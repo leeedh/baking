@@ -33,11 +33,8 @@ export default function Header({ currentView, onNavigate, isLoggedIn, userEmail,
             A
           </div>
           <div>
-            <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-[#2A211B] flex items-center gap-1.5 whitespace-nowrap">
+            <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-[#2A211B] whitespace-nowrap">
               Atelier Crème
-              <span className="text-[10px] sm:text-xs font-sans font-medium px-1.5 py-0.5 bg-[#B0863C]/15 text-[#B0863C] rounded">
-                {language === 'ko' ? '아틀리에 크렘' : 'Atelier Crème'}
-              </span>
             </span>
             <p className="hidden sm:block text-[10px] tracking-wide text-[#5F4E43] uppercase font-sans">Premium French Baking Atelier</p>
           </div>
