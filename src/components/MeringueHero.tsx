@@ -39,7 +39,7 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=1500', // Pinned for 1500px of scrolling to complete the zoom
+        end: '+=2500', // Pinned for 3000px of scrolling to complete the zoom (slower reveal)
         scrub: 1.5, // Buttery smooth response
         pin: true, // Let ScrollTrigger handle pure pinning
         anticipatePin: 1,
@@ -49,14 +49,14 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
     // 1. Zoom mask hole & rotate background image dynamically
     tl.to(maskHoleRef.current, {
       scale: 22, // Expands the 8% radius circle to fully cover the screen corners (176% width/height)
-      ease: 'power2.out',
+      ease: 'power1.out', // Gentler ramp than power2 — circle grows more evenly as you scroll
     }, 0);
 
     if (decorRef.current) {
       tl.to(decorRef.current, {
         scale: 22,
         opacity: 0, // Gently fades out outline rings as they expand past margins
-        ease: 'power2.out',
+        ease: 'power1.out',
       }, 0);
     }
 
