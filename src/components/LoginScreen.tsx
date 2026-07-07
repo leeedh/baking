@@ -55,7 +55,7 @@ export default function LoginScreen({ onLoginSuccess, onNavigateToCatalog }: Log
         {/* Top styling strip */}
         <div className="h-2 bg-gradient-to-r from-[#B65538] via-[#B0863C] to-[#B65538]"></div>
         
-        <div className="p-8 sm:p-10">
+        <div className="p-6 sm:p-10">
           
           {/* Logo & Subtext */}
           <div className="text-center mb-8">
@@ -213,8 +213,8 @@ export default function LoginScreen({ onLoginSuccess, onNavigateToCatalog }: Log
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
             {/* Google Login */}
             <button
               id="google-login-btn"

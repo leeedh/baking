@@ -45,3 +45,11 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* MeringueHero 마우스 스크롤 힌트 아이콘 */
+@keyframes mouseScroll {
+  0%   { transform: translateY(0);   opacity: 1; }
+  60%  { transform: translateY(6px); opacity: 0.2; }
+  61%  { transform: translateY(0);   opacity: 0; }
+  100% { transform: translateY(0);   opacity: 1; }
+}

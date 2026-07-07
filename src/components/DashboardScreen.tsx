@@ -196,8 +196,71 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
           </div>
         </div>
 
-        {/* Real HTML Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile card list (< md) */}
+        <div className="md:hidden space-y-3">
+          {classList.map(item => (
+            <div key={item.id} className="bg-white rounded-xl border border-[#EFE8DC] p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="font-bold text-xs text-[#2A211B] block truncate">{item.title}</span>
+                  <span className="text-[10px] text-[#5F4E43]/60 font-mono">ID: {item.id}</span>
+                </div>
+                <span className="text-xs font-semibold text-[#B65538] shrink-0">{item.instructor}</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-[#FAF4EA] rounded-lg p-2">
+                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">정가</span>
+                  <span className="text-xs font-bold text-[#2A211B] font-mono">₩{item.price.toLocaleString()}</span>
+                </div>
+                <div className="bg-[#FAF4EA] rounded-lg p-2">
+                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">판매</span>
+                  <span className="text-xs font-bold text-[#2A211B] font-mono">{item.salesCount.toLocaleString()}</span>
+                </div>
+                <div className="bg-[#FAF4EA] rounded-lg p-2">
+                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">매출</span>
+                  <span className="text-xs font-bold text-[#B0863C] font-mono">₩{(item.revenue / 10000).toFixed(0)}만</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 flex-1 mr-3">
+                  <span className="text-xs font-bold text-emerald-700 shrink-0">{item.completionRate}%</span>
+                  <div className="flex-1 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden border border-[#EFE8DC]">
+                    <div className="bg-emerald-600 h-full rounded-full" style={{ width: `${item.completionRate}%` }} />
+                  </div>
+                </div>
+
+                {editingClassId === item.id ? (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <input
+                      type="number"
+                      value={editingPrice}
+                      onChange={(e) => setEditingPrice(Number(e.target.value))}
+                      className="w-24 px-2 py-1.5 border border-[#B65538] text-xs font-bold rounded"
+                    />
+                    <button
+                      onClick={() => savePriceEdit(item.id)}
+                      className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded min-h-[36px]"
+                    >
+                      저장
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => startEditPrice(item)}
+                    className="px-3 py-2 text-xs font-bold text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] rounded transition-all cursor-pointer shrink-0 min-h-[36px]"
+                  >
+                    단가 조정
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table (≥ md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table id="tbl-baking-classes" className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#FAF4EA]/20 border-b border-[#EFE8DC] text-[11px] font-bold text-[#5F4E43] uppercase tracking-wider">
@@ -217,7 +280,7 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
                     <span className="font-bold text-xs block truncate max-w-[250px]">{item.title}</span>
                     <span className="text-[10px] text-[#5F4E43]/60 block mt-1 font-mono">ID: {item.id}</span>
                   </td>
-                  
+
                   <td className="py-4 px-6">
                     <span className="text-xs font-semibold text-[#B65538]">{item.instructor}</span>
                   </td>
@@ -231,7 +294,7 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
                           onChange={(e) => setEditingPrice(Number(e.target.value))}
                           className="w-20 px-1 py-0.5 border border-[#B65538] text-xs font-bold rounded"
                         />
-                        <button 
+                        <button
                           onClick={() => savePriceEdit(item.id)}
                           className="px-1.5 py-0.5 bg-emerald-600 text-white text-[10px] rounded"
                         >
@@ -255,8 +318,8 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
                     <div className="flex flex-col items-center">
                       <span className="text-xs font-bold text-emerald-700">{item.completionRate}%</span>
                       <div className="w-16 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden mt-1 border border-[#EFE8DC]">
-                        <div 
-                          className="bg-emerald-600 h-full rounded-full" 
+                        <div
+                          className="bg-emerald-600 h-full rounded-full"
                           style={{ width: `${item.completionRate}%` }}
                         />
                       </div>

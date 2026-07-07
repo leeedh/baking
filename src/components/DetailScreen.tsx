@@ -22,7 +22,7 @@ export default function DetailScreen({ cls, purchased, onNavigateToCatalog, onNa
   const totalLessons = curriculum.reduce((acc, curr) => acc + curr.lessons.length, 0);
 
   return (
-    <div id="detail-screen" className="bg-[#FAF4EA] py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div id="detail-screen" className="bg-[#FAF4EA] py-8 px-4 sm:px-8 max-w-7xl mx-auto pb-28 lg:pb-8">
       
       {/* Navigation Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-[#5F4E43] mb-6">
@@ -241,7 +241,7 @@ export default function DetailScreen({ cls, purchased, onNavigateToCatalog, onNa
                                   <button
                                     id={`preview-btn-${lesson.id}`}
                                     onClick={() => onStartPreview(cls.id, lesson.id)}
-                                    className="px-3 py-1 bg-[#B65538] hover:bg-[#A0452C] text-[#FAF4EA] text-xs font-bold rounded cursor-pointer"
+                                    className="px-3 py-2 min-h-[36px] bg-[#B65538] hover:bg-[#A0452C] text-[#FAF4EA] text-xs font-bold rounded cursor-pointer"
                                   >
                                     즉시 시청
                                   </button>
@@ -400,7 +400,7 @@ export default function DetailScreen({ cls, purchased, onNavigateToCatalog, onNa
       </div>
 
       {/* Sticky Bottom Row for Quick Purchase Conversion on Mobile Devices */}
-      <div className="lg:hidden fixed bottom-[72px] left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#EFE8DC] p-3 shadow-[0_-8px_20px_rgba(42,33,27,0.08)] flex items-center justify-between gap-3 px-4">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#EFE8DC] p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_20px_rgba(42,33,27,0.08)] flex items-center justify-between gap-3 px-4">
         <div className="flex flex-col">
           <span className="text-[9px] font-bold text-[#B65538] uppercase tracking-wider">LIFETIME ACCESS PASS</span>
           <div className="flex items-baseline gap-1.5">
@@ -412,7 +412,7 @@ export default function DetailScreen({ cls, purchased, onNavigateToCatalog, onNa
         {purchased ? (
           <button
             onClick={() => onStartPreview(cls.id, curriculum[0]?.lessons[0]?.id || '')}
-            className="px-5 py-2.5 bg-[#2A211B] text-white font-bold text-xs rounded-xl shadow cursor-pointer text-center whitespace-nowrap"
+            className="px-5 py-3 min-h-[44px] bg-[#2A211B] text-white font-bold text-xs rounded-xl shadow cursor-pointer text-center whitespace-nowrap"
           >
             플레이어로 이동
           </button>
@@ -420,7 +420,7 @@ export default function DetailScreen({ cls, purchased, onNavigateToCatalog, onNa
           <button
             id="mobile-sticky-buy"
             onClick={() => onNavigateToPayment(cls.id)}
-            className="px-6 py-2.5 bg-[#B65538] hover:bg-[#9C3F24] text-[#FAF4EA] font-extrabold text-xs rounded-xl shadow-md text-center whitespace-nowrap cursor-pointer"
+            className="px-6 py-3 min-h-[44px] bg-[#B65538] hover:bg-[#9C3F24] text-[#FAF4EA] font-extrabold text-xs rounded-xl shadow-md text-center whitespace-nowrap cursor-pointer"
           >
             지금 평생소장 결제
           </button>

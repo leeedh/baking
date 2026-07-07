@@ -214,7 +214,7 @@ export default function PlayerScreen({ cls, purchased, onNavigateBack, initialLe
             <p className="text-[10px] text-[#5F4E43] mt-0.5">클릭하면 즉시 비디오 스트리밍이 변환됩니다.</p>
           </div>
 
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+          <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">
             {curriculum.map((chapter) => (
               <div key={chapter.id} className="space-y-2">
                 <span className="text-[10.5px] font-bold text-[#B0863C] block uppercase tracking-wider bg-[#FAF4EA] p-1.5 rounded">
@@ -232,7 +232,7 @@ export default function PlayerScreen({ cls, purchased, onNavigateBack, initialLe
                         key={lesson.id}
                         onClick={() => handleLessonSelect(lesson)}
                         disabled={isLocked}
-                        className={`w-full p-2.5 rounded-lg flex items-center justify-between text-left text-xs transition-all cursor-pointer ${
+                        className={`w-full p-2.5 min-h-[44px] rounded-lg flex items-center justify-between text-left text-xs transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#B65538]/10 text-[#B65538] font-bold'
                             : isLocked

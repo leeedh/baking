@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Search, ChevronDown, Sparkles } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -61,13 +61,12 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
     }
 
     if (bgImageRef.current) {
-      tl.fromTo(bgImageRef.current, 
-        { scale: 1.05, rotation: 0 },
-        { 
-          scale: 1.25, 
-          rotation: 4, // Elegant 3D camera twist during zoom
-          ease: 'power1.out' 
-        }, 
+      tl.fromTo(bgImageRef.current,
+        { scale: 1.05 },
+        {
+          scale: 1.2,  // rotation 제거 — 수평 케이크 이미지 기울기 방지
+          ease: 'power1.out'
+        },
         0
       );
     }
@@ -77,7 +76,7 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
       tl.to(leftTextRef.current, {
         opacity: 0,
         y: -15,
-        ease: 'power1.inOut'
+        ease: 'power1.in'  // 느리게 시작 → 초반 텍스트를 더 오래 유지
       }, 0);
     }
 
@@ -85,7 +84,7 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
       tl.to(bottomBarRef.current, {
         opacity: 0,
         y: 20,
-        ease: 'power1.inOut'
+        ease: 'power1.in'
       }, 0);
     }
 
@@ -94,22 +93,22 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
       tl.to(textInitialRef.current, {
         opacity: 0,
         scale: 0.98,
-        ease: 'power1.out',
+        ease: 'power1.in',  // 크로스페이드 구간 확보
       }, 0);
     }
 
-    // 4. Fade in the gorgeous revealed full-screen branding/slogan inside the cake scene near the end of zoom
+    // 4. Fade in the revealed full-screen branding/slogan — starts earlier to eliminate empty gap
     if (textRevealRef.current) {
-      tl.fromTo(textRevealRef.current, 
+      tl.fromTo(textRevealRef.current,
         { opacity: 0, y: 30, scale: 0.98 },
-        { 
-          opacity: 1, 
-          y: 0, 
+        {
+          opacity: 1,
+          y: 0,
           scale: 1,
           ease: 'power2.out',
-          duration: 0.5
-        }, 
-        0.4
+          duration: 0.6
+        },
+        0.25  // 0.4 → 0.25: 앞당겨 초기 텍스트와 크로스페이드 구간 확보
       );
     }
 
@@ -211,11 +210,8 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
           <defs>
             <mask id="cake-zoom-mask" maskUnits="userSpaceOnUse">
-              {/* White rectangle covers everything (Overlay is visible) */}
               <rect x="0" y="0" width="100" height="100" fill="white" />
-              
-              {/* Perfect circular hole cutting the mask to reveal the top-view cake below */}
-              <circle 
+              <circle
                 ref={maskHoleRef}
                 cx="50"
                 cy="50"
@@ -224,15 +220,16 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
               />
             </mask>
           </defs>
-          
-          {/* Soft Cream Overlay Rect with the mask applied */}
+
+          {/* Cream overlay — solid fill required; gradient fill breaks mask animation in browsers */}
           <rect x="0" y="0" width="100" height="100" fill="#FDFBF7" mask="url(#cake-zoom-mask)" />
-          
-          {/* Elegant luxury concentric guidelines framing the circular cake (scales in sync) */}
-          <g ref={decorRef} className="opacity-70">
-            <circle cx="50" cy="50" r="8.3" fill="none" stroke="#B0863C" strokeWidth="0.15" />
-            <circle cx="50" cy="50" r="9.2" fill="none" stroke="#B0863C" strokeWidth="0.08" strokeDasharray="0.3,0.3" opacity="0.7" />
-            <circle cx="50" cy="50" r="10.5" fill="none" stroke="#B0863C" strokeWidth="0.05" opacity="0.4" />
+
+          {/* Luxury concentric rings framing the circular cake window */}
+          <g ref={decorRef} className="opacity-80">
+            <circle cx="50" cy="50" r="8.4"  fill="none" stroke="#B0863C" strokeWidth="0.28" opacity="0.9" />
+            <circle cx="50" cy="50" r="9.6"  fill="none" stroke="#B0863C" strokeWidth="0.16" strokeDasharray="0.55,0.55" opacity="0.7" />
+            <circle cx="50" cy="50" r="11.2" fill="none" stroke="#B0863C" strokeWidth="0.09" opacity="0.45" />
+            <circle cx="50" cy="50" r="13.5" fill="none" stroke="#9E2D1B" strokeWidth="0.05" opacity="0.22" />
           </g>
         </svg>
       </div>
@@ -260,17 +257,41 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
             </p>
           </div>
 
-          {/* Right Display frame detailing the Interactive top-view cake guide */}
-          <div className="lg:col-span-5 hidden lg:flex flex-col items-center justify-center p-6 relative">
-            {/* Dynamic luxury circular spinning indicator around the cake circle */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5 pointer-events-none select-none z-10">
-              <span className="bg-[#B0863C] text-white font-mono text-[9px] tracking-[0.2em] font-bold px-3 py-1.5 rounded-full uppercase shadow-lg flex items-center gap-1.5 animate-pulse">
-                <Sparkles size={10} />
-                CAKE TOP-VIEW
+          {/* Right column: 에디토리얼 브랜드 스탯 패널 */}
+          <div className="lg:col-span-5 hidden lg:flex flex-col items-end justify-center gap-6 pr-2">
+            {/* 구분선 + 레이블 */}
+            <div className="flex items-center gap-3 self-end">
+              <div className="h-[1px] w-8 bg-[#B0863C]/50" />
+              <span className="text-[9px] font-mono tracking-[0.4em] text-[#B0863C] uppercase font-bold">
+                SINCE 2019 · PARIS
               </span>
-              <p className="text-[10px] font-medium text-[#2C1A12] tracking-wide bg-white/40 backdrop-blur-sm px-2 py-0.5 rounded">
-                {language === 'ko' ? '스크롤하여 깊이 줌인' : 'Scroll to Plunge Deep'}
-              </p>
+            </div>
+
+            {/* 스탯 카드 그리드 */}
+            <div className="grid grid-cols-2 gap-4 w-full max-w-[200px]">
+              <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm">
+                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">42</div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">Masterclasses</div>
+              </div>
+              <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm">
+                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">4.9</div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">Avg Rating</div>
+              </div>
+              <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm col-span-2">
+                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">4,800<span className="text-base">+</span></div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">Students Worldwide</div>
+              </div>
+            </div>
+
+            {/* 수직 텍스트 장식 */}
+            <div className="flex items-center gap-2 self-end opacity-40">
+              <div className="h-12 w-[1px] bg-[#2C1A12]" />
+              <span
+                className="text-[8px] font-mono tracking-[0.35em] text-[#2C1A12] uppercase font-medium"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                ATELIER CRÈME
+              </span>
             </div>
           </div>
         </div>
@@ -278,9 +299,14 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
         {/* Bottom Indicator */}
         <div ref={bottomBarRef} className="absolute bottom-6 left-6 right-6 sm:left-12 sm:right-12 flex items-center justify-between border-t border-[#EFE8DC] pt-4 text-[11px] text-[#4E3C30] font-light transition-all duration-300">
           <span>Scroll Down to Zoom Into the Secret Dessert Scene</span>
-          <div className="flex items-center gap-1 animate-bounce">
-            <span className="font-mono text-[9px] tracking-widest font-semibold uppercase">SCROLL</span>
-            <ChevronDown size={12} />
+          {/* 마우스 아이콘 스크롤 힌트 */}
+          <div className="flex flex-col items-center gap-1.5">
+            <svg width="18" height="26" viewBox="0 0 18 26" fill="none" className="text-[#4E3C30]/60">
+              <rect x="1" y="1" width="16" height="24" rx="8" stroke="currentColor" strokeWidth="1.2" />
+              <rect x="8" y="5" width="2" height="5" rx="1" fill="#B0863C"
+                style={{ animation: 'mouseScroll 1.6s ease-in-out infinite' }} />
+            </svg>
+            <span className="font-mono text-[8px] tracking-[0.35em] text-[#4E3C30]/50 uppercase">SCROLL</span>
           </div>
         </div>
       </div>
@@ -315,11 +341,26 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
               "Discover the exact oven pressure formula and cream masking techniques perfected over years, transforming raw intuition into master-level French pastries."
             )}
           </p>
-          <div className="pt-6">
+          <div className="pt-6 flex flex-col items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/20 rounded-full bg-white/5 backdrop-blur-sm text-[10px] font-semibold text-white uppercase tracking-[0.2em]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#B0863C] animate-ping" />
               Live VOD Streaming Active
             </span>
+            {/* CTA 버튼 — pointer-events-auto로 클릭 가능하게 */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto">
+              <button
+                onClick={handleExploreClick}
+                className="px-7 py-3 min-h-[44px] bg-[#B0863C] hover:bg-[#9A7230] text-white text-[11px] font-bold tracking-[0.25em] uppercase rounded-full transition-all duration-300 shadow-lg shadow-[#B0863C]/30 cursor-pointer"
+              >
+                {language === 'ko' ? '마스터클래스 탐색' : 'Explore Masterclasses'}
+              </button>
+              <button
+                onClick={handleExploreClick}
+                className="px-5 py-3 min-h-[44px] border border-white/30 hover:border-white/60 text-white/80 hover:text-white text-[11px] font-medium tracking-[0.15em] uppercase rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm"
+              >
+                {language === 'ko' ? '무료 맛보기 시청' : 'Watch Free Preview'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

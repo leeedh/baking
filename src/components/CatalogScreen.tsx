@@ -416,20 +416,24 @@ export default function CatalogScreen({
           </div>
           
           {/* Aesthetic tabs selector */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 w-full md:w-auto">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4.5 py-2.5 text-xs font-medium rounded-xl whitespace-nowrap transition-all duration-300 cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#2A211B] text-[#FAF4EA] font-semibold hover:shadow-md'
-                    : 'bg-white text-[#5F4E43] border border-[#EFE8DC] hover:text-[#2A211B] hover:bg-[#FAF4EA]/80'
-                }`}
-              >
-                {cat === 'All' ? '전체 클래스' : cat}
-              </button>
-            ))}
+          <div className="relative w-full md:w-auto">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 w-full md:w-auto">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2.5 min-h-[44px] text-xs font-medium rounded-xl whitespace-nowrap transition-all duration-300 cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-[#2A211B] text-[#FAF4EA] font-semibold hover:shadow-md'
+                      : 'bg-white text-[#5F4E43] border border-[#EFE8DC] hover:text-[#2A211B] hover:bg-[#FAF4EA]/80'
+                  }`}
+                >
+                  {cat === 'All' ? '전체 클래스' : cat}
+                </button>
+              ))}
+            </div>
+            {/* Right fade hint for horizontal scroll on mobile */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#FAF4EA] to-transparent md:hidden" />
           </div>
         </div>
 
@@ -590,14 +594,14 @@ export default function CatalogScreen({
             </div>
 
             {/* Sub category filter tabs simple state */}
-            <div className="flex items-center gap-1 text-[11px]">
+            <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
               {['All', '정통 프렌치 디저트', '클래식 구움과자', '모던 타르트'].map(fTag => (
                 <button
                   key={fTag}
                   onClick={() => setActiveArchiveCategory(fTag)}
-                  className={`px-3 py-1.5 rounded-lg transition-all font-medium cursor-pointer ${
-                    activeArchiveCategory === fTag 
-                      ? 'bg-[#B0863C] text-white' 
+                  className={`px-3 py-2 min-h-[36px] rounded-lg transition-all font-medium cursor-pointer ${
+                    activeArchiveCategory === fTag
+                      ? 'bg-[#B0863C] text-white'
                       : 'bg-[#FAF4EA] text-[#5F4E43] hover:bg-gray-100'
                   }`}
                 >
