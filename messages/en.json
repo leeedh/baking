@@ -1,0 +1,50 @@
+{
+  "nav": {
+    "books": "Book Shop",
+    "instructor": "Meet Chef",
+    "myclasses": "My Classes",
+    "dashboard": "Admin Dashboard",
+    "login": "Sign In / Register",
+    "logout": "Sign Out",
+    "student": "Student"
+  },
+  "hero": {
+    "subtitle": "ARTISAN MASTERY CLASS",
+    "title1": "The Sense of Perfection,",
+    "title2": "Precise Oven Aesthetics",
+    "desc": "The prestige of authentic French pastry crafted with temperature and humidity control. Lifetime-access VODs to elevate your dessert brand.",
+    "searchPlaceholder": "Search macarons, financiers, classic pastries...",
+    "exploreBtn": "Explore Signature",
+    "quizBtn": "1:1 Custom Proposal"
+  },
+  "quiz": {
+    "badge": "Matchmaking Quiz",
+    "title": "My Baking DNA Matchmaker",
+    "desc": "From scientific calibration to trendy artistic plating, find your 100% matched baking course in under 1 minute.",
+    "start": "Launch DNA Matchmaker Quiz"
+  },
+  "pillars": {
+    "pill": "Premium Standard",
+    "title": "The Definitive Atelier Crème Standard",
+    "desc": "Simple recipe tracing cannot elevate store competitiveness or craft breathtaking textures. We transmit authentic master-level secrets."
+  },
+  "grid": {
+    "badge": "ONLINE MASTERCLASSES",
+    "title": "Artisan Masterclass VOD Archives",
+    "desc": "Archived master collections designed through Parisian culinary bloodlines and thousands of retail validations.",
+    "all": "All",
+    "searchEmpty": "No masterclasses matched your search query.",
+    "searchEmptyDesc": "Try entering another search keyword or changing the category filter."
+  },
+  "btn": {
+    "detail": "View Cook Book Recipe",
+    "preview": "Free Preview First Lecture",
+    "purchase": "Acquire Lifetime Access",
+    "premiumBadge": "Lifetime Access Pass",
+    "rating": "Rating {rating} ({count} reviews)"
+  },
+  "footer": {
+    "rights": "© 2026 Atelier Crème Inc. All rights reserved.",
+    "chef": "Head Artisan Chef: Sohee Min"
+  }
+}

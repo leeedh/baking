@@ -1,17 +1,41 @@
-import React, { useState } from 'react';
-import { ClassItem } from '../types';
-import { CreditCard, Wallet, Landmark, Globe, Check, AlertCircle, ShoppingBag, BadgePercent } from 'lucide-react';
+'use client';
+
+import { useRouter } from '@/i18n/navigation';
+import { useAppStore, useClassById } from '@/lib/store';
+import {
+  AlertCircle,
+  BadgePercent,
+  Check,
+  CreditCard,
+  Globe,
+  Landmark,
+  ShoppingBag,
+  Wallet,
+} from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 
 interface PaymentScreenProps {
-  cls: ClassItem;
-  userEmail: string;
-  onPaymentSuccess: (classId: string) => void;
-  onNavigateBack: () => void;
+  classId: string;
 }
 
 type PaymentMethod = 'korean-card' | 'overseas-card' | 'simple-pay' | 'line-pay';
 
-export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavigateBack }: PaymentScreenProps) {
+export default function PaymentScreen({ classId }: PaymentScreenProps) {
+  const cls = useClassById(classId);
+  const router = useRouter();
+  const userEmail = useAppStore((s) => s.userEmail);
+  const addPurchased = useAppStore((s) => s.addPurchased);
+
+  const onPaymentSuccess = (id: string) => {
+    addPurchased(id);
+    router.push('/my-classes');
+    alert(
+      '🎉 정식 평생소장 라이선스 계약이 완료되었습니다! 내 클래스 보관함에서 평생 기한 없이 반복 수강하실 수 있습니다.',
+    );
+  };
+  const onNavigateBack = () => router.push(`/classes/${cls.id}`);
+
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('korean-card');
   const [couponCode, setCouponCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0);
@@ -47,24 +71,27 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
 
   return (
     <div id="payment-screen" className="bg-[#FAF4EA] py-12 px-4 sm:px-8 max-w-5xl mx-auto">
-      
       <div className="mb-8">
         <h1 className="font-serif text-3xl font-bold text-[#2A211B]">안심 안전 주문 결제</h1>
-        <p className="text-xs text-[#5F4E43] mt-1">대만 및 국내 전용 신용카드, 라인페이, 간편결제 무중단 호환</p>
+        <p className="text-xs text-[#5F4E43] mt-1">
+          대만 및 국내 전용 신용카드, 라인페이, 간편결제 무중단 호환
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         {/* Left Column: Form & Payment Method Selectors */}
         <div className="lg:col-span-7 space-y-6">
-          
           {/* Orderer details card */}
           <div className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-4">
-            <h3 className="font-serif text-base font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-3">1. 주문 수강생 정보</h3>
-            
+            <h3 className="font-serif text-base font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-3">
+              1. 주문 수강생 정보
+            </h3>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">수강 아이디(이메일)</label>
+                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">
+                  수강 아이디(이메일)
+                </label>
                 <input
                   type="text"
                   value={userEmail}
@@ -74,7 +101,9 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">이름 (실명)</label>
+                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">
+                  이름 (실명)
+                </label>
                 <input
                   type="text"
                   value={buyerName}
@@ -84,7 +113,9 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">연락처 (인증번호 대용)</label>
+                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">
+                  연락처 (인증번호 대용)
+                </label>
                 <input
                   type="text"
                   value={buyerPhone}
@@ -92,17 +123,20 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
                   className="w-full px-3 py-2 bg-white border border-[#EFE8DC] rounded-lg text-xs text-[#2A211B] focus:outline-none focus:ring-1 focus:ring-[#B65538] font-mono"
                   placeholder="010-XXXX-XXXX"
                 />
-                <span className="text-[10px] text-[#5F4E43]/60 mt-1 block">수강 변경 이력 및 영수증 번호와 동기화됩니다.</span>
+                <span className="text-[10px] text-[#5F4E43]/60 mt-1 block">
+                  수강 변경 이력 및 영수증 번호와 동기화됩니다.
+                </span>
               </div>
             </div>
           </div>
 
           {/* Payment Method selectors */}
           <div className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-4">
-            <h3 className="font-serif text-base font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-3">2. 결제 수단 선택</h3>
-            
+            <h3 className="font-serif text-base font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-3">
+              2. 결제 수단 선택
+            </h3>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              
               {/* Option 1: Korean Card */}
               <button
                 id="pm-korean-card"
@@ -116,7 +150,9 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               >
                 <div className="flex justify-between items-start w-full">
                   <CreditCard size={18} />
-                  {paymentMethod === 'korean-card' && <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />}
+                  {paymentMethod === 'korean-card' && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />
+                  )}
                 </div>
                 <div>
                   <span className="block text-xs font-bold font-sans">국내 신용카드</span>
@@ -137,10 +173,14 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               >
                 <div className="flex justify-between items-start w-full">
                   <Globe size={18} className="text-[#B0863C]" />
-                  {paymentMethod === 'overseas-card' && <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />}
+                  {paymentMethod === 'overseas-card' && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />
+                  )}
                 </div>
                 <div>
-                  <span className="block text-xs font-bold font-sans">해외 결제 (Visa/Master/JCB)</span>
+                  <span className="block text-xs font-bold font-sans">
+                    해외 결제 (Visa/Master/JCB)
+                  </span>
                   <span className="text-[10px] opacity-70">대만(台灣) 포함 통합 지원</span>
                 </div>
               </button>
@@ -158,7 +198,9 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               >
                 <div className="flex justify-between items-start w-full">
                   <Wallet size={18} />
-                  {paymentMethod === 'simple-pay' && <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />}
+                  {paymentMethod === 'simple-pay' && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />
+                  )}
                 </div>
                 <div>
                   <span className="block text-xs font-bold font-sans">카카오페이 / 토스페이</span>
@@ -178,15 +220,18 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
                 }`}
               >
                 <div className="flex justify-between items-start w-full">
-                  <span className="text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded">LINE PY</span>
-                  {paymentMethod === 'line-pay' && <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />}
+                  <span className="text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded">
+                    LINE PY
+                  </span>
+                  {paymentMethod === 'line-pay' && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#B65538] shrink-0" />
+                  )}
                 </div>
                 <div>
                   <span className="block text-xs font-bold font-sans">Line Pay & Apple Pay</span>
                   <span className="text-[10px] opacity-70">대만 달러(TWD) 가맹 대응</span>
                 </div>
               </button>
-
             </div>
 
             {/* Simulated Payment instruction prompt */}
@@ -194,19 +239,35 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               <span className="font-bold text-[#B0863C] block flex items-center gap-1">
                 <AlertCircle size={14} /> 안전인증결제 가이드
               </span>
-              {paymentMethod === 'korean-card' && <p>• 국내 신용카드 수강 시 앱카드 간편인증 및 ISP 비밀번호 입력창이 다음에 노출됩니다.</p>}
-              {paymentMethod === 'overseas-card' && <p>• 3D Secure 2.0 국제안심인증이 적용되며 승인 전용 OTP 코드가 수취될 수 있습니다.</p>}
-              {paymentMethod === 'simple-pay' && <p>• 네이버/카카오 연계 생체 인식 완료 시 수강 승인이 실시간 자동 승인됩니다.</p>}
-              {paymentMethod === 'line-pay' && <p>• LINE Pay 대만 지부 연동에 의한 환율 계산 청구가 실행됩니다.</p>}
+              {paymentMethod === 'korean-card' && (
+                <p>
+                  • 국내 신용카드 수강 시 앱카드 간편인증 및 ISP 비밀번호 입력창이 다음에
+                  노출됩니다.
+                </p>
+              )}
+              {paymentMethod === 'overseas-card' && (
+                <p>
+                  • 3D Secure 2.0 국제안심인증이 적용되며 승인 전용 OTP 코드가 수취될 수 있습니다.
+                </p>
+              )}
+              {paymentMethod === 'simple-pay' && (
+                <p>• 네이버/카카오 연계 생체 인식 완료 시 수강 승인이 실시간 자동 승인됩니다.</p>
+              )}
+              {paymentMethod === 'line-pay' && (
+                <p>• LINE Pay 대만 지부 연동에 의한 환율 계산 청구가 실행됩니다.</p>
+              )}
             </div>
           </div>
 
           {/* Coupon Entry */}
-          <form onSubmit={handleApplyCoupon} className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-3">
+          <form
+            onSubmit={handleApplyCoupon}
+            className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-3"
+          >
             <h3 className="font-serif text-sm font-bold text-[#2A211B] flex items-center gap-1.5">
               <BadgePercent size={16} className="text-[#B0863C]" /> 할인가 혜택 입력
             </h3>
-            
+
             <div className="flex gap-2">
               <input
                 type="text"
@@ -215,21 +276,21 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
                 placeholder="할인 쿠폰코드 (예시: BAKING10)"
                 className="flex-1 px-3 py-2 bg-white border border-[#EFE8DC] rounded-lg text-xs text-[#2A211B] uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#B65538]"
               />
-              <button 
+              <button
                 type="submit"
                 className="px-4 py-2 bg-[#2A211B] text-white text-xs font-semibold rounded-lg hover:bg-[#B65538] transition-colors cursor-pointer"
               >
                 할인 적용
               </button>
             </div>
-            <p className="text-[10px] text-[#5F4E43]/60 italic font-mono">* 힌트: BAKING10 입력 후 적용 시 ₩15,000 즉시 할인!</p>
+            <p className="text-[10px] text-[#5F4E43]/60 italic font-mono">
+              * 힌트: BAKING10 입력 후 적용 시 ₩15,000 즉시 할인!
+            </p>
           </form>
-
         </div>
 
         {/* Right Column: Order breakdown & summary */}
         <div className="lg:col-span-5 sticky top-24">
-          
           <div className="bg-white rounded-2xl border border-[#EFE8DC] p-6 shadow-md space-y-4">
             <h3 className="font-serif text-base font-bold text-[#2A211B] flex items-center gap-1.5 pb-2 border-b border-[#FAF4EA]">
               <ShoppingBag size={18} className="text-[#B65538]" /> 3. 최종 주문정보 요약
@@ -237,10 +298,10 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
 
             {/* Miniature class summary info */}
             <div className="flex gap-3 bg-[#FAF4EA]/40 p-3 rounded-xl border border-[#EFE8DC]/80">
-              <img 
+              <img
                 referrerPolicy="no-referrer"
-                src={cls.thumbnail} 
-                alt={cls.title} 
+                src={cls.thumbnail}
+                alt={cls.title}
                 className="w-16 h-12 object-cover rounded-md"
               />
               <div>
@@ -262,9 +323,11 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
               </div>
               <div className="flex justify-between items-center text-[#5F3E43]">
                 <span>얼리버드 이벤트 자체 할인</span>
-                <span className="text-[#B65538]">- ₩{(cls.originalPrice - cls.price).toLocaleString()}</span>
+                <span className="text-[#B65538]">
+                  - ₩{(cls.originalPrice - cls.price).toLocaleString()}
+                </span>
               </div>
-              
+
               {appliedDiscount > 0 && (
                 <div className="flex justify-between items-center text-[#B0863C] font-semibold">
                   <span>추가 적용 쿠폰 할인 코드</span>
@@ -277,11 +340,13 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
                 <span className="text-emerald-700 font-bold">₩0 (무상제공)</span>
               </div>
 
-              <div className="h-px bg-[#EFE8DC]"></div>
+              <div className="h-px bg-[#EFE8DC]" />
 
               <div className="flex justify-between items-baseline pt-2">
                 <span className="font-bold text-[#2A211B]">최종 결제 금액 (원화)</span>
-                <span className="text-xl font-serif font-extrabold text-[#B65538]">₩{finalPrice.toLocaleString()}</span>
+                <span className="text-xl font-serif font-extrabold text-[#B65538]">
+                  ₩{finalPrice.toLocaleString()}
+                </span>
               </div>
             </div>
 
@@ -294,7 +359,8 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
                 className="w-4 h-4 rounded text-[#B65538] border-[#EFE8DC] focus:ring-[#B65538] accent-[#B65538] mt-0.5"
               />
               <span className="text-[11px] text-[#5F4E43] leading-relaxed">
-                [필수] 본 상품은 영구 소장 디지털 VOD이며, 시청 개시 후 디지털 복제 방지법에 의거하여 단순 변심 환불이 제한됨을 동의합니다.
+                [필수] 본 상품은 영구 소장 디지털 VOD이며, 시청 개시 후 디지털 복제 방지법에
+                의거하여 단순 변심 환불이 제한됨을 동의합니다.
               </span>
             </label>
 
@@ -311,13 +377,11 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
             >
               {isProcessing ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-t-transparent border-[#FAF4EA] rounded-full animate-spin"></span>
+                  <span className="w-4 h-4 border-2 border-t-transparent border-[#FAF4EA] rounded-full animate-spin" />
                   해외 승인 및 수강 인가 처리 중...
                 </>
               ) : (
-                <>
-                  ₩{finalPrice.toLocaleString()} 결제 및 바로 평생소장 수강하기
-                </>
+                <>₩{finalPrice.toLocaleString()} 결제 및 바로 평생소장 수강하기</>
               )}
             </button>
 
@@ -329,12 +393,9 @@ export default function PaymentScreen({ cls, userEmail, onPaymentSuccess, onNavi
             >
               이전으로 돌아가기
             </button>
-
           </div>
         </div>
-
       </div>
-
     </div>
   );
 }

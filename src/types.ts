@@ -62,20 +62,3 @@ export interface ClassManagementItem {
   revenue: number;
   completionRate: number;
 }
-
-export interface AuthState {
-  isLoggedIn: boolean;
-  user: {
-    email: string;
-    name: string;
-    avatar: string;
-  } | null;
-}
-
-export interface ApplicationState {
-  currentView: 'catalog' | 'detail' | 'player' | 'payment' | 'myclasses' | 'dashboard' | 'login';
-  selectedClassId: string | null;
-  purchasedClassIds: string[]; // List of classIds purchased
-  currentLessonId: string | null; // Currently selected lesson in player
-  cartClassId: string | null; // Class currently in the billing/checkout flow
-}

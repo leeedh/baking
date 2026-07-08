@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+'use client';
+
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search } from 'lucide-react';
-import { useLanguage } from '../LanguageContext';
+import { useLocale, useTranslations } from 'next-intl';
+import React, { useEffect, useRef } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,7 +14,8 @@ interface MeringueHeroProps {
 }
 
 export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHeroProps) {
-  const { t, language } = useLanguage();
+  const t = useTranslations();
+  const language = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const maskHoleRef = useRef<SVGCircleElement>(null);
   const bgImageRef = useRef<HTMLImageElement>(null);
@@ -24,6 +27,9 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
 
   useEffect(() => {
     if (!containerRef.current || !maskHoleRef.current) return;
+
+    // Respect reduced-motion preference: skip the scroll-pinned zoom entirely, keep the static hero layer
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     // Set initial transform origins for accurate central scaling
     gsap.set(maskHoleRef.current, { transformOrigin: '50% 50%' });
@@ -47,74 +53,96 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
     });
 
     // 1. Zoom mask hole & rotate background image dynamically
-    tl.to(maskHoleRef.current, {
-      scale: 22, // Expands the 8% radius circle to fully cover the screen corners (176% width/height)
-      ease: 'power1.out', // Gentler ramp than power2 — circle grows more evenly as you scroll
-    }, 0);
+    tl.to(
+      maskHoleRef.current,
+      {
+        scale: 22, // Expands the 8% radius circle to fully cover the screen corners (176% width/height)
+        ease: 'power1.out', // Gentler ramp than power2 — circle grows more evenly as you scroll
+      },
+      0,
+    );
 
     if (decorRef.current) {
-      tl.to(decorRef.current, {
-        scale: 22,
-        opacity: 0, // Gently fades out outline rings as they expand past margins
-        ease: 'power1.out',
-      }, 0);
+      tl.to(
+        decorRef.current,
+        {
+          scale: 22,
+          opacity: 0, // Gently fades out outline rings as they expand past margins
+          ease: 'power1.out',
+        },
+        0,
+      );
     }
 
     if (bgImageRef.current) {
-      tl.fromTo(bgImageRef.current,
+      tl.fromTo(
+        bgImageRef.current,
         { scale: 1.05 },
         {
-          scale: 1.2,  // rotation 제거 — 수평 케이크 이미지 기울기 방지
-          ease: 'power1.out'
+          scale: 1.2, // rotation 제거 — 수평 케이크 이미지 기울기 방지
+          ease: 'power1.out',
         },
-        0
+        0,
       );
     }
 
     // 2. Smoothly fade out the central initial editorial content to keep the zoom-in visual clean
     if (leftTextRef.current) {
-      tl.to(leftTextRef.current, {
-        opacity: 0,
-        y: -15,
-        ease: 'power1.in'  // 느리게 시작 → 초반 텍스트를 더 오래 유지
-      }, 0);
+      tl.to(
+        leftTextRef.current,
+        {
+          opacity: 0,
+          y: -15,
+          ease: 'power1.in', // 느리게 시작 → 초반 텍스트를 더 오래 유지
+        },
+        0,
+      );
     }
 
     if (bottomBarRef.current) {
-      tl.to(bottomBarRef.current, {
-        opacity: 0,
-        y: 20,
-        ease: 'power1.in'
-      }, 0);
+      tl.to(
+        bottomBarRef.current,
+        {
+          opacity: 0,
+          y: 20,
+          ease: 'power1.in',
+        },
+        0,
+      );
     }
 
     // 3. Fade out the initial premium light content container
     if (textInitialRef.current) {
-      tl.to(textInitialRef.current, {
-        opacity: 0,
-        scale: 0.98,
-        ease: 'power1.in',  // 크로스페이드 구간 확보
-      }, 0);
+      tl.to(
+        textInitialRef.current,
+        {
+          opacity: 0,
+          scale: 0.98,
+          ease: 'power1.in', // 크로스페이드 구간 확보
+        },
+        0,
+      );
     }
 
     // 4. Fade in the revealed full-screen branding/slogan — starts earlier to eliminate empty gap
     if (textRevealRef.current) {
-      tl.fromTo(textRevealRef.current,
+      tl.fromTo(
+        textRevealRef.current,
         { opacity: 0, y: 30, scale: 0.98 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
           ease: 'power2.out',
-          duration: 0.6
+          duration: 0.6,
         },
-        0.25  // 0.4 → 0.25: 앞당겨 초기 텍스트와 크로스페이드 구간 확보
+        0.25, // 0.4 → 0.25: 앞당겨 초기 텍스트와 크로스페이드 구간 확보
       );
     }
 
     return () => {
       // Cleanup ScrollTrigger to avoid context leaks
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
   }, []);
 
@@ -129,9 +157,9 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
   };
 
   return (
-    <div 
-      ref={containerRef} 
-      id="meringue-scroll-wrapper" 
+    <div
+      ref={containerRef}
+      id="meringue-scroll-wrapper"
       className="relative w-full h-screen bg-[#FDFBF7] overflow-hidden"
     >
       {/* 
@@ -140,8 +168,8 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
         Provides seamless search and category selection anywhere on the screen.
         ========================================================================
       */}
-      <div 
-        id="hero-fixed-action-bar" 
+      <div
+        id="hero-fixed-action-bar"
         className="absolute top-0 inset-x-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EFE8DC]/70 py-3.5 px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm pointer-events-auto"
       >
         {/* Left brand/slogan */}
@@ -174,14 +202,14 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
 
           {/* Quick Button Pair */}
           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center">
-            <button 
-              onClick={handleExploreClick} 
+            <button
+              onClick={handleExploreClick}
               className="px-4 py-1.5 bg-[#2C1A12] hover:bg-[#9E2D1B] text-[#FAF4EA] text-xs font-bold rounded-lg transition-all duration-300 cursor-pointer shadow-sm whitespace-nowrap"
             >
               {t('hero.exploreBtn')}
             </button>
-            
-            <button 
+
+            <button
               onClick={handleQuizClick}
               className="px-3 py-1.5 bg-transparent border border-[#2C1A12]/20 hover:border-[#2C1A12] text-[#2C1A12] text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
             >
@@ -193,11 +221,11 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
 
       {/* Underneath Visual: Gorgeous Full-Screen Cake/Meringue (revealed by masking) */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <img 
+        <img
           ref={bgImageRef}
           referrerPolicy="no-referrer"
-          src="https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&q=80&w=2000" 
-          alt="Artisan Gourmet Raspberry Cake Top-View" 
+          src="https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&q=80&w=2000"
+          alt="Artisan Gourmet Raspberry Cake Top-View"
           className="w-full h-full object-cover object-center brightness-[0.82]"
         />
         {/* Soft dark gradient overlay to ensure revealed white text is fully legible */}
@@ -211,13 +239,7 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
           <defs>
             <mask id="cake-zoom-mask" maskUnits="userSpaceOnUse">
               <rect x="0" y="0" width="100" height="100" fill="white" />
-              <circle
-                ref={maskHoleRef}
-                cx="50"
-                cy="50"
-                r="8"
-                fill="black"
-              />
+              <circle ref={maskHoleRef} cx="50" cy="50" r="8" fill="black" />
             </mask>
           </defs>
 
@@ -226,30 +248,68 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
 
           {/* Luxury concentric rings framing the circular cake window */}
           <g ref={decorRef} className="opacity-80">
-            <circle cx="50" cy="50" r="8.4"  fill="none" stroke="#B0863C" strokeWidth="0.28" opacity="0.9" />
-            <circle cx="50" cy="50" r="9.6"  fill="none" stroke="#B0863C" strokeWidth="0.16" strokeDasharray="0.55,0.55" opacity="0.7" />
-            <circle cx="50" cy="50" r="11.2" fill="none" stroke="#B0863C" strokeWidth="0.09" opacity="0.45" />
-            <circle cx="50" cy="50" r="13.5" fill="none" stroke="#9E2D1B" strokeWidth="0.05" opacity="0.22" />
+            <circle
+              cx="50"
+              cy="50"
+              r="8.4"
+              fill="none"
+              stroke="#B0863C"
+              strokeWidth="0.28"
+              opacity="0.9"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="9.6"
+              fill="none"
+              stroke="#B0863C"
+              strokeWidth="0.16"
+              strokeDasharray="0.55,0.55"
+              opacity="0.7"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="11.2"
+              fill="none"
+              stroke="#B0863C"
+              strokeWidth="0.09"
+              opacity="0.45"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="13.5"
+              fill="none"
+              stroke="#9E2D1B"
+              strokeWidth="0.05"
+              opacity="0.22"
+            />
           </g>
         </svg>
       </div>
 
       {/* Foreground Layer 1: Initial Editorial Content (Light Theme, Premium Dark Chocolate Text) */}
-      <div 
+      <div
         ref={textInitialRef}
         className="absolute inset-0 z-20 max-w-7xl mx-auto w-full px-6 sm:px-12 flex flex-col justify-center pt-24 pb-16 pointer-events-auto"
       >
         {/* Asymmetrical Split Editorial Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left text column: Using Deep Chocolate colors */}
-          <div ref={leftTextRef} className="lg:col-span-7 space-y-5 sm:space-y-6 transition-all duration-300">
+          <div
+            ref={leftTextRef}
+            className="lg:col-span-7 space-y-5 sm:space-y-6 transition-all duration-300"
+          >
             <span className="text-[#B0863C] text-[10px] sm:text-[11px] font-mono tracking-[0.4em] block font-bold uppercase">
               {t('hero.subtitle')}
             </span>
-            
+
             <h1 className="font-serif text-3xl sm:text-5xl lg:text-[56px] font-light leading-[1.12] tracking-tight text-[#2C1A12] space-y-1 sm:space-y-2 keep-all break-keep">
               <span className="block">{t('hero.title1')}</span>
-              <span className="block font-medium font-serif text-[#9E2D1B]">{t('hero.title2')}</span>
+              <span className="block font-medium font-serif text-[#9E2D1B]">
+                {t('hero.title2')}
+              </span>
             </h1>
 
             <p className="text-xs sm:text-sm text-[#4E3C30] leading-relaxed max-w-md font-light keep-all break-keep">
@@ -271,15 +331,25 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
             <div className="grid grid-cols-2 gap-4 w-full max-w-[200px]">
               <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm">
                 <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">42</div>
-                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">Masterclasses</div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">
+                  Masterclasses
+                </div>
               </div>
               <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">4.9</div>
-                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">Avg Rating</div>
+                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">
+                  4.9
+                </div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">
+                  Avg Rating
+                </div>
               </div>
               <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm col-span-2">
-                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">4,800<span className="text-base">+</span></div>
-                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">Students Worldwide</div>
+                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">
+                  4,800<span className="text-base">+</span>
+                </div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">
+                  Students Worldwide
+                </div>
               </div>
             </div>
 
@@ -297,22 +367,48 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
         </div>
 
         {/* Bottom Indicator */}
-        <div ref={bottomBarRef} className="absolute bottom-6 left-6 right-6 sm:left-12 sm:right-12 flex items-center justify-between border-t border-[#EFE8DC] pt-4 text-[11px] text-[#4E3C30] font-light transition-all duration-300">
+        <div
+          ref={bottomBarRef}
+          className="absolute bottom-6 left-6 right-6 sm:left-12 sm:right-12 flex items-center justify-between border-t border-[#EFE8DC] pt-4 text-[11px] text-[#4E3C30] font-light transition-all duration-300"
+        >
           <span>Scroll Down to Zoom Into the Secret Dessert Scene</span>
           {/* 마우스 아이콘 스크롤 힌트 */}
           <div className="flex flex-col items-center gap-1.5">
-            <svg width="18" height="26" viewBox="0 0 18 26" fill="none" className="text-[#4E3C30]/60">
-              <rect x="1" y="1" width="16" height="24" rx="8" stroke="currentColor" strokeWidth="1.2" />
-              <rect x="8" y="5" width="2" height="5" rx="1" fill="#B0863C"
-                style={{ animation: 'mouseScroll 1.6s ease-in-out infinite' }} />
+            <svg
+              width="18"
+              height="26"
+              viewBox="0 0 18 26"
+              fill="none"
+              className="text-[#4E3C30]/60"
+            >
+              <rect
+                x="1"
+                y="1"
+                width="16"
+                height="24"
+                rx="8"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+              <rect
+                x="8"
+                y="5"
+                width="2"
+                height="5"
+                rx="1"
+                fill="#B0863C"
+                style={{ animation: 'mouseScroll 1.6s ease-in-out infinite' }}
+              />
             </svg>
-            <span className="font-mono text-[8px] tracking-[0.35em] text-[#4E3C30]/50 uppercase">SCROLL</span>
+            <span className="font-mono text-[8px] tracking-[0.35em] text-[#4E3C30]/50 uppercase">
+              SCROLL
+            </span>
           </div>
         </div>
       </div>
 
       {/* Foreground Layer 2: Revealed Full-Screen Cinematic Slogan (Dark Theme, Crisp White Text) */}
-      <div 
+      <div
         ref={textRevealRef}
         className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6 pointer-events-none select-none opacity-0"
       >
@@ -324,22 +420,24 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
             {language === 'ko' ? (
               <>
                 완벽한 텍스처를 향한 <br className="sm:hidden" />
-                <span className="font-serif italic font-medium text-[#FAF4EA]">파티시에의 무한한 집념</span>
+                <span className="font-serif italic font-medium text-[#FAF4EA]">
+                  파티시에의 무한한 집념
+                </span>
               </>
             ) : (
               <>
                 An Infinite Obsession for <br className="sm:hidden" />
-                <span className="font-serif italic font-medium text-[#FAF4EA]">the Absolute Perfect Texture</span>
+                <span className="font-serif italic font-medium text-[#FAF4EA]">
+                  the Absolute Perfect Texture
+                </span>
               </>
             )}
           </h2>
           <div className="w-16 h-[1px] bg-[#B0863C] mx-auto my-4" />
           <p className="text-xs sm:text-sm text-white/85 max-w-lg mx-auto font-light leading-relaxed tracking-wide keep-all break-keep">
-            {language === 'ko' ? (
-              "아틀리에 크렘이 수년간 정교화한 오븐 기압 공식과 크림 마스킹 기술을 통해, 손가락 끝의 감각이 과학적 마스터피스가 되는 순간을 선사합니다."
-            ) : (
-              "Discover the exact oven pressure formula and cream masking techniques perfected over years, transforming raw intuition into master-level French pastries."
-            )}
+            {language === 'ko'
+              ? '아틀리에 크렘이 수년간 정교화한 오븐 기압 공식과 크림 마스킹 기술을 통해, 손가락 끝의 감각이 과학적 마스터피스가 되는 순간을 선사합니다.'
+              : 'Discover the exact oven pressure formula and cream masking techniques perfected over years, transforming raw intuition into master-level French pastries.'}
           </p>
           <div className="pt-6 flex flex-col items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/20 rounded-full bg-white/5 backdrop-blur-sm text-[10px] font-semibold text-white uppercase tracking-[0.2em]">

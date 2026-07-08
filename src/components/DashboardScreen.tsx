@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
-import { ClassManagementItem, KPIStats } from '../types';
-import { KPI_DASHBOARD_DATA, CLASS_MANAGEMENT_DATA } from '../data';
-import { TrendingUp, Users, Target, GraduationCap, Coins, Settings, Plus, LayoutGrid, FileSpreadsheet, Sparkles, Filter } from 'lucide-react';
+'use client';
 
-interface DashboardScreenProps {
-  onAddNewMockClass: (newClass: any) => void;
-  onRefreshStats: () => void;
-}
+import { useAppStore } from '@/lib/store';
+import {
+  Coins,
+  FileSpreadsheet,
+  Filter,
+  GraduationCap,
+  LayoutGrid,
+  Plus,
+  Settings,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { CLASS_MANAGEMENT_DATA, KPI_DASHBOARD_DATA } from '../data';
+import type { ClassManagementItem, KPIStats } from '../types';
 
-export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: DashboardScreenProps) {
+export default function DashboardScreen() {
+  const onAddNewMockClass = useAppStore((s) => s.addClass);
+  const onRefreshStats = () => {
+    alert(
+      '운영 서버 자원이 원격으로 갱신되었습니다. 대만 및 전국 가맹점 결제 데이터가 정상 동기화되었습니다.',
+    );
+  };
   const [stats, setStats] = useState<KPIStats>(KPI_DASHBOARD_DATA);
   const [classList, setClassList] = useState<ClassManagementItem[]>(CLASS_MANAGEMENT_DATA);
-  
+
   // States for interactive custom pricing modifier
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
@@ -28,16 +45,18 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
   };
 
   const savePriceEdit = (id: string) => {
-    setClassList(classList.map(item => {
-      if (item.id === id) {
-        return { 
-          ...item, 
-          price: editingPrice,
-          revenue: item.salesCount * editingPrice // recalculate revenue
-        };
-      }
-      return item;
-    }));
+    setClassList(
+      classList.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            price: editingPrice,
+            revenue: item.salesCount * editingPrice, // recalculate revenue
+          };
+        }
+        return item;
+      }),
+    );
     setEditingClassId(null);
     alert('클래스 판매가가 성공적으로 업데이트되었습니다.');
   };
@@ -57,11 +76,11 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
       price: Number(newPrice),
       salesCount: 1,
       revenue: Number(newPrice),
-      completionRate: 0
+      completionRate: 0,
     };
 
     setClassList([newClassManagement, ...classList]);
-    
+
     // Propagate up to simulated DB
     onAddNewMockClass({
       id: mockId,
@@ -73,12 +92,13 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
       originalPrice: Number(newPrice) * 1.5,
       rating: 5.0,
       reviewCount: 1,
-      thumbnail: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&q=80&w=800',
+      thumbnail:
+        'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&q=80&w=800',
       category: '모던 타르트',
       level: '초급',
       duration: '총 8차시 (4시간 30분)',
       studentsCount: 15,
-      tags: ['컵케이크', '딸기 포레누아', '초보자']
+      tags: ['컵케이크', '딸기 포레누아', '초보자'],
     });
 
     setShowAddModal(false);
@@ -87,16 +107,21 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
 
   return (
     <div id="dashboard-screen" className="bg-[#FAF4EA] py-10 px-4 sm:px-8 max-w-7xl mx-auto">
-      
       {/* Title block */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <span className="text-xs font-bold text-[#B0863C] tracking-wider uppercase block">ADMIN SYSTEM</span>
+          <span className="text-xs font-bold text-[#B0863C] tracking-wider uppercase block">
+            ADMIN SYSTEM
+          </span>
           <h1 className="font-serif text-3xl font-bold text-[#2A211B] flex items-center gap-2">
             운영자 모드 대시보드
-            <span className="text-xs font-sans text-[#B65538] bg-[#B65538]/10 px-2 py-0.5 rounded font-bold">LIVE METRIC</span>
+            <span className="text-xs font-sans text-[#B65538] bg-[#B65538]/10 px-2 py-0.5 rounded font-bold">
+              LIVE METRIC
+            </span>
           </h1>
-          <p className="text-xs text-[#5F4E43] mt-1">대만 및 국내 수강권 매출, 가입 전환 및 완주 인덱스 요약 정보입니다.</p>
+          <p className="text-xs text-[#5F4E43] mt-1">
+            대만 및 국내 수강권 매출, 가입 전환 및 완주 인덱스 요약 정보입니다.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 self-stretch sm:self-auto">
@@ -107,7 +132,7 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
           >
             설비 데이터 갱신
           </button>
-          
+
           <button
             id="btn-show-add-class"
             onClick={() => setShowAddModal(true)}
@@ -120,17 +145,20 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
 
       {/* KPI METRICS (총 4개 카드: 매출, 수강생, 구매전환율, 완주율) */}
       <div id="kpi-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        
         {/* KPI 1: Sales Revenue */}
         <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm transform hover:translate-y-[-2px] transition-transform">
           <div className="flex justify-between items-center text-[#5F4E43]">
-            <span className="text-xs font-bold uppercase tracking-wider">클래스 당월 유효 매출</span>
+            <span className="text-xs font-bold uppercase tracking-wider">
+              클래스 당월 유효 매출
+            </span>
             <span className="text-[#B65538] p-1.5 bg-[#B65538]/10 rounded-lg">
               <Coins size={16} />
             </span>
           </div>
           <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">₩{stats.salesTotal.toLocaleString()}</span>
+            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+              ₩{stats.salesTotal.toLocaleString()}
+            </span>
             <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.salesGrowth}</p>
           </div>
         </div>
@@ -144,7 +172,9 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
             </span>
           </div>
           <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">{stats.studentsTotal.toLocaleString()} 명</span>
+            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+              {stats.studentsTotal.toLocaleString()} 명
+            </span>
             <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.studentsGrowth}</p>
           </div>
         </div>
@@ -152,13 +182,17 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
         {/* KPI 3: Conversion Rate */}
         <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm transform hover:translate-y-[-2px] transition-transform">
           <div className="flex justify-between items-center text-[#5F4E43]">
-            <span className="text-xs font-bold uppercase tracking-wider">방문자 평균 구매 전환율</span>
+            <span className="text-xs font-bold uppercase tracking-wider">
+              방문자 평균 구매 전환율
+            </span>
             <span className="text-sky-700 p-1.5 bg-sky-50 rounded-lg">
               <Target size={16} />
             </span>
           </div>
           <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">{stats.conversionRate.toFixed(2)} %</span>
+            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+              {stats.conversionRate.toFixed(2)} %
+            </span>
             <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.conversionGrowth}</p>
           </div>
         </div>
@@ -172,21 +206,25 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
             </span>
           </div>
           <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">{stats.completionRate.toFixed(1)} %</span>
+            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+              {stats.completionRate.toFixed(1)} %
+            </span>
             <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.completionGrowth}</p>
           </div>
         </div>
-
       </div>
 
       {/* CLASSES MANAGEMENT TABLE */}
       <div className="bg-white rounded-2xl border border-[#EFE8DC] shadow-sm overflow-hidden">
-        
         {/* Table Header Controls */}
         <div className="p-6 bg-[#FAF4EA]/40 border-b border-[#EFE8DC] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-serif text-base font-bold text-[#2A211B]">클래스 상품 판매 실적 관리 데스크</h3>
-            <p className="text-[11px] text-[#5F4E43] mt-0.5">실시간으로 VOD 수강권 가격 조율 및 긴급 배포가 허용됩니다.</p>
+            <h3 className="font-serif text-base font-bold text-[#2A211B]">
+              클래스 상품 판매 실적 관리 데스크
+            </h3>
+            <p className="text-[11px] text-[#5F4E43] mt-0.5">
+              실시간으로 VOD 수강권 가격 조율 및 긴급 배포가 허용됩니다.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -198,36 +236,60 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
 
         {/* Mobile card list (< md) */}
         <div className="md:hidden space-y-3">
-          {classList.map(item => (
-            <div key={item.id} className="bg-white rounded-xl border border-[#EFE8DC] p-4 space-y-3">
+          {classList.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-xl border border-[#EFE8DC] p-4 space-y-3"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <span className="font-bold text-xs text-[#2A211B] block truncate">{item.title}</span>
+                  <span className="font-bold text-xs text-[#2A211B] block truncate">
+                    {item.title}
+                  </span>
                   <span className="text-[10px] text-[#5F4E43]/60 font-mono">ID: {item.id}</span>
                 </div>
-                <span className="text-xs font-semibold text-[#B65538] shrink-0">{item.instructor}</span>
+                <span className="text-xs font-semibold text-[#B65538] shrink-0">
+                  {item.instructor}
+                </span>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-[#FAF4EA] rounded-lg p-2">
-                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">정가</span>
-                  <span className="text-xs font-bold text-[#2A211B] font-mono">₩{item.price.toLocaleString()}</span>
+                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">
+                    정가
+                  </span>
+                  <span className="text-xs font-bold text-[#2A211B] font-mono">
+                    ₩{item.price.toLocaleString()}
+                  </span>
                 </div>
                 <div className="bg-[#FAF4EA] rounded-lg p-2">
-                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">판매</span>
-                  <span className="text-xs font-bold text-[#2A211B] font-mono">{item.salesCount.toLocaleString()}</span>
+                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">
+                    판매
+                  </span>
+                  <span className="text-xs font-bold text-[#2A211B] font-mono">
+                    {item.salesCount.toLocaleString()}
+                  </span>
                 </div>
                 <div className="bg-[#FAF4EA] rounded-lg p-2">
-                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">매출</span>
-                  <span className="text-xs font-bold text-[#B0863C] font-mono">₩{(item.revenue / 10000).toFixed(0)}만</span>
+                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">
+                    매출
+                  </span>
+                  <span className="text-xs font-bold text-[#B0863C] font-mono">
+                    ₩{(item.revenue / 10000).toFixed(0)}만
+                  </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 flex-1 mr-3">
-                  <span className="text-xs font-bold text-emerald-700 shrink-0">{item.completionRate}%</span>
+                  <span className="text-xs font-bold text-emerald-700 shrink-0">
+                    {item.completionRate}%
+                  </span>
                   <div className="flex-1 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden border border-[#EFE8DC]">
-                    <div className="bg-emerald-600 h-full rounded-full" style={{ width: `${item.completionRate}%` }} />
+                    <div
+                      className="bg-emerald-600 h-full rounded-full"
+                      style={{ width: `${item.completionRate}%` }}
+                    />
                   </div>
                 </div>
 
@@ -274,11 +336,15 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EFE8DC]/60 text-xs sm:text-sm text-[#2A211B]">
-              {classList.map(item => (
+              {classList.map((item) => (
                 <tr key={item.id} className="hover:bg-[#FAF4EA]/10 transition-colors">
                   <td className="py-4 px-6">
-                    <span className="font-bold text-xs block truncate max-w-[250px]">{item.title}</span>
-                    <span className="text-[10px] text-[#5F4E43]/60 block mt-1 font-mono">ID: {item.id}</span>
+                    <span className="font-bold text-xs block truncate max-w-[250px]">
+                      {item.title}
+                    </span>
+                    <span className="text-[10px] text-[#5F4E43]/60 block mt-1 font-mono">
+                      ID: {item.id}
+                    </span>
                   </td>
 
                   <td className="py-4 px-6">
@@ -316,7 +382,9 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
 
                   <td className="py-4 px-6 text-center">
                     <div className="flex flex-col items-center">
-                      <span className="text-xs font-bold text-emerald-700">{item.completionRate}%</span>
+                      <span className="text-xs font-bold text-emerald-700">
+                        {item.completionRate}%
+                      </span>
                       <div className="w-16 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden mt-1 border border-[#EFE8DC]">
                         <div
                           className="bg-emerald-600 h-full rounded-full"
@@ -341,24 +409,26 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
             </tbody>
           </table>
         </div>
-
       </div>
 
       {/* COMPONENT 7 ADD MODAL DESIGN OVERLAY */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-2xl max-w-md w-full border border-[#EFE8DC] p-6 space-y-4 shadow-2xl relative">
-            
             <div className="border-b border-[#FAF4EA] pb-2">
               <h3 className="font-serif text-lg font-bold text-[#2A211B] flex items-center gap-1">
                 <Sparkles size={18} className="text-[#B0863C]" /> 새 클래스 편성등록 에이전트
               </h3>
-              <p className="text-[10px] text-[#5F4E43] mt-0.5">커뮤니티 카탈로그 및 비디오 목록에 즉시 편입되는 라이브 기능입니다.</p>
+              <p className="text-[10px] text-[#5F4E43] mt-0.5">
+                커뮤니티 카탈로그 및 비디오 목록에 즉시 편입되는 라이브 기능입니다.
+              </p>
             </div>
 
             <form onSubmit={handleCreateMockClass} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">강의 명칭</label>
+                <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+                  강의 명칭
+                </label>
                 <input
                   type="text"
                   value={newTitle}
@@ -369,7 +439,9 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">담당 파티시에(셰프)</label>
+                <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+                  담당 파티시에(셰프)
+                </label>
                 <input
                   type="text"
                   value={newInstructor}
@@ -380,7 +452,9 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">출시 가격 (KRW ₩)</label>
+                <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+                  출시 가격 (KRW ₩)
+                </label>
                 <input
                   type="number"
                   value={newPrice}
@@ -406,11 +480,9 @@ export default function DashboardScreen({ onAddNewMockClass, onRefreshStats }: D
                 </button>
               </div>
             </form>
-            
           </div>
         </div>
       )}
-
     </div>
   );
 }
