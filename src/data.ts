@@ -239,7 +239,7 @@ export const CLASS_MANAGEMENT_DATA: ClassManagementItem[] = [
   {
     id: 'class-macarons',
     title: '프렌치 정통 파티스리 - 피에르 마카롱 & 생토노레 마스터 클래스',
-    instructor: '엘리제 뒤퐁',
+    instructor: '민소희',
     price: 189000,
     salesCount: 2450,
     revenue: 463050000,
@@ -257,7 +257,7 @@ export const CLASS_MANAGEMENT_DATA: ClassManagementItem[] = [
   {
     id: 'class-tart',
     title: '타르트 에디토리얼 - 제철 생과일 생또노레 & 시그니처 타르트',
-    instructor: '장-뤽 마르탱',
+    instructor: '민소희',
     price: 210000,
     salesCount: 1240,
     revenue: 260400000,

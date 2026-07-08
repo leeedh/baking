@@ -7,6 +7,8 @@
 > **PRD 참조**: 베이킹 온라인 클래스 플랫폼 PRD v1.1
 > **상태**: Approved
 
+> 📐 **문서 역할**: 본 문서는 **정본(to-be 목표 아키텍처)**이다. 현재 프로토타입은 `Vite + React SPA` 껍데기 단계이며(백엔드·DB·결제·영상보안 미구현), 그 as-built 현황은 `UXGuide.md`에 기록된다. **TS-ADR-01(Next.js 채택, SPA 기각)은 목표 방향**이고, UXGuide가 서술하는 현행 SPA는 이관 전 과도기 상태다 — 두 문서는 충돌이 아니라 "목표 vs 현황" 관계다.
+
 ---
 
 ## §1. Tech Stack
@@ -19,8 +21,9 @@
 | i18n | next-intl | 3.x | App Router 호환, `/[locale]` 라우팅 기반 다국어 | PRD-F-01 |
 | 서버 상태 | TanStack Query | 5.x | 클라이언트 페칭·캐싱(stale-while-revalidate) | PRD-NF-01 |
 | 클라이언트 상태 | Zustand | 5.x | 플레이어/UI 로컬 상태 | PRD-F-07 |
-| 스타일 | Tailwind CSS | 3.x | 빠른 반응형 UI | PRD-NF-08 |
+| 스타일 | Tailwind CSS | **4.x** | 빠른 반응형 UI. `@tailwindcss/vite` 플러그인 + `index.css`의 `@theme` 블록으로 디자인 토큰 정의(현 프로토타입 채택 방식). Next.js 15와도 호환 | PRD-NF-08 |
 | 영상 플레이어 | `@mux/mux-player-react` | latest | Mux 네이티브 플레이어, 서명 재생 토큰 지원 | PRD-F-06, PRD-F-07 |
+| 스크롤 모션 | GSAP + ScrollTrigger | 3.x | 히어로 줌 리빌 등 에디토리얼 인터랙션(프로토타입 핵심 자산). Next.js 이관 시 `next/dynamic`+`ssr:false`, `prefers-reduced-motion` 가드 필수 | PRD-NF-08 |
 
 ### 1.2 Backend / Data
 | 영역 | 기술 | 버전 | 선택 이유 | PRD 참조 |
@@ -206,6 +209,7 @@ src/
 
 **Consequences**:
 - ✅ **MID 하나당 통화 하나** 제약으로, KRW 단일화하면 결제·정산·회계가 단순. 대만 고객도 본인 카드사에서 자동 환전되므로 UX 손상 최소. 국내 간편결제도 통합.
+- 📌 **통화 현지화(PRD-NF-06)**: 청구는 KRW 단일이되, 대만/영어 로케일 화면에는 **지역 통화 참고가(예: `≈ NT$`)를 병기 표시**한다(환율은 앱 레벨 근사·비청구값). 현 프로토타입은 `₩` 단일 표기라 향후 구현 대상.
 - ⚠️ 해외카드 3DS 마찰(PRD-R-02) — 안내 강화로 보완
 - 🔄 변경 비용: PayPal/USD MID 추가는 설정 변경(낮음), MoR 전환은 결제 모듈 재작성(높음)
 
@@ -259,8 +263,11 @@ src/
 
 **Decision**: Route Handler에서 `paymentKey`·금액·주문을 TossPayments API로 재검증한 뒤 수강권을 트랜잭션으로 발급하고, Webhook은 멱등 키로 중복 처리를 방지한다.
 
+**쿠폰·할인 처리**: 프로토타입의 결제 화면은 클라이언트에서 쿠폰(`BAKING10`)을 계산한다. **최종 결제 금액은 반드시 서버가 계산·검증**해야 한다 — 서버가 쿠폰 규칙(`coupons` 테이블, DBSchema 참조)을 모른 채 할인가를 받으면 금액 재검증 단계에서 정상 결제가 거부된다. 따라서 쿠폰 코드는 서버로 전달하고, 서버가 유효성·할인액을 산출한 `amount_krw`를 Toss 승인·검증의 기준값으로 사용한다.
+
 **Consequences**:
 - ✅ 금액 조작·중복 발급 차단, 가상계좌 등 비동기 결제 보완
+- ✅ 쿠폰 할인도 서버 산출 → 클라이언트 조작 방지
 - ⚠️ 주문·결제·수강권 상태 머신 관리 필요
 - 🔄 변경 비용: 낮음 (정책 강화 형태)
 
@@ -371,6 +378,8 @@ paths:
 | TS-COMP-08 | `features/reviews` | 후기·평점 | Supabase / 의존: TS-API-05 | PRD-F-10 |
 | TS-COMP-09 | `features/dashboard` | 매출·수강·완주율 집계 | Supabase | PRD-F-11 |
 | TS-COMP-10 | `app/[locale]` i18n provider | 로케일·통화·번역 | next-intl | PRD-F-01 |
+| TS-COMP-11 | `features/books` | 도서 목록·소개 노출, **구매는 외부 커머스(네이버쇼핑/쿠팡) `external_purchase_url`로 링크 이동** | Supabase(또는 정적 데이터) — 내부 orders/결제/배송 **없음** | PRD-F-19 |
+| TS-COMP-12 | `features/instructor` | 대표 파티시에 소개(연혁·철학·Q&A). 단일 브랜드 정적 콘텐츠 | i18n | PRD-F-18 |
 
 ### 5.2 Shared Components
 | ID | 컴포넌트 | 용도 | Atomic Level |
@@ -380,6 +389,7 @@ paths:
 | TS-COMP-S3 | `<LocaleSwitcher />` | 언어 전환 | Molecule |
 | TS-COMP-S4 | `<PriceTag />` | 통화·로케일별 가격 표시 | Atom |
 | TS-COMP-S5 | `<CheckoutButton />` | 결제 트리거 | Molecule |
+| TS-COMP-S6 | `<ScrollRevealHero />` | GSAP ScrollTrigger 히어로(줌 리빌·크로스페이드). `ssr:false` + reduced-motion 대응 | Organism |
 
 ### 5.3 핵심 타입 정의
 ```typescript

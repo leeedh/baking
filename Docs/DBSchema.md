@@ -7,6 +7,8 @@
 > **DBMS**: PostgreSQL 15.x (Supabase managed)
 > **상태**: Draft
 
+> 📐 **문서 역할**: 본 문서는 **정본(to-be 목표 스키마)**이다. 현재 프로토타입은 DB 없이 `src/data.ts` 목업만 존재하므로, 여기 정의된 테이블·RLS·함수는 **예정된 구현**이다(결함 아님). 현 목업 데이터 구조와의 매핑·차이는 `UXGuide.md` 및 `src/types.ts` 참조.
+
 ---
 
 ## §1. Entity Inventory
@@ -22,6 +24,8 @@
 | DB-T-06 | `enrollments` | Commerce | 영구 수강권(접근 권한) | PRD-F-05 | TS-API-03, TS-COMP-04 |
 | DB-T-07 | `progress` | Activity | 차시별 시청 진도 | PRD-F-07 | TS-API-04, TS-COMP-05 |
 | DB-T-08 | `reviews` | Activity | 후기·평점 | PRD-F-10 | TS-API-05, TS-COMP-08 |
+| DB-T-09 | `coupons` | Commerce | 할인 쿠폰(서버 측 할인 계산 근거) | PRD-F-04 | TS-ADR-08, TS-API-10 |
+| DB-T-10 | `books` | Catalog | 레시피 도서 상품(외부 커머스 링크) | PRD-F-19 | TS-COMP-11 |
 
 ### 1.2 Views
 | ID | 뷰명 | 기반 테이블 | 용도 | PRD 참조 |
@@ -35,6 +39,9 @@
 | `course_status` | `'draft','published'` | DB-T-02 |
 | `order_status` | `'pending','paid','failed','canceled','refunded'` | DB-T-05 |
 | `enrollment_status` | `'active','refunded'` | DB-T-06 |
+| `coupon_discount_type` | `'fixed','percent'` | DB-T-09 |
+| `book_status` | `'draft','published'` | DB-T-10 (course_status와 동형) |
+| `course_level` | `'초급','중급','상급'` (표시값; 정본은 i18n 키 권장) | DB-T-02 `level` |
 | `locale` (i18n 키) | `'ko','en'` (확장: `'zh-CN'`) | DB-T-02,03 jsonb 키 |
 
 > 열거형은 모두 `text` + CHECK constraint로 구현(확장 용이). 다국어 텍스트는 `jsonb`로 `{"ko": "...", "en": "..."}` 형태 저장(PRD-F-01).
@@ -100,11 +107,18 @@ create policy "profiles_update_self" on public.profiles
 | C3 | `title` | jsonb | NOT NULL | `'{}'` | i18n 제목 |
 | C4 | `description` | jsonb | NOT NULL | `'{}'` | i18n 설명 |
 | C5 | `thumbnail_url` | text | NULL | - | 대표 이미지 |
-| C6 | `price_krw` | integer | NOT NULL | `0` | 가격(원, 정수) |
+| C6 | `price_krw` | integer | NOT NULL | `0` | 판매가(원, 정수) |
+| C6b | `list_price_krw` | integer | NULL | - | 정가(취소선·할인율 표시용). 프로토타입 `originalPrice` 대응 |
 | C7 | `currency` | text | NOT NULL | `'KRW'` | 정산 통화(단일 MID) |
 | C8 | `status` | text | NOT NULL | `'draft'` | 공개 상태 |
+| C8b | `category` | text | NULL | - | 카탈로그 필터 탭(정통 프렌치 디저트/클래식 구움과자/모던 타르트 등) |
+| C8c | `level` | text | NULL | - | 난이도 배지(초급/중급/상급) |
+| C8d | `tags` | text[] | NOT NULL | `'{}'` | 카드 태그 |
+| C8e | `instructor_title` | jsonb | NOT NULL | `'{}'` | i18n 강사 직함/소개 문구(단일 브랜드) |
 | C9 | `created_at` | timestamptz | NOT NULL | `now()` | |
 | C10 | `updated_at` | timestamptz | NOT NULL | `now()` | |
+
+> ℹ️ **카탈로그 파생 지표**: 카드/상세에 쓰이는 `rating`·`review_count`(← reviews 집계), `students_count`(← active enrollments 집계), `duration`(← lessons `duration_sec` 합산)는 **컬럼으로 저장하지 않고 뷰/집계로 파생**한다. 매 카탈로그 조회마다 실시간 집계하면 성능(PRD-NF-01)이 무너지므로, `course_catalog` 뷰 또는 캐시 컬럼(주기 갱신) 사용을 권장. 강사명은 단일 브랜드 상수이므로 `courses`에 별도 저장하지 않는다(C2 참조).
 
 **제약**
 - `courses_pk`: PRIMARY KEY (`id`)
@@ -147,6 +161,8 @@ create policy "courses_admin_modify" on public.courses
 | C1 | `id` | uuid | NOT NULL | `gen_random_uuid()` | PK |
 | C2 | `course_id` | uuid | NOT NULL | - | FK → courses.id |
 | C3 | `title` | jsonb | NOT NULL | `'{}'` | i18n 제목 |
+| C3b | `chapter_index` | integer | NOT NULL | `1` | 소속 챕터 순서(커리큘럼 그룹핑) |
+| C3c | `chapter_title` | jsonb | NOT NULL | `'{}'` | i18n 챕터명. 프로토타입 `CurriculumChapter` 대응(비정규화) |
 | C4 | `mux_asset_id` | text | NULL | - | Mux 에셋 ID(업로드 관리용) |
 | C5 | `mux_playback_id` | text | NULL | - | 서명 재생 대상 ID |
 | C6 | `order_index` | integer | NOT NULL | `0` | 차시 순서 |
@@ -183,6 +199,7 @@ create policy "lessons_admin_modify" on public.lessons
 **트리거**: `DB-TRG-AU` 적용.
 
 **비고**: 영상 메타(`mux_playback_id`) 노출 자체를 수강권 보유자로 제한(TS-SEC-02). 실제 재생 토큰은 서버(TS-API-12)에서 추가 검증 후 발급하는 **이중 방어**.
+**챕터 표현**: 프로토타입은 `CurriculumChapter{ title, lessons[] }`로 챕터→차시 2계층을 그린다. 챕터에 별도 메타데이터가 없으므로 별도 `chapters` 테이블 대신 `lessons`에 `chapter_index`/`chapter_title`을 **비정규화**해 표현한다(조인 절감). 챕터별 부가 속성(설명·잠금 등)이 필요해지면 `chapters` 테이블로 승격 검토.
 
 ---
 
@@ -417,6 +434,87 @@ create policy "reviews_delete_own" on public.reviews
 ```
 
 **트리거**: `DB-TRG-AU` 적용.
+
+---
+
+### DB-T-09: `coupons`
+> **PRD 참조**: PRD-F-04 | **TS 참조**: TS-ADR-08, TS-API-10
+
+**설명**: 결제 시 적용하는 할인 쿠폰. **할인액은 서버가 이 테이블을 근거로 계산**하며(TS-ADR-08), 클라이언트 계산은 표시용에 불과하다. 프로토타입의 `BAKING10`(₩15,000 정액 할인)이 대표 예.
+
+**컬럼**
+| ID | 컬럼명 | 타입 | NULL | 기본값 | 설명 |
+|----|--------|------|------|--------|------|
+| C1 | `code` | text | NOT NULL | - | PK, 쿠폰 코드(대문자 정규화) |
+| C2 | `discount_type` | text | NOT NULL | `'fixed'` | `'fixed'`(정액) / `'percent'`(정률) |
+| C3 | `discount_value` | integer | NOT NULL | - | 정액=원, 정률=% |
+| C4 | `is_active` | boolean | NOT NULL | `true` | 사용 가능 여부 |
+| C5 | `starts_at` | timestamptz | NULL | - | 유효 시작 |
+| C6 | `expires_at` | timestamptz | NULL | - | 유효 만료 |
+| C7 | `max_redemptions` | integer | NULL | - | 총 사용 한도(NULL=무제한) |
+| C8 | `redeemed_count` | integer | NOT NULL | `0` | 누적 사용 수 |
+| C9 | `created_at` | timestamptz | NOT NULL | `now()` | |
+| C10 | `updated_at` | timestamptz | NOT NULL | `now()` | |
+
+**제약**
+- `coupons_pk`: PRIMARY KEY (`code`)
+- `coupons_type_check`: CHECK (`discount_type` IN (`'fixed','percent'`))
+- `coupons_value_check`: CHECK (`discount_value` >= 0)
+
+**RLS** (`policy_pattern: 서버 전용`)
+```sql
+alter table public.coupons enable row level security;
+-- 검증·적용은 서버(service_role, TS-API-10)에서만. 일반 클라이언트엔 SELECT 정책 미부여
+-- (코드 유효성은 서버 엔드포인트로 확인 → 코드 열거 방지)
+create policy "coupons_admin_all" on public.coupons
+  for all using (public.is_admin()) with check (public.is_admin());
+```
+
+**트리거**: `DB-TRG-AU` 적용.
+
+**비고**: 주문에 적용된 쿠폰 추적이 필요하면 `orders`에 `coupon_code text NULL`, `discount_krw integer` 컬럼을 추가한다(정산·환불 정합). 사용 한도는 `redeemed_count` 원자적 증가로 관리.
+
+---
+
+### DB-T-10: `books`
+> **PRD 참조**: PRD-F-19 | **TS 참조**: TS-COMP-11
+
+**설명**: 레시피 도서 상품. **플랫폼은 소개·유입만 담당하고 구매는 외부 커머스(네이버쇼핑·쿠팡)로 위임**한다 — 자체 결제·재고·배송 도메인 없음(PRD 1.5, 린 운영). 데이터가 소수·정적이면 테이블 대신 앱 상수/CMS 콘텐츠로 관리해도 무방.
+
+**컬럼**
+| ID | 컬럼명 | 타입 | NULL | 기본값 | 설명 |
+|----|--------|------|------|--------|------|
+| C1 | `id` | uuid | NOT NULL | `gen_random_uuid()` | PK |
+| C2 | `slug` | text | NOT NULL | - | URL 식별자 |
+| C3 | `title` | jsonb | NOT NULL | `'{}'` | i18n 제목 |
+| C4 | `subtitle` | jsonb | NOT NULL | `'{}'` | i18n 부제 |
+| C5 | `description` | jsonb | NOT NULL | `'{}'` | i18n 소개 |
+| C6 | `thumbnail_url` | text | NULL | - | 표지 이미지 |
+| C7 | `price_krw` | integer | NULL | - | 참고 표시가(청구 아님) |
+| C8 | `list_price_krw` | integer | NULL | - | 정가(할인율 표시) |
+| C9 | `chapters` | jsonb | NOT NULL | `'[]'` | 챕터 목록(표시용) |
+| C10 | `external_purchase_url` | text | NOT NULL | - | **외부 커머스 구매 링크(네이버쇼핑/쿠팡 등)** |
+| C11 | `status` | text | NOT NULL | `'draft'` | 공개 상태 |
+| C12 | `created_at` | timestamptz | NOT NULL | `now()` | |
+| C13 | `updated_at` | timestamptz | NOT NULL | `now()` | |
+
+**제약**
+- `books_pk`: PRIMARY KEY (`id`)
+- `books_slug_uk`: UNIQUE (`slug`)
+- `books_status_check`: CHECK (`status` IN (`'draft','published'`))
+
+**RLS** (`policy_pattern: public-read + role-based`)
+```sql
+alter table public.books enable row level security;
+create policy "books_select_published" on public.books
+  for select using (status = 'published' or public.is_admin());
+create policy "books_admin_modify" on public.books
+  for all using (public.is_admin()) with check (public.is_admin());
+```
+
+**트리거**: `DB-TRG-AU` 적용.
+
+**비고**: `orders`/`enrollments`와 **연결되지 않는다**(내부 판매 아님). 구매 클릭은 `external_purchase_url` 새 탭 이동. 전자상거래 표시의무는 외부 커머스 측이 부담.
 
 ---
 
