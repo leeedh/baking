@@ -2,24 +2,19 @@ import { CLASSES_DATA } from '@/data';
 import type { ClassItem } from '@/types';
 import { create } from 'zustand';
 
+// 목업 상태 스토어. 인증은 Supabase(AuthProvider, EPIC-C)로 이관됨.
+// 구매(purchasedClassIds)·카탈로그(classesList)는 아직 목업 — EPIC-D(결제)·EPIC-F(운영콘솔)에서
+// enrollments/courses 실 테이블 연동으로 교체 예정.
 interface AppStoreState {
-  isLoggedIn: boolean;
-  userEmail: string;
   purchasedClassIds: string[];
   classesList: ClassItem[];
-  login: (email: string) => void;
-  logout: () => void;
   addPurchased: (classId: string) => void;
   addClass: (newClass: ClassItem) => void;
 }
 
 export const useAppStore = create<AppStoreState>((set) => ({
-  isLoggedIn: true,
-  userEmail: 'ldhl4468@gmail.com', // Pre-filled with user metadata for immediate premium experience
-  purchasedClassIds: ['class-cookies'], // pre-own cookies so "My Classes" screen isn't empty on load
+  purchasedClassIds: ['class-cookies'], // pre-own cookies so "My Classes" isn't empty on load
   classesList: CLASSES_DATA,
-  login: (email) => set({ isLoggedIn: true, userEmail: email }),
-  logout: () => set({ isLoggedIn: false, userEmail: '' }),
   addPurchased: (classId) =>
     set((state) =>
       state.purchasedClassIds.includes(classId)
@@ -29,7 +24,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
   addClass: (newClass) => set((state) => ({ classesList: [newClass, ...state.classesList] })),
 }));
 
-/** Resolve a class by id, falling back to the first class (mirrors legacy App.tsx behavior). */
+/** Resolve a class by id, falling back to the first class (mirrors legacy behavior). */
 export function useClassById(classId: string): ClassItem {
   return useAppStore((s) => s.classesList.find((c) => c.id === classId) ?? s.classesList[0]);
 }

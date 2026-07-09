@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import { useAppStore, useClassById } from '@/lib/store';
 import {
   AlertCircle,
@@ -24,7 +25,8 @@ type PaymentMethod = 'korean-card' | 'overseas-card' | 'simple-pay' | 'line-pay'
 export default function PaymentScreen({ classId }: PaymentScreenProps) {
   const cls = useClassById(classId);
   const router = useRouter();
-  const userEmail = useAppStore((s) => s.userEmail);
+  const { user } = useAuth();
+  const userEmail = user?.email ?? '';
   const addPurchased = useAppStore((s) => s.addPurchased);
 
   const onPaymentSuccess = (id: string) => {

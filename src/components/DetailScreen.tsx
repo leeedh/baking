@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import { useAppStore, useClassById } from '@/lib/store';
 import {
   BookOpen,
@@ -29,7 +30,7 @@ interface DetailScreenProps {
 export default function DetailScreen({ classId }: DetailScreenProps) {
   const cls = useClassById(classId);
   const router = useRouter();
-  const isLoggedIn = useAppStore((s) => s.isLoggedIn);
+  const { isLoggedIn } = useAuth();
   const purchased = useAppStore((s) => s.purchasedClassIds.includes(cls.id));
 
   const onNavigateToCatalog = () => router.push('/');

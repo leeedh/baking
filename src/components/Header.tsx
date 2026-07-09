@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { useAppStore } from '@/lib/store';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import { LogIn, LogOut, Menu, ShieldAlert, User, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useState } from 'react';
@@ -12,7 +12,8 @@ export default function Header() {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn, userEmail, logout } = useAppStore();
+  const { isLoggedIn, user, signOut } = useAuth();
+  const userEmail = user?.email ?? '';
 
   const isActive = (path: string) => pathname === path;
   const isMyClassesActive = pathname === '/my-classes' || pathname.startsWith('/learn');
@@ -22,10 +23,11 @@ export default function Header() {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
     setIsOpen(false);
+    await signOut();
     router.push('/');
+    router.refresh();
   };
 
   const switchLocale = (nextLocale: 'ko' | 'en') => {

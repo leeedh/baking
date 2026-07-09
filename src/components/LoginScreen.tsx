@@ -1,29 +1,40 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useAppStore } from '@/lib/store';
-import { Check, Chrome, Compass, Eye, EyeOff, Lock, Mail, Sparkles, Star } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+
+/** Supabase Auth 에러 메시지를 사용자 친화 한국어로 매핑. */
+function translateAuthError(message: string): string {
+  if (/invalid login credentials/i.test(message))
+    return '이메일 또는 비밀번호가 올바르지 않습니다.';
+  if (/email not confirmed/i.test(message))
+    return '이메일 인증이 완료되지 않았습니다. 메일함을 확인해주세요.';
+  if (/user already registered/i.test(message)) return '이미 가입된 이메일입니다. 로그인해주세요.';
+  if (/password should be at least/i.test(message))
+    return '비밀번호는 최소 6자리 이상이어야 합니다.';
+  return message;
+}
 
 export default function LoginScreen() {
   const router = useRouter();
-  const login = useAppStore((s) => s.login);
-  const onLoginSuccess = (email: string) => {
-    login(email);
-    router.push('/');
-  };
+  const supabase = useMemo(() => createClient(), []);
   const [isLoginTab, setIsLoginTab] = useState(true);
-  const [email, setEmail] = useState('baking.master@gmail.com');
+  const [email, setEmail] = useState('admin@ateliercreme.com');
   const [password, setPassword] = useState('password123');
   const [name, setName] = useState('김베이커');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
     if (!email) {
       setErrorMsg('이메일을 입력해주세요.');
       return;
@@ -33,25 +44,51 @@ export default function LoginScreen() {
       return;
     }
 
-    setErrorMsg('');
+    setSubmitting(true);
     if (isLoginTab) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setErrorMsg(translateAuthError(error.message));
+        setSubmitting(false);
+        return;
+      }
       setSuccessMsg('성공적으로 로그인되었습니다!');
-      setTimeout(() => {
-        onLoginSuccess(email);
-      }, 800);
+      router.push('/');
+      router.refresh();
     } else {
-      setSuccessMsg('회원가입이 완료되었습니다! 로그인 상태로 전환됩니다.');
-      setTimeout(() => {
-        onLoginSuccess(email);
-      }, 1000);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name } },
+      });
+      if (error) {
+        setErrorMsg(translateAuthError(error.message));
+        setSubmitting(false);
+        return;
+      }
+      if (data.session) {
+        setSuccessMsg('회원가입이 완료되었습니다! 로그인 상태로 전환됩니다.');
+        router.push('/');
+        router.refresh();
+      } else {
+        // 이메일 확인이 켜진 경우 세션 없이 확인 메일 발송
+        setSubmitting(false);
+        setSuccessMsg('확인 이메일을 발송했습니다. 메일함에서 인증 후 로그인해주세요.');
+      }
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    setSuccessMsg(`${provider} 간편 로그인으로 입장 중...`);
-    setTimeout(() => {
-      onLoginSuccess(`${provider.toLowerCase()}@ateliercreme.com`);
-    }, 1000);
+  const handleSocialLogin = async (provider: 'google' | 'apple') => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    // 성공 시 브라우저가 provider로 리다이렉트됨. 실패(미설정 등) 시 안내.
+    if (error) {
+      setErrorMsg(`${provider} 로그인을 사용할 수 없습니다: ${error.message}`);
+    }
   };
 
   return (
@@ -229,9 +266,14 @@ export default function LoginScreen() {
             <button
               id="btn-auth-submit"
               type="submit"
-              className="w-full py-3 px-4 bg-[#B65538] hover:bg-[#9E3E23] text-[#FAF4EA] font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
+              disabled={submitting}
+              className="w-full py-3 px-4 bg-[#B65538] hover:bg-[#9E3E23] disabled:opacity-60 disabled:cursor-not-allowed text-[#FAF4EA] font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
             >
-              {isLoginTab ? '크렘 가입 계정으로 로그인' : '이메일로 회원가입 및 즉시 시작'}
+              {submitting
+                ? '처리 중...'
+                : isLoginTab
+                  ? '크렘 가입 계정으로 로그인'
+                  : '이메일로 회원가입 및 즉시 시작'}
             </button>
           </form>
 
@@ -250,7 +292,7 @@ export default function LoginScreen() {
             <button
               id="google-login-btn"
               type="button"
-              onClick={() => handleSocialLogin('Google')}
+              onClick={() => handleSocialLogin('google')}
               className="flex items-center justify-center gap-2 py-2 px-3 border border-[#EFE8DC] rounded-lg bg-white hover:bg-[#FAF4EA]/40 transition-colors text-xs font-medium text-[#2A211B] cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -278,7 +320,7 @@ export default function LoginScreen() {
             <button
               id="apple-login-btn"
               type="button"
-              onClick={() => handleSocialLogin('Apple')}
+              onClick={() => handleSocialLogin('apple')}
               className="flex items-center justify-center gap-2 py-2 px-3 border border-[#EFE8DC] rounded-lg bg-white hover:bg-[#FAF4EA]/40 transition-colors text-xs font-medium text-[#2A211B] cursor-pointer"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">

@@ -1,10 +1,14 @@
 import PaymentScreen from '@/components/PaymentScreen';
+import { getUser } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
 export default async function CheckoutPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
+  const user = await getUser();
+  if (!user) redirect(`/${locale}/login`);
   return <PaymentScreen classId={id} />;
 }

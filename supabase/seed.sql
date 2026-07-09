@@ -30,8 +30,38 @@ values
    'jisoo.lee@example.com',         extensions.crypt('password123', extensions.gen_salt('bf')),
    now(), '{"provider":"email","providers":["email"]}', '{"name":"이지수 (Jisoo Lee)","locale":"ko"}', now(), now());
 
+-- GoTrue는 토큰 컬럼을 non-nullable Go string으로 스캔하므로 NULL이면 로그인 시 500이 난다.
+-- 수동 시드한 계정의 해당 컬럼을 ''로 정규화(로그인 가능하게).
+update auth.users
+set confirmation_token         = coalesce(confirmation_token, ''),
+    recovery_token             = coalesce(recovery_token, ''),
+    email_change               = coalesce(email_change, ''),
+    email_change_token_new     = coalesce(email_change_token_new, ''),
+    email_change_token_current = coalesce(email_change_token_current, ''),
+    phone_change               = coalesce(phone_change, ''),
+    phone_change_token         = coalesce(phone_change_token, ''),
+    reauthentication_token     = coalesce(reauthentication_token, '')
+where id::text like 'a0000000-0000-0000-0000-%';
+
 -- 관리자 승격 (트리거는 기본 'student'로 생성)
 update public.profiles set role = 'admin' where id = 'a0000000-0000-0000-0000-000000000001';
+
+-- 이메일 로그인용 identities (email 컬럼은 generated이므로 삽입 대상에서 제외).
+-- 이게 있어야 GoTrue 이메일+비밀번호 로그인이 동작한다.
+insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+select
+  u.id::text,
+  u.id,
+  jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', true, 'phone_verified', false),
+  'email',
+  now(), now(), now()
+from auth.users u
+where u.id in (
+  'a0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000002',
+  'a0000000-0000-0000-0000-000000000003','a0000000-0000-0000-0000-000000000004',
+  'a0000000-0000-0000-0000-000000000005'
+)
+and not exists (select 1 from auth.identities i where i.user_id = u.id and i.provider = 'email');
 
 -- -----------------------------------------------------------------------------
 -- 2. courses (CLASSES_DATA) — 고정 UUID로 lessons/reviews 참조 용이
