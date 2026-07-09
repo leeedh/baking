@@ -5,6 +5,7 @@ coverage/
 .DS_Store
 *.log
 .env*
+!.env.sample
 
 # Next.js
 .next/

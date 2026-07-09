@@ -683,17 +683,20 @@ create trigger on_auth_user_created
 | DB-V-01 | `admin_course_sales` | 클래스별 매출·수강자·완주 집계 | 운영 대시보드(PRD-F-11) |
 
 ```sql
-create or replace view public.admin_course_sales as
+-- ⚠️ 개정(2026-07-08): orders·enrollments를 동시에 JOIN하면 코스당 (주문수 × 수강권수)
+--    카테시안 곱이 생겨 gross_krw(=sum(amount))가 수강권 수만큼 부풀려진다
+--    (active_enrollments는 count(distinct)라 무사). 팬아웃 방지를 위해 스칼라 서브쿼리로 분리.
+create or replace view public.admin_course_sales
+with (security_invoker = on) as
   select
     c.id as course_id,
     c.title,
-    count(distinct e.id) filter (where e.status = 'active') as active_enrollments,
-    coalesce(sum(o.amount_krw) filter (where o.status = 'paid'), 0) as gross_krw
-  from courses c
-  left join orders o on o.course_id = c.id
-  left join enrollments e on e.course_id = c.id
-  group by c.id, c.title;
--- 접근은 운영자만: security_invoker + courses/orders RLS(is_admin)로 보호
+    (select count(*) from enrollments e
+       where e.course_id = c.id and e.status = 'active')                   as active_enrollments,
+    coalesce((select sum(o.amount_krw) from orders o
+       where o.course_id = c.id and o.status = 'paid'), 0)                 as gross_krw
+  from courses c;
+-- 접근은 운영자만: security_invoker + orders/enrollments RLS(is_admin)로 보호
 ```
 
 ---

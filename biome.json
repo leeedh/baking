@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": [".next", "node_modules", "next-env.d.ts"]
+    "ignore": [".next", "node_modules", "next-env.d.ts", "supabase", ".claude", ".mcp.json"]
   },
   "formatter": {
     "enabled": true,

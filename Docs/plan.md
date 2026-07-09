@@ -1,10 +1,14 @@
 # Atelier Crème — 남은 작업 계획 (Implementation Plan)
 
-> **작성일**: 2026-07-08 · **개정**: 2026-07-08 (가이드 문서 as-built 정합 반영판)
+> **작성일**: 2026-07-08 · **개정**: 2026-07-08 (EPIC-A 이관 완료 + EPIC-B 착수 반영)
 > **기준 문서**: PRD v1.1(정본) · TechSpec v1.1(정본) · DBSchema v1.0(정본) · UXGuide v2.0(as-built)
-> **목적**: 가이드 문서(목표 스펙)와 현재 코드(`src/`)를 비교해 **남은 구현 작업**을 정리한다. (본 문서는 계획서이며 코드 변경 없음)
+> **목적**: 가이드 문서(목표 스펙)와 현재 코드(`src/`)를 비교해 **남은 구현 작업**을 정리한다.
 >
 > 📐 **문서 관계**: PRD·TechSpec·DBSchema는 **정본(to-be)**, UXGuide는 **현재 프로토타입의 as-built 기록**이다. 따라서 아래 갭은 **결함이 아니라 정본이 정의한 예정 작업**이다.
+>
+> 🗓 **진행 이력**:
+> - 2026-07-08 **EPIC-A 완료** — Vite SPA → Next.js 15 App Router 이관(`feat/nextjs-migration`, 커밋 `e5f2efb`). 9개 화면 라우트화, next-intl `/[locale]` 골격, Zustand 목업 스토어, GSAP `ssr:false`+reduced-motion, pnpm+Biome 전환.
+> - 2026-07-08 **EPIC-B 착수** — Supabase 스키마(10테이블·함수·트리거·뷰·RLS) 마이그레이션 작성 + `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 적용·검증.
 
 ---
 
@@ -12,20 +16,18 @@
 
 | 구분 | 가이드 문서(목표) | 현재 코드(as-built) |
 |------|------------------|--------------------|
-| 프레임워크 | Next.js 15 App Router (SSR/RSC/ISR) | **Vite + React SPA** (라우터 없음, `currentView` state) |
-| 백엔드/DB | Supabase (Postgres + Auth + Storage + RLS) | **없음** — 로컬 목업(`src/data.ts`) |
-| 인증 | Supabase Auth (이메일+OAuth, role) | **목업** — 항상 로그인 상태, 하드코딩 이메일 |
+| 프레임워크 | Next.js 15 App Router (SSR/RSC/ISR) | ✅ **Next.js 15 App Router** (이관 완료, `/[locale]` 라우팅) |
+| 백엔드/DB | Supabase (Postgres + Auth + Storage + RLS) | 🔄 **스키마 적용됨**(EPIC-B) — 10테이블·RLS·함수·뷰 `sowoo` 프로젝트에 생성. 프런트 연동은 EPIC-C~G |
+| 인증 | Supabase Auth (이메일+OAuth, role) | **목업** — Zustand 스토어(항상 로그인, 하드코딩 이메일) |
 | 결제 | TossPayments 서버검증+Webhook 멱등 | **목업** — 1.5s `setTimeout` + `alert` |
 | 영상 | Mux 서명 재생 URL + 워터마크 | **네이티브 `<video>`** + 샘플 mp4, 보안 없음 |
-| 진도/수강권 | DB `progress`/`enrollments` + RLS | **React state** (배열) |
-| i18n | next-intl 라우팅 기반 | **커스텀 `LanguageContext`** (실제 `t()` 적용 3개 컴포넌트뿐) |
-| 화면 UI | 9개 화면 스펙(도서 F-19·강사 F-18 정본 편입) | **9개 화면 구현 완료**, 반응형 ✅ |
+| 진도/수강권 | DB `progress`/`enrollments` + RLS | **Zustand state** (배열) — DB 테이블은 생성됨, 연동 전 |
+| i18n | next-intl 라우팅 기반 | 🔄 **next-intl 골격 완료**(`/ko`·`/en`, ~40키 이전). 나머지 KO 하드코딩은 EPIC-K |
+| 화면 UI | 9개 화면 스펙(도서 F-19·강사 F-18 정본 편입) | ✅ **9개 화면 라우트화 완료**, 반응형 ✅ |
 
-> ℹ️ **스택은 정본과 일치**: Tailwind CSS **4.x**(`@theme` 토큰)와 **GSAP + ScrollTrigger**(히어로 줌 리빌, `<ScrollRevealHero/>` TS-COMP-S6)는 TechSpec §1이 정본 스택으로 확정 → 프로토타입 채택 방식이 그대로 유지된다(이관 시 GSAP는 `ssr:false`+reduced-motion 가드).
+> ℹ️ **스택은 정본과 일치**: Tailwind CSS **4.x**(`@theme` 토큰)와 **GSAP + ScrollTrigger**(히어로 줌 리빌, `MeringueHero` = TS-COMP-S6)는 TechSpec §1 정본 스택 → 이관 후에도 유지(GSAP는 `ssr:false`+reduced-motion 가드 적용됨).
 
-**결론**: UI/UX 레이어는 9화면·반응형·에디토리얼 무드까지 완성도가 높고, 프로토타입 화면(도서·강사)이 이번 개정으로 정본 기능(PRD-F-18/19)에 편입됐다. 그러나 **백엔드·인증·결제·영상보안·데이터 영속성은 전무**하다. 남은 작업의 본질은 *"UI 프로토타입 → 실제 동작하는 풀스택 제품"* 전환이다.
-
-> ⚠️ **핵심 의사결정 필요**: TechSpec TS-ADR-01은 SEO·서버 시크릿 처리를 이유로 **Vite SPA를 기각하고 Next.js를 채택**했다. 스펙을 따르려면 현재 SPA를 Next.js로 마이그레이션해야 한다. → §5 "선결 결정" 참조.
+**결론**: 프레임워크 이관(EPIC-A)과 데이터 스키마(EPIC-B)가 완료되어 "UI 프로토타입 → 풀스택 제품" 전환의 **기반이 마련됐다**. 남은 핵심은 스키마 위에 **인증·결제·영상보안(EPIC-C/D/E)을 얹어 목업을 실데이터로 교체**하는 것이다.
 
 ---
 
@@ -35,8 +37,8 @@
 
 | 영역 | 스펙 ID | 현재 | 갭(남은 작업) |
 |------|---------|------|--------------|
-| 다국어 i18n | PRD-F-01, TS-ADR-07 | 커스텀 Context, `t()` 실적용 3개 컴포넌트뿐(Header·MeringueHero·CatalogScreen), 나머지 KO 하드코딩 | next-intl 전환, 전 문자열 메시지화, 통화/날짜 로케일 포맷 |
-| 카탈로그·상세·미리보기 | PRD-F-02 | UI 완성, 목업 데이터 | Supabase 데이터 연동, `is_preview` 게이팅 서버화 |
+| 다국어 i18n | PRD-F-01, TS-ADR-07 | ✅ next-intl 골격 완료(`/ko`·`/en`, ~40키 이전, Header·Hero·Catalog 적용). 나머지 화면 KO 하드코딩 | **전 문자열 메시지화(EPIC-K)**, 통화/날짜 로케일 포맷 |
+| 카탈로그·상세·미리보기 | PRD-F-02 | UI 완성, 목업 데이터(Zustand). **DB 테이블 생성됨** | Supabase 데이터 연동(`course_catalog` 뷰), `is_preview` 게이팅 서버화 |
 | 강사 소개 | PRD-F-18, TS-COMP-12 | UI 완성(`InstructorScreen`), KO 하드코딩 | 정적 콘텐츠 i18n화 + 정본 라우팅(`features/instructor`) |
 | 도서 상품 | PRD-F-19, TS-COMP-11, DB-T-10 | UI 완성(`BooksScreen`) + 가짜 `alert()` 구매 | **외부 커머스 링크(`external_purchase_url`) 전환**, `books` 데이터 연동(자체 결제·배송 없음) |
 | 쿠폰 할인 | PRD-F-04, TS-ADR-08, DB-T-09 | 클라 계산(`BAKING10` ₩15,000 정액) | `coupons` 테이블 + **서버 할인 산출·검증** |
@@ -61,22 +63,22 @@
 
 각 Epic은 우선순위(P0=출시 필수 / P1=출시 직후 / P2=v1.1+)와 참조 ID를 포함.
 
-### EPIC-A · 플랫폼 기반 마이그레이션 (P0) — *선결*
-- Next.js 15 App Router 프로젝트로 이관, `/[locale]` 라우팅(next-intl), RSC/Route Handlers, 폴더 구조(TS §2.4).
-- 기존 9개 화면 컴포넌트를 App Router 페이지/`features/*` 모듈로 재배치.
-- lib 초기화: `supabase`, `mux`, `toss`, `sentry`.
+### EPIC-A · 플랫폼 기반 마이그레이션 (P0) — ✅ **완료** (2026-07-08)
+- ✅ Next.js 15 App Router 이관, `/[locale]` 라우팅(next-intl), 9개 화면 라우트화(`src/app/[locale]/*`).
+- ✅ 전역 state → Zustand 목업 스토어(`src/lib/store.ts`), GSAP `ssr:false`+reduced-motion, pnpm+Biome.
+- **재배치 결정**: `features/*` 모듈 재배치는 리프트&시프트 원칙상 **의도적 보류**(현 `components/` 평면 유지 — 백엔드 Epic 착수 시 재검토). lib 초기화(`supabase/mux/toss/sentry`)는 EPIC-A에 몰지 않고 **각 소비 Epic으로 재배치**: supabase→EPIC-B, mux→EPIC-E, toss→EPIC-D, sentry→EPIC-I(첫 소비 시점에 생성해 빈 파일 방지).
 - **참조**: TS-ADR-01/07, TS §2.4, TS-COMP-10
-- **비고**: 변경 비용 높음. §5 결정 필요.
 
-### EPIC-B · 데이터 레이어 (P0)
-- Supabase 프로젝트 + **10개 테이블**·enum(CHECK)·인덱스 (DB-MIG-01). 신규: **`coupons`(DB-T-09)**, **`books`(DB-T-10)**.
-- enum 3종 추가: `coupon_discount_type`, `book_status`, `course_level`.
-- `courses` 신규 컬럼: `list_price_krw`·`category`·`level`·`tags`·`instructor_title`(i18n). `lessons` 신규 컬럼: `chapter_index`·`chapter_title`(챕터 **비정규화**).
-- 카탈로그 파생지표(`rating`/`review_count`/`students_count`/`duration`)는 컬럼 저장이 아니라 **뷰/집계로 파생**(성능 PRD-NF-01).
-- 함수/트리거/뷰: `is_admin`, `has_course_access`, `grant_enrollment`, `set_updated_at`, `handle_new_user`, `admin_course_sales` (DB-MIG-02).
-- 전체 RLS 정책 (DB-MIG-03). `coupons`는 서버 전용(코드 열거 방지), `books`는 public-read.
-- 목업 `data.ts` → DB 시드(`seed_dev.sql`)로 이전. 현재 3개 클래스/커리큘럼/후기 데이터 활용.
-- **비고**: `books`는 `orders`/`enrollments`와 **연결하지 않는다**(내부 판매 아님).
+### EPIC-B · 데이터 레이어 (P0) — ✅ **스키마 적용 완료** (2026-07-08, `sowoo`=`ptwgrmdtzdphervuanxi`)
+- ✅ **10개 테이블**·enum(CHECK)·인덱스(DB-IDX-01~15) 생성 (DB-MIG-01). `coupons`(DB-T-09)·`books`(DB-T-10) 포함.
+- ✅ `courses` 신규 컬럼(`list_price_krw`·`category`·`level`·`tags`·`instructor_title`), `lessons` 챕터 비정규화(`chapter_index`·`chapter_title`).
+- ✅ 함수/트리거/뷰: `is_admin`·`has_course_access`·`grant_enrollment`(멱등)·`set_updated_at`·`handle_new_user`·`admin_course_sales` + 신설 **`course_catalog` 뷰**(파생지표 `rating`/`review_count`/`students_count`/`duration_sec` 집계, `security_invoker`로 published만 노출) (DB-MIG-02).
+- ✅ 전체 RLS 정책(DB-MIG-03). `coupons` 서버 전용, `books`/`courses` public-read.
+- ✅ 목업 `data.ts` → `supabase/seed.sql`(3개 클래스·커리큘럼·4후기·BAKING10 쿠폰·2도서 + 시드 계정 5). 로컬 마이그레이션 파일은 `supabase/migrations/`(4개)에 버전 관리, TS 타입은 `supabase/database.types.ts`.
+- ✅ **하드닝(DB-MIG-04)**: `grant_enrollment`/`handle_new_user` RPC 실행권한 회수(자가발급 방지), `set_updated_at` search_path 고정, RLS `auth.uid()`→`(select …)` 최적화. **검증 완료**(원격 `sowoo`): 멱등 발급·`has_course_access`·`is_admin` 통과, `course_catalog` anon=published만(draft 미노출).
+- **잔여 advisor(수용/이연)**: `course_catalog`는 의도적 SECURITY DEFINER(published 공개집계 목적, draft·PII 미노출 검증됨) → ERROR지만 수용. `is_admin`/`has_course_access` RPC 노출은 RLS 평가에 필요해 유지(WARN). Auth "leaked password protection"은 프로젝트 설정 토글 → EPIC-C에서 활성화 권장. admin `for all` 중복정책 WARN은 DBSchema 정본과 일치.
+- **비고**: `books`는 `orders`/`enrollments`와 **연결하지 않는다**(내부 판매 아님). `lessons.mux_playback_id`는 NULL(EPIC-E 전까지 실영상 없음, 의도된 갭).
+- **남은 것**: 프런트엔드 화면의 실제 Supabase 쿼리 연동 → EPIC-C~G에서 진행. Supabase JS 클라이언트(`src/lib/supabase/*`)는 EPIC-C 착수 시 생성.
 - **참조**: DBSchema 전체, TS-ADR-02
 
 ### EPIC-C · 인증 (P0)
@@ -132,8 +134,8 @@
 - **참조**: PRD-NF-01/02/08, TS §6
 
 ### EPIC-J · 개발 인프라 (P0 병행)
-- pnpm, Biome, Husky+lint-staged, Vitest(단위) + Playwright(결제·시청 E2E).
-- CI/CD 파이프라인, Vercel 환경 분리, Supabase CLI 마이그레이션.
+- ✅ **pnpm, Biome** 전환 완료(EPIC-A). ✅ Supabase CLI 마이그레이션 구조(`supabase/migrations/`) 도입(EPIC-B).
+- 🔲 남은 것: Husky+lint-staged, Vitest(단위) + Playwright(결제·시청 E2E), CI/CD 파이프라인, Vercel 환경 분리.
 - **참조**: TS §1.4, §7
 
 ### EPIC-K · i18n 완성 (P1)
@@ -166,8 +168,8 @@
 
 | 단계 | 포함 Epic | 산출 | PRD 단계 |
 |------|-----------|------|---------|
-| **1. 기반** | A, B, J | Next.js 이관 + Supabase 스키마 + CI | (사전) |
-| **2. Alpha** | C, D, E + I(성능/에러/보안) | 인증·결제·보안시청 핵심 흐름 | PRD-P-01 (Week 4) |
+| **1. 기반** | ✅ A · ✅ B · 🔄 J | Next.js 이관 ✅ + Supabase 스키마 ✅ + (CI 등 J 잔여) | (사전) |
+| **2. Alpha** | **C**(다음), D, E + I(성능/에러/보안) | 인증·결제·보안시청 핵심 흐름 | PRD-P-01 (Week 4) |
 | **3. Beta** | F, G, K, L | 운영콘솔·자료·후기·i18n·도서·강사 완성 | PRD-P-02 (Week 8) |
 | **4. GA** | H, I(접근성/관측성) 마감 | 환불·품질·모니터링, M-01 달성 | PRD-P-03 (Week 12) |
 | **5. v1.1** | 중국결제/zh-CN/DRM | 확장 | PRD-P-04 |
@@ -178,15 +180,14 @@
 
 ## 5. 선결 결정 사항 (Open Decisions)
 
-진행 전 확정이 필요한 항목:
+1. ~~**아키텍처 경로**~~ → ✅ **해소**: Next.js 15 App Router 이관 완료(EPIC-A).
+2. **범위/속도** — 프레임워크→데이터→인증 순으로 진행 중. 다음은 EPIC-C(인증).
+3. **결제 계정** — TossPayments 가맹(해외카드 MID) 준비 상태. → EPIC-D 착수 전 필요.
+4. ~~**Supabase 계정**~~ → ✅ **해소**: `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 스키마 적용. **Mux 계정**은 EPIC-E 착수 전 필요(별도 미해결). 로컬 검증용 Docker는 미설치(2026-07-08 확인) — 원격 프로젝트로 대체 검증 중.
+5. **도서 외부 커머스 URL** — 네이버쇼핑/쿠팡 실제 판매 링크 미확보. `books.external_purchase_url`은 현재 시드에 **플레이스홀더**로 입력됨 → 실값 확보 후 갱신 필요.
+6. **관리자 계정** — 시드의 `admin@ateliercreme.com`은 로컬 검증용. 실제 운영자 이메일 확정 필요(EPIC-C).
 
-1. **아키텍처 경로** — (a) 스펙대로 Next.js 마이그레이션(SEO·서버시크릿·ISR 확보, 비용 높음) vs (b) 현재 Vite SPA 유지 + 별도 백엔드(BFF) 추가. → 스펙 정합성은 (a).
-2. **범위/속도** — 전체 풀스택 구축인지, 특정 Epic(예: 인증+결제만) 우선인지.
-3. **결제 계정** — TossPayments 가맹(해외카드 MID) 준비 상태.
-4. **Mux/Supabase 계정** — 프로비저닝 및 비용 승인.
-5. **도서 외부 커머스 URL** — 네이버쇼핑/쿠팡 등 실제 판매 링크 확보(도서 방식은 정본에서 외부 위임으로 확정, 링크값만 필요).
-
-> ✅ 기존 "프로토타입 데이터 정리(브랜드 불일치)" 결정 항목은 `data.ts` 수정으로 **해소**되어 제거됨.
+> ✅ 기존 "프로토타입 데이터 정리(브랜드 불일치)" 결정 항목은 `data.ts` 수정으로 **해소**됨.
 
 ---
 
@@ -194,8 +195,11 @@
 
 - 9개 화면의 완성도 높은 UI·에디토리얼 디자인, 모바일 반응형(최근 수정 완료).
 - `PaymentScreen`(쿠폰·약관·요약), `PlayerScreen`(사이드바·진도바·노트), `DashboardScreen`(KPI·테이블·모달), `BooksScreen`(도서 카드), `InstructorScreen`(강사 소개) 등은 **UI 골격을 그대로 두고 데이터/로직만 실연동**하면 되는 구조(도서는 구매 CTA만 외부 링크로 교체).
-- 디자인 토큰(`index.css @theme`, Tailwind 4.x), GSAP 히어로 인터랙션(`MeringueHero`), i18n 골격(`LanguageContext`), 목업 데이터(시드 소스로 활용).
+- 디자인 토큰(`src/app/globals.css @theme`, Tailwind 4.x), GSAP 히어로 인터랙션(`MeringueHero`, `ssr:false`).
+- **next-intl 골격**(`src/i18n/*`, `messages/{ko,en}.json`) — EPIC-K에서 전 화면 메시지 확장.
+- **Zustand 목업 스토어**(`src/lib/store.ts`) — EPIC-C(인증)에서 실제 Supabase 세션으로, 구매/진도는 EPIC-D/E에서 실 테이블로 교체할 자리.
+- **Supabase 스키마**(`supabase/migrations/*`, `supabase/seed.sql`) — `data.ts` 목업이 시드로 이전됨. EPIC-C~G에서 프런트 쿼리 연동.
 
 ---
 
-*이 계획은 코드 변경 없이 문서 비교로 작성됨. 진행 방향(§5) 확정 후 Epic 단위로 착수 권장.*
+*EPIC-A·B 완료. 다음 착수 권장: **EPIC-C(인증)** — Supabase Auth + `profiles` + role 가드로 Zustand 목업 로그인 대체.*
