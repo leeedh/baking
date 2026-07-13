@@ -4,11 +4,14 @@ import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useClassById } from '@/lib/store';
 import { createClient } from '@/lib/supabase/client';
+import { getSupabasePublicEnv } from '@/lib/supabase/env';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { type TossPaymentsWidgets, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { AlertCircle, BadgePercent, ShoppingBag } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Database } from '../../supabase/database.types';
 
 interface PaymentScreenProps {
   classId: string; // 카탈로그 slug (예: class-macarons)
@@ -44,7 +47,10 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
   const locale = useLocale();
   const { user } = useAuth();
   const userEmail = user?.email ?? '';
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo<SupabaseClient<Database> | null>(() => {
+    if (!getSupabasePublicEnv()) return null;
+    return createClient();
+  }, []);
 
   const [dbCourse, setDbCourse] = useState<DbCourse | null>(null);
   const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
@@ -64,6 +70,12 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
 
   // 1) 판매 코스 확정 (slug → DB UUID·서버 가격). 공개 read라 anon 키로 조회 가능.
   useEffect(() => {
+    if (!supabase) {
+      setPayError(
+        'Supabase 환경변수가 없습니다. Vercel Environment Variables를 설정한 뒤 재배포하세요.',
+      );
+      return;
+    }
     let active = true;
     supabase
       .from('courses')
@@ -121,7 +133,7 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     setCouponMsg(null);
-    if (!dbCourse || !couponCode.trim()) return;
+    if (!supabase || !dbCourse || !couponCode.trim()) return;
     const { data, error } = await supabase.rpc('validate_coupon', {
       p_code: couponCode,
       p_course_id: dbCourse.id,

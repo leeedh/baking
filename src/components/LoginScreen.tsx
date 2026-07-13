@@ -2,9 +2,12 @@
 
 import { useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { getSupabasePublicEnv } from '@/lib/supabase/env';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
+import type { Database } from '../../supabase/database.types';
 
 /** Supabase Auth 에러 메시지를 사용자 친화 한국어로 매핑. */
 function translateAuthError(message: string): string {
@@ -20,7 +23,11 @@ function translateAuthError(message: string): string {
 
 export default function LoginScreen() {
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
+  // Vercel에 NEXT_PUBLIC_SUPABASE_* 미설정 시 createClient throw로 페이지가 죽지 않게 한다.
+  const supabase = useMemo<SupabaseClient<Database> | null>(() => {
+    if (!getSupabasePublicEnv()) return null;
+    return createClient();
+  }, []);
   const [isLoginTab, setIsLoginTab] = useState(true);
   const [email, setEmail] = useState('admin@ateliercreme.com');
   const [password, setPassword] = useState('password123');
@@ -35,6 +42,12 @@ export default function LoginScreen() {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+    if (!supabase) {
+      setErrorMsg(
+        'Supabase 환경변수가 없습니다. Vercel Project Settings > Environment Variables에 NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY를 추가한 뒤 재배포하세요.',
+      );
+      return;
+    }
     if (!email) {
       setErrorMsg('이메일을 입력해주세요.');
       return;
@@ -81,6 +94,12 @@ export default function LoginScreen() {
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setErrorMsg('');
     setSuccessMsg('');
+    if (!supabase) {
+      setErrorMsg(
+        'Supabase 환경변수가 없습니다. Vercel Environment Variables를 설정한 뒤 재배포하세요.',
+      );
+      return;
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
