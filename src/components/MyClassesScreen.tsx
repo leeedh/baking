@@ -14,10 +14,14 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-export default function MyClassesScreen() {
+interface MyClassesScreenProps {
+  /** 서버에서 조회한 활성 수강권 코스 slug 목록 (enrollments 실데이터) */
+  purchasedClassIds: string[];
+}
+
+export default function MyClassesScreen({ purchasedClassIds }: MyClassesScreenProps) {
   const router = useRouter();
   const classesList = useAppStore((s) => s.classesList);
-  const purchasedClassIds = useAppStore((s) => s.purchasedClassIds);
   const purchasedClasses = classesList.filter((c) => purchasedClassIds.includes(c.id));
   const onNavigateToCatalog = () => router.push('/');
   const onResumeClass = (classId: string) => router.push(`/learn/${classId}`);

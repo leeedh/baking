@@ -8,7 +8,9 @@
 >
 > 🗓 **진행 이력**:
 > - 2026-07-08 **EPIC-A 완료** — Vite SPA → Next.js 15 App Router 이관(`feat/nextjs-migration`, 커밋 `e5f2efb`). 9개 화면 라우트화, next-intl `/[locale]` 골격, Zustand 목업 스토어, GSAP `ssr:false`+reduced-motion, pnpm+Biome 전환.
-> - 2026-07-08 **EPIC-B 착수** — Supabase 스키마(10테이블·함수·트리거·뷰·RLS) 마이그레이션 작성 + `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 적용·검증.
+> - 2026-07-08 **EPIC-B 완료** — Supabase 스키마(10테이블·함수·트리거·뷰·RLS) 마이그레이션 작성 + `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 적용·검증(커밋 `1edeeaf`). 리뷰에서 `admin_course_sales` 팬아웃 버그 발견·수정.
+> - 2026-07-09 **EPIC-C 완료** — Supabase Auth 이메일 로그인/가입·세션(@supabase/ssr)·role 라우트 가드(커밋 `68a8e76`). 프로덕션 빌드 대상 브라우저 검증(관리자/학생/비로그인 시나리오). OAuth는 배선만(프로바이더 설정 대기).
+> - 2026-07-10 **EPIC-D 구현** — TossPayments v2 위젯(테스트 키), 서버 주문생성/승인검증/웹훅, `validate_coupon` 서버 산출, enrollments 실연동(my-classes/detail/learn). 위젯·쿠폰 브라우저 검증 완료, 결제→수강권 e2e는 `SUPABASE_SERVICE_ROLE_KEY` 설정 대기.
 
 ---
 
@@ -18,10 +20,10 @@
 |------|------------------|--------------------|
 | 프레임워크 | Next.js 15 App Router (SSR/RSC/ISR) | ✅ **Next.js 15 App Router** (이관 완료, `/[locale]` 라우팅) |
 | 백엔드/DB | Supabase (Postgres + Auth + Storage + RLS) | 🔄 **스키마 적용됨**(EPIC-B) — 10테이블·RLS·함수·뷰 `sowoo` 프로젝트에 생성. 프런트 연동은 EPIC-C~G |
-| 인증 | Supabase Auth (이메일+OAuth, role) | **목업** — Zustand 스토어(항상 로그인, 하드코딩 이메일) |
-| 결제 | TossPayments 서버검증+Webhook 멱등 | **목업** — 1.5s `setTimeout` + `alert` |
+| 인증 | Supabase Auth (이메일+OAuth, role) | ✅ **Supabase Auth**(이메일)·세션·role 가드. OAuth는 프로바이더 설정 대기 |
+| 결제 | TossPayments 서버검증+Webhook 멱등 | ✅ **Toss v2 위젯 + 서버 주문/승인검증/웹훅**(테스트 키). 실가맹 키 교체만 남음 |
 | 영상 | Mux 서명 재생 URL + 워터마크 | **네이티브 `<video>`** + 샘플 mp4, 보안 없음 |
-| 진도/수강권 | DB `progress`/`enrollments` + RLS | **Zustand state** (배열) — DB 테이블은 생성됨, 연동 전 |
+| 진도/수강권 | DB `progress`/`enrollments` + RLS | 🔄 **수강권은 enrollments 실연동**(구매→발급→표시). 진도(progress)는 로컬 state(EPIC-E) |
 | i18n | next-intl 라우팅 기반 | 🔄 **next-intl 골격 완료**(`/ko`·`/en`, ~40키 이전). 나머지 KO 하드코딩은 EPIC-K |
 | 화면 UI | 9개 화면 스펙(도서 F-19·강사 F-18 정본 편입) | ✅ **9개 화면 라우트화 완료**, 반응형 ✅ |
 
@@ -81,21 +83,23 @@
 - **남은 것**: 프런트엔드 화면의 실제 Supabase 쿼리 연동 → EPIC-C~G에서 진행. Supabase JS 클라이언트(`src/lib/supabase/*`)는 EPIC-C 착수 시 생성.
 - **참조**: DBSchema 전체, TS-ADR-02
 
-### EPIC-C · 인증 (P0)
-- Supabase Auth 이메일 + OAuth(Google/Apple), 세션 관리, `profiles` 자동 생성 트리거.
-- role(student/admin) 기반 라우팅 가드(운영자 콘솔 보호).
-- 현재 `App.tsx`의 목업 로그인 state 제거.
+### EPIC-C · 인증 (P0) — ✅ **완료** (2026-07-09, 커밋 `68a8e76`)
+- ✅ Supabase Auth 이메일 로그인/가입(`@supabase/ssr` 쿠키 세션), `profiles` 자동 생성 트리거 연동.
+- ✅ role(student/admin) 서버 라우트 가드: `/admin`(role), `/checkout`·`/my-classes`(인증), `/learn`·`/classes`는 공개(미리보기 퍼널).
+- ✅ 목업 로그인 state 제거(`useAuth`로 교체), 미들웨어에 세션 갱신 합성.
+- 🔲 잔여: OAuth(Google/Apple)는 코드 배선 완료 — **Supabase 대시보드 프로바이더 설정 필요**. Leaked-password 보호 토글.
 - **참조**: PRD-F-03, TS-COMP-02, DB-T-01, DB-TRG-01
 
-### EPIC-D · 결제 → 수강권 (P0)
-- TossPayments v2 결제창(수단 분기: 국내카드/해외카드/간편결제), KRW 단일 MID.
-- Route Handler `POST /api/payments/confirm` — 금액·상태 서버 재검증 → `grant_enrollment`.
-- **쿠폰 서버 계산(TS-ADR-08)**: 쿠폰 코드를 서버로 전달, 서버가 `coupons`(DB-T-09) 근거로 유효성·할인액 산출 → `amount_krw`를 Toss 승인·검증 기준값으로 사용. 클라 계산(`BAKING10`)은 표시용에 불과(클라 조작 시 금액 재검증에서 거부).
-- **통화 현지화(TS-ADR-05)**: 청구는 KRW 단일, 대만/EN 로케일 화면엔 `≈ NT$` 참고가 병기(비청구 근사값).
-- `POST /api/payments/webhook` — 서명 검증 + 멱등(가상계좌 등 비동기 보완).
-- 완료 후 `enrollments` 발급 → 내 클래스.
+### EPIC-D · 결제 → 수강권 (P0) — ✅ **구현 완료** (2026-07-10, 테스트 키)
+- ✅ TossPayments **v2 결제위젯**(`@tosspayments/tosspayments-sdk`, 샌드박스 키) — 결제수단·약관 위젯 렌더, `PaymentScreen` 목업 결제 대체.
+- ✅ `POST /api/payments/create-order` — **금액 서버 산출**(코스 가격+쿠폰) pending 주문 생성, 중복 수강 차단.
+- ✅ `POST /api/payments/confirm` — 주문 소유·금액 재검증 → Toss 승인 → `grant_enrollment` 멱등 발급(TS-API-10).
+- ✅ `POST /api/payments/webhook` — 페이로드 불신뢰·Toss 재조회로 무결성 확보, 멱등, 취소→refunded 전이 기초(TS-API-11).
+- ✅ **쿠폰 서버 계산(TS-ADR-08)**: `validate_coupon` RPC(SECURITY DEFINER, 열거 방지) — 표시·확정 동일 산출식. `orders.coupon_code/discount_krw` 추적 컬럼(DB-MIG-06/07).
+- ✅ **통화 현지화(TS-ADR-05)**: EN 로케일에 `≈ NT$` 참고가 병기(비청구 근사).
+- ✅ 수강권 실연동: `my-classes`/`classes/[id]`/`learn/[id]`가 서버에서 enrollments 조회(`src/lib/enrollments.ts`), 스토어 목업 구매상태 제거.
+- 🔲 잔여: **결제→수강권 e2e 검증**(`SUPABASE_SERVICE_ROLE_KEY` 설정 대기), 실 가맹 키 교체, 웹훅 엔드포인트 등록(배포 후).
 - **참조**: PRD-F-04/04.1, PRD-NF-06, TS-ADR-05/08, TS-API-10/11/20, DB-T-05/06/09
-- **비고**: 현재 `PaymentScreen`의 UI/쿠폰/약관 흐름은 재사용 가능(쿠폰 계산만 서버로 이관).
 
 ### EPIC-E · 보안 영상 재생 (P0)
 - `@mux/mux-player-react` 도입, `POST /api/video/playback-token`(수강권 확인 후 서명 JWT).
@@ -169,7 +173,7 @@
 | 단계 | 포함 Epic | 산출 | PRD 단계 |
 |------|-----------|------|---------|
 | **1. 기반** | ✅ A · ✅ B · 🔄 J | Next.js 이관 ✅ + Supabase 스키마 ✅ + (CI 등 J 잔여) | (사전) |
-| **2. Alpha** | **C**(다음), D, E + I(성능/에러/보안) | 인증·결제·보안시청 핵심 흐름 | PRD-P-01 (Week 4) |
+| **2. Alpha** | ✅ C · ✅ D · **E**(다음) + I(성능/에러/보안) | 인증 ✅·결제 ✅·보안시청(잔여) | PRD-P-01 (Week 4) |
 | **3. Beta** | F, G, K, L | 운영콘솔·자료·후기·i18n·도서·강사 완성 | PRD-P-02 (Week 8) |
 | **4. GA** | H, I(접근성/관측성) 마감 | 환불·품질·모니터링, M-01 달성 | PRD-P-03 (Week 12) |
 | **5. v1.1** | 중국결제/zh-CN/DRM | 확장 | PRD-P-04 |
@@ -181,11 +185,12 @@
 ## 5. 선결 결정 사항 (Open Decisions)
 
 1. ~~**아키텍처 경로**~~ → ✅ **해소**: Next.js 15 App Router 이관 완료(EPIC-A).
-2. **범위/속도** — 프레임워크→데이터→인증 순으로 진행 중. 다음은 EPIC-C(인증).
-3. **결제 계정** — TossPayments 가맹(해외카드 MID) 준비 상태. → EPIC-D 착수 전 필요.
+2. **범위/속도** — 프레임워크→데이터→인증→결제 순으로 진행 완료. 다음은 EPIC-E(보안 영상).
+3. **결제 계정** — ✅ 개발은 **테스트(샌드박스) 키**로 진행(실결제 없음). 실 가맹(해외카드 MID) 계약 후 `live_` 키 교체 + 웹훅 URL 등록 필요(GA 전).
 4. ~~**Supabase 계정**~~ → ✅ **해소**: `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 스키마 적용. **Mux 계정**은 EPIC-E 착수 전 필요(별도 미해결). 로컬 검증용 Docker는 미설치(2026-07-08 확인) — 원격 프로젝트로 대체 검증 중.
 5. **도서 외부 커머스 URL** — 네이버쇼핑/쿠팡 실제 판매 링크 미확보. `books.external_purchase_url`은 현재 시드에 **플레이스홀더**로 입력됨 → 실값 확보 후 갱신 필요.
-6. **관리자 계정** — 시드의 `admin@ateliercreme.com`은 로컬 검증용. 실제 운영자 이메일 확정 필요(EPIC-C).
+6. **관리자 계정** — 시드의 `admin@ateliercreme.com`은 로컬 검증용. 실제 운영자 이메일 확정 필요.
+7. **service_role 키** — 결제 확정(주문 생성·수강권 발급)에 필요. `.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`에 대시보드 키 입력 대기(입력 즉시 결제 e2e 검증 가능).
 
 > ✅ 기존 "프로토타입 데이터 정리(브랜드 불일치)" 결정 항목은 `data.ts` 수정으로 **해소**됨.
 
@@ -197,9 +202,10 @@
 - `PaymentScreen`(쿠폰·약관·요약), `PlayerScreen`(사이드바·진도바·노트), `DashboardScreen`(KPI·테이블·모달), `BooksScreen`(도서 카드), `InstructorScreen`(강사 소개) 등은 **UI 골격을 그대로 두고 데이터/로직만 실연동**하면 되는 구조(도서는 구매 CTA만 외부 링크로 교체).
 - 디자인 토큰(`src/app/globals.css @theme`, Tailwind 4.x), GSAP 히어로 인터랙션(`MeringueHero`, `ssr:false`).
 - **next-intl 골격**(`src/i18n/*`, `messages/{ko,en}.json`) — EPIC-K에서 전 화면 메시지 확장.
-- **Zustand 목업 스토어**(`src/lib/store.ts`) — EPIC-C(인증)에서 실제 Supabase 세션으로, 구매/진도는 EPIC-D/E에서 실 테이블로 교체할 자리.
-- **Supabase 스키마**(`supabase/migrations/*`, `supabase/seed.sql`) — `data.ts` 목업이 시드로 이전됨. EPIC-C~G에서 프런트 쿼리 연동.
+- **Zustand 목업 스토어**(`src/lib/store.ts`) — 인증(EPIC-C)·구매(EPIC-D)는 실데이터로 이관 완료. 남은 것은 카탈로그(`classesList`)뿐 → EPIC-F에서 `courses` 실 테이블로 교체.
+- **Supabase 스키마**(`supabase/migrations/*`, `supabase/seed.sql`) — `data.ts` 목업이 시드로 이전됨. 인증·수강권·쿠폰은 실연동 완료, 카탈로그·진도·자료·후기는 EPIC-E~G에서 연동.
+- **결제 파이프라인**(`src/app/api/payments/*`, `src/lib/payments/*`) — 주문/승인/웹훅·쿠폰 서버 산출. 실 가맹 시 키 교체만.
 
 ---
 
-*EPIC-A·B 완료. 다음 착수 권장: **EPIC-C(인증)** — Supabase Auth + `profiles` + role 가드로 Zustand 목업 로그인 대체.*
+*EPIC-A·B·C·D 완료. 다음 착수 권장: **EPIC-E(보안 영상 재생)** — Mux Player + 서명 JWT + 워터마크 + `progress` 실저장. 선결: Mux 계정 프로비저닝(§5-4).*

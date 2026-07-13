@@ -1,4 +1,8 @@
 import DetailScreen from '@/components/DetailScreen';
+import { hasEnrollmentBySlug } from '@/lib/enrollments';
+
+// 세션 쿠키로 수강권을 판별하므로 요청마다 동적 렌더.
+export const dynamic = 'force-dynamic';
 
 export default async function ClassDetailPage({
   params,
@@ -6,5 +10,6 @@ export default async function ClassDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <DetailScreen classId={id} />;
+  const purchased = await hasEnrollmentBySlug(id);
+  return <DetailScreen classId={id} purchased={purchased} />;
 }

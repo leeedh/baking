@@ -14,6 +14,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.110.1
         version: 2.110.1
+      '@tosspayments/tosspayments-sdk':
+        specifier: ^2.7.1
+        version: 2.7.1
       gsap:
         specifier: ^3.15.0
         version: 3.15.0
@@ -32,6 +35,12 @@ importers:
       react-dom:
         specifier: ^19.0.1
         version: 19.2.7(react@19.2.7)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
       zustand:
         specifier: ^5.0.2
         version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
@@ -529,6 +538,9 @@ packages:
   '@tailwindcss/postcss@4.3.2':
     resolution: {integrity: sha512-rjVWYCa7Ngbi5AarT6k8TkxUG3Wl1QKzHdIZVsjZSzf36Jmo2IKZt/NHRAwly8oDkbBOH0YTu+CHuf9jPxMc+g==}
 
+  '@tosspayments/tosspayments-sdk@2.7.1':
+    resolution: {integrity: sha512-nHInxgFvFGm1VtaCS+IPLdtmE+B2a+MCYE9Meq0aR/0L0hAgoGllLS4ciQGb1RtLvp3mHcj3lL80XMi4BqQ7uw==}
+
   '@types/node@22.20.0':
     resolution: {integrity: sha512-QWlFW2wf3nTjC13/DqRnBpR4ZO36VJH/JVBkA/vcnmbTBNQIlnObqyqZE1tUR7+Ni23Lda8R1BxMfbXRpCUx5g==}
 
@@ -730,6 +742,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
+
   sharp@0.34.5:
     resolution: {integrity: sha512-Ou9I5Ft9WNcCbXrU9cMgPBcCK8LiwLqcbywW3t4oDV37n1pzpuNLsYiAV8eODnjbtQlSDwZ2cUEeQz4E54Hltg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -777,6 +792,9 @@ packages:
     resolution: {integrity: sha512-OdsJnC/znPvHCHLQH/duvQNXnP1w0hPfS+tkSi3mAbfjYBGh4JnyfdwkQBfIVf7t8gs9eSX/CntxUMvtKdG2MQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0 || ^19.0.0
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
   zustand@5.0.14:
     resolution: {integrity: sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g==}
@@ -1158,6 +1176,8 @@ snapshots:
       postcss: 8.5.16
       tailwindcss: 4.3.2
 
+  '@tosspayments/tosspayments-sdk@2.7.1': {}
+
   '@types/node@22.20.0':
     dependencies:
       undici-types: 6.21.0
@@ -1329,6 +1349,8 @@ snapshots:
   semver@7.8.5:
     optional: true
 
+  server-only@0.0.1: {}
+
   sharp@0.34.5:
     dependencies:
       '@img/colour': 1.1.0
@@ -1397,6 +1419,8 @@ snapshots:
       '@formatjs/fast-memoize': 2.2.7
       intl-messageformat: 10.7.18
       react: 19.2.7
+
+  zod@4.4.3: {}
 
   zustand@5.0.14(@types/react@19.2.17)(react@19.2.7):
     optionalDependencies:

@@ -2,7 +2,7 @@
 
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { useAppStore, useClassById } from '@/lib/store';
+import { useClassById } from '@/lib/store';
 import {
   BookOpen,
   CheckCircle2,
@@ -25,13 +25,14 @@ import { CurriculumChapter, Review } from '../types';
 
 interface DetailScreenProps {
   classId: string;
+  /** 서버에서 enrollments로 판별한 활성 수강권 보유 여부 */
+  purchased: boolean;
 }
 
-export default function DetailScreen({ classId }: DetailScreenProps) {
+export default function DetailScreen({ classId, purchased }: DetailScreenProps) {
   const cls = useClassById(classId);
   const router = useRouter();
   const { isLoggedIn } = useAuth();
-  const purchased = useAppStore((s) => s.purchasedClassIds.includes(cls.id));
 
   const onNavigateToCatalog = () => router.push('/');
   const onNavigateToPayment = (id: string) => {

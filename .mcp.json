@@ -1,0 +1,23 @@
+{
+    "mcpServers": {
+      "supabase": {
+        "type": "http",
+        "url": "https://mcp.supabase.com/mcp"
+      },
+      "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+        ]
+      },
+      "mux": {
+      "url": "https://mcp.mux.com"
+      },
+      "vercel": {
+      "url": "https://mcp.vercel.com"
+      },
+      "sentry": {
+      "url": "https://mcp.sentry.dev/mcp"
+      }
+    }
+  }

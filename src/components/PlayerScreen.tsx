@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useAppStore, useClassById } from '@/lib/store';
+import { useClassById } from '@/lib/store';
 import {
   Award,
   BookOpen,
@@ -23,11 +23,12 @@ import { CurriculumChapter, type CurriculumLesson } from '../types';
 
 interface PlayerScreenProps {
   classId: string;
+  /** 서버에서 enrollments로 판별한 활성 수강권 보유 여부 */
+  purchased: boolean;
 }
 
-export default function PlayerScreen({ classId }: PlayerScreenProps) {
+export default function PlayerScreen({ classId, purchased }: PlayerScreenProps) {
   const cls = useClassById(classId);
-  const purchased = useAppStore((s) => s.purchasedClassIds.includes(cls.id));
   const router = useRouter();
   const onNavigateBack = () => router.push(`/classes/${cls.id}`);
   const initialLessonId = useSearchParams().get('lesson');

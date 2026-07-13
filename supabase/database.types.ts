@@ -336,9 +336,11 @@ export type Database = {
       orders: {
         Row: {
           amount_krw: number
+          coupon_code: string | null
           course_id: string
           created_at: string
           currency: string
+          discount_krw: number
           id: string
           paid_at: string | null
           payment_key: string | null
@@ -349,9 +351,11 @@ export type Database = {
         }
         Insert: {
           amount_krw: number
+          coupon_code?: string | null
           course_id: string
           created_at?: string
           currency?: string
+          discount_krw?: number
           id?: string
           paid_at?: string | null
           payment_key?: string | null
@@ -362,9 +366,11 @@ export type Database = {
         }
         Update: {
           amount_krw?: number
+          coupon_code?: string | null
           course_id?: string
           created_at?: string
           currency?: string
+          discount_krw?: number
           id?: string
           paid_at?: string | null
           payment_key?: string | null
@@ -616,7 +622,15 @@ export type Database = {
         Returns: string
       }
       has_course_access: { Args: { p_course_id: string }; Returns: boolean }
+      increment_coupon_redemption: {
+        Args: { p_code: string }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
+      validate_coupon: {
+        Args: { p_code: string; p_course_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

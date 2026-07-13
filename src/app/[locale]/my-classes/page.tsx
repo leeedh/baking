@@ -1,4 +1,5 @@
 import MyClassesScreen from '@/components/MyClassesScreen';
+import { getEnrolledCourseSlugs } from '@/lib/enrollments';
 import { getUser } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -9,5 +10,7 @@ export default async function MyClassesPage({ params }: { params: Promise<{ loca
   const { locale } = await params;
   const user = await getUser();
   if (!user) redirect(`/${locale}/login`);
-  return <MyClassesScreen />;
+  // 실제 enrollments 기반 소장 목록 (EPIC-D). 카드 메타는 아직 목업 카탈로그 매핑.
+  const purchasedClassIds = await getEnrolledCourseSlugs();
+  return <MyClassesScreen purchasedClassIds={purchasedClassIds} />;
 }
