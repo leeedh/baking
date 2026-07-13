@@ -1,14 +1,21 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '../../../supabase/database.types';
+import { getSupabasePublicEnv } from './env';
 
 /** 서버 컴포넌트/라우트 핸들러용 Supabase 클라이언트. 요청 쿠키에서 세션을 읽는다. */
 export async function createClient() {
+  const env = getSupabasePublicEnv();
+  if (!env) {
+    throw new Error(
+      'NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY가 설정되지 않았습니다. Vercel Environment Variables를 확인하세요.',
+    );
+  }
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    env.url,
+    env.anonKey,
     {
       cookies: {
         getAll() {

@@ -1,8 +1,10 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { getSupabasePublicEnv } from '@/lib/supabase/env';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { Database } from '../../../supabase/database.types';
 
 export interface AuthProfile {
   id: string;
@@ -30,13 +32,21 @@ export function AuthProvider({
   initialUser: User | null;
   children: React.ReactNode;
 }) {
-  const supabase = useMemo(() => createClient(), []);
+  // Vercel env 미설정 시 createClient() throw로 전체 레이아웃이 깨지지 않게 한다.
+  const supabase = useMemo<SupabaseClient<Database> | null>(() => {
+    if (!getSupabasePublicEnv()) return null;
+    return createClient();
+  }, []);
   const [user, setUser] = useState<User | null>(initialUser);
   const [profile, setProfile] = useState<AuthProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 세션 변화 구독(로그인/로그아웃/토큰 갱신)
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -48,7 +58,7 @@ export function AuthProvider({
   // user 변화 시 profile(role 포함) 로드
   useEffect(() => {
     let active = true;
-    if (!user) {
+    if (!supabase || !user) {
       setProfile(null);
       setLoading(false);
       return;
@@ -76,7 +86,7 @@ export function AuthProvider({
       isAdmin: profile?.role === 'admin',
       loading,
       signOut: async () => {
-        await supabase.auth.signOut();
+        if (supabase) await supabase.auth.signOut();
         setUser(null);
         setProfile(null);
       },
