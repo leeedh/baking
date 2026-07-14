@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
+import { getTossFailureMessage } from '@/lib/payments/toss-error-messages';
 import { CircleAlert } from 'lucide-react';
 import { useParams, useSearchParams } from 'next/navigation';
 
@@ -10,7 +11,7 @@ export default function CheckoutFailPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
-  const message = searchParams.get('message');
+  const message = getTossFailureMessage(code, searchParams.get('message'));
 
   return (
     <div className="flex items-center justify-center min-h-[70vh] px-4 bg-[#FAF4EA]">
@@ -18,7 +19,7 @@ export default function CheckoutFailPage() {
         <CircleAlert size={44} className="mx-auto text-red-500" />
         <h1 className="font-serif text-xl font-bold text-[#2A211B]">결제에 실패했습니다</h1>
         <p className="text-xs text-red-600">
-          {message ?? '결제가 취소되었거나 승인되지 않았습니다.'}
+          {message}
           {code && (
             <span className="block mt-1 text-[10px] text-[#5F4E43]/60 font-mono">({code})</span>
           )}

@@ -18,6 +18,10 @@
       },
       "sentry": {
       "url": "https://mcp.sentry.dev/mcp"
+      },
+      "tosspayments-integration-guide": {
+      "command": "npx",
+      "args": ["-y", "@tosspayments/integration-guide-mcp@latest"]
       }
     }
   }

@@ -1,6 +1,7 @@
 import { problem } from '@/lib/api/problem';
 import { completePaidOrder } from '@/lib/payments/orders';
 import { confirmTossPayment } from '@/lib/payments/toss';
+import { getTossFailureMessage } from '@/lib/payments/toss-error-messages';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
@@ -88,11 +89,12 @@ export async function POST(request: Request) {
         .eq('id', orderId)
         .eq('status', 'pending');
     }
+    console.error(`[toss-confirm-failed] ${result.error.code}: ${result.error.message}`);
     return problem(
       result.status >= 400 && result.status < 500 ? 400 : 502,
       'toss-confirm-failed',
       'Payment confirmation failed',
-      `${result.error.code}: ${result.error.message}`,
+      getTossFailureMessage(result.error.code, result.error.message),
     );
   }
   if (result.payment.status !== 'DONE') {
