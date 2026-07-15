@@ -22,6 +22,14 @@
       "tosspayments-integration-guide": {
       "command": "npx",
       "args": ["-y", "@tosspayments/integration-guide-mcp@latest"]
+      },
+      "mcp-atlassian": {
+      "command": "uvx",
+      "args": [
+        "mcp-atlassian",
+        "--env-file",
+        ".env.local"
+      ]
       }
     }
   }
