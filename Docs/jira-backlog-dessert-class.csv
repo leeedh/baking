@@ -1,0 +1,519 @@
+Issue Type,Summary,Description,Epic Name,Parent,Priority,Labels,Estimate (days),Status Hint
+Epic,플랫폼 기반 구축 (Next.js 이관),"큰 기능 묶음: Vite SPA를 Next.js 15 App Router로 이관하고 로케일 라우팅·앱 셸을 갖춘다.
+
+구현 범위:
+- Next.js 15 App Router, `/[locale]` (next-intl) 골격
+- 9개 화면 라우트화, Zustand 스토어, GSAP ssr:false + reduced-motion
+- pnpm + Biome
+
+완료 기준:
+- 9개 화면이 `/[locale]/*`로 접근 가능
+- 프로덕션 빌드 성공
+- 기존 에디토리얼 UI·히어로 모션 유지
+
+참조: TS-ADR-01/07, PRD-P-01, plan EPIC-A",플랫폼 기반 구축 (Next.js 이관),,Highest,platform;p0,,"Done (잔여 없음)"
+Epic,데이터·보안 기반 (Supabase 스키마),"큰 기능 묶음: 영구 수강권·결제·진도·RLS를 담는 Postgres 스키마와 마이그레이션을 구축한다.
+
+구현 범위:
+- 10테이블, RLS, grant_enrollment / has_course_access / is_admin
+- course_catalog·admin_course_sales 뷰, seed 데이터
+
+완료 기준:
+- 원격 Supabase에 마이그레이션 적용·검증 완료
+- published만 공개, 수강권 기반 접근 헬퍼 동작
+
+참조: DBSchema 전체, TS-ADR-02, plan EPIC-B",데이터·보안 기반 (Supabase 스키마),,Highest,database;p0,,"Done (잔여 advisor 수용)"
+Epic,회원 인증,"큰 기능 묶음: 수강생·운영자가 안전하게 가입·로그인하고 역할별 화면에 접근한다.
+
+구현 범위:
+- Supabase Auth 이메일 + OAuth(Google/Apple)
+- profiles·role 라우트 가드·세션
+
+완료 기준:
+- 이메일 로그인/가입·세션 유지
+- admin/checkout/my-classes 가드 동작
+- OAuth 프로바이더 설정 후 소셜 로그인 가능
+
+참조: PRD-F-03, TS-COMP-02, plan EPIC-C",회원 인증,,Highest,auth;p0,,"Almost Done (OAuth 잔여)"
+Epic,결제 및 수강권,"큰 기능 묶음: 국내·해외 카드로 결제하고 영구 수강권을 즉시 발급한다.
+
+구현 범위:
+- TossPayments v2, 서버 금액·쿠폰 검증, Webhook 멱등
+- grant_enrollment, KRW + ≈NT$ 참고가
+
+완료 기준:
+- 결제 성공 시 active enrollment 발급
+- 금액 조작·중복 발급 불가
+- 실 가맹 키·웹훅 등록 후 e2e 통과
+
+참조: PRD-F-04/05, TS-ADR-05/08, plan EPIC-D",결제 및 수강권,,Highest,payment;enrollment;p0,,"Implemented (e2e·live 키 잔여)"
+Epic,보안 영상 시청,"큰 기능 묶음: 구매한 차시만 Mux 서명 URL로 재생하고, 워터마크·진도 저장으로 콘텐츠를 보호한다.
+
+구현 범위:
+- Mux Player, playback-token API, 오버레이 워터마크
+- 다운로드 방어, progress upsert·이어보기
+
+완료 기준:
+- 수강권 없으면 403·구매 CTA
+- 미리보기 차시만 비구매 재생
+- 진도 서버 저장·복원, 시작 지연 < 3s 목표
+
+참조: PRD-F-06/07, TS-ADR-03/04, plan EPIC-E",보안 영상 시청,,Highest,video;mux;security;p0,,To Do
+Epic,운영자 콘솔,"큰 기능 묶음: 운영자가 클래스·차시·가격·공개 상태를 관리하고 매출·수강 현황을 본다.
+
+구현 범위:
+- courses/lessons CRUD, Mux 업로드, 가격·status
+- admin_course_sales 실집계 KPI
+
+완료 기준:
+- 관리자만 콘솔 접근
+- 게시 후 카탈로그 반영
+- KPI가 실데이터와 일치
+
+참조: PRD-F-08/11, plan EPIC-F",운영자 콘솔,,High,admin;p1,,To Do
+Epic,학습 자료·후기,"큰 기능 묶음: 수강생이 레시피 PDF를 받고 별점·후기를 남긴다.
+
+구현 범위:
+- materials + Storage 서명 URL
+- reviews 작성(수강자 한정)·공개·집계
+
+완료 기준:
+- 비수강자 자료 다운로드 불가
+- 클래스당 후기 1건, 카탈로그 평점 반영
+
+참조: PRD-F-09/10, plan EPIC-G",학습 자료·후기,,High,materials;reviews;p1,,To Do
+Epic,환불 처리,"큰 기능 묶음: 결제 취소 시 주문을 환불하고 수강권을 회수해 시청을 차단한다.
+
+구현 범위:
+- orders → refunded, enrollments → refunded
+- has_course_access 자동 차단
+
+완료 기준:
+- 환불 후 재생 토큰·자료 URL 거부
+- 하드 삭제 없이 상태 전이만 사용
+
+참조: PRD-F-12, plan EPIC-H",환불 처리,,Medium,refund;p1,,To Do
+Epic,품질·성능·관측성,"큰 기능 묶음: 성능·에러·보안·접근성·모니터링으로 출시 품질을 맞춘다.
+
+구현 범위:
+- SSG/ISR, TanStack Query, Zod, RFC 7807, Error Boundary
+- WCAG AA 개선, Sentry·알림
+
+완료 기준:
+- p95 로딩 < 2s 목표 추적 가능
+- 결제/토큰 실패 알림
+- 주요 a11y 과제(§6.2) 해소
+
+참조: PRD-NF-*, TS §6, plan EPIC-I",품질·성능·관측성,,High,quality;a11y;observability;p0-p1,,To Do
+Epic,개발 인프라,"큰 기능 묶음: 테스트·CI/CD·환경 분리로 안전하게 배포한다.
+
+구현 범위:
+- Husky, Vitest, Playwright, Vercel 환경, CI
+
+완료 기준:
+- PR 시 typecheck/lint/unit
+- develop 머지 시 결제·시청 E2E
+- prod/staging/preview 환경변수 분리
+
+참조: TechSpec §1.4 §7, plan EPIC-J",개발 인프라,,High,devops;ci;p0,,To Do
+Epic,다국어·현지화 완성,"큰 기능 묶음: 한/영 UI를 전 화면에 적용하고 통화·날짜를 로케일에 맞게 보여준다.
+
+구현 범위:
+- 전 화면 next-intl 메시지화
+- PriceTag 참고가·날짜 포맷, zh-CN 확장 준비
+
+완료 기준:
+- EN 전환 시 상세·결제·플레이어·로그인·도서·강사도 번역
+- 미번역 하드코딩 제거
+
+참조: PRD-F-01, plan EPIC-K",다국어·현지화 완성,,High,i18n;p1,,To Do
+Epic,도서·강사 소개,"큰 기능 묶음: 대표 파티시에 신뢰 페이지와 외부 커머스 연동 도서 소개를 완성한다.
+
+구현 범위:
+- Instructor i18n·정본 라우팅
+- books 연동 + external_purchase_url 새 탭
+
+완료 기준:
+- 도서 CTA가 외부 쇼핑몰로 이동(자체 결제 없음)
+- 강사 연혁·철학·Q&A 다국어 노출
+
+참조: PRD-F-18/19, plan EPIC-L",도서·강사 소개,,High,books;instructor;p1,,To Do
+Story,소셜 로그인으로 빠르게 가입하고 싶다,"사용자(해외·국내 수강생) 관점: Google/Apple로 가입·로그인하고 싶다.
+
+구현 범위:
+- Supabase OAuth 프로바이더(Google/Apple) 대시보드 설정
+- 콜백·세션 쿠키 검증
+- Leaked-password protection 토글
+
+완료 기준:
+- 소셜 로그인 성공 시 profiles 생성·카탈로그 진입
+- 기존 이메일 계정과 세션 동작 동일
+
+참조: PRD-F-03, plan EPIC-C 잔여",회원 인증,,Highest,auth;oauth,1,To Do
+Story,해외·국내 카드로 클래스를 결제하고 바로 수강하고 싶다,"사용자 관점: 결제 후 즉시 영구 수강권을 받고 내 클래스에서 이어보고 싶다.
+
+구현 범위:
+- 결제→수강권 e2e (SERVICE_ROLE_KEY)
+- 실 가맹 키 교체, 웹훅 URL 등록
+- 실패 사유별 다국어 안내
+
+완료 기준:
+- 샌드박스/실결제에서 paid + active enrollment
+- Webhook 중복 호출에도 수강권 1건
+- my-classes에 즉시 반영
+
+참조: PRD-F-04/05, UC-01/04",결제 및 수강권,,Highest,payment;enrollment,2,To Do
+Story,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,"사용자 관점: 다운로드 없이 스트리밍으로 보고, 다음에 이어서 보고 싶다.
+
+구현 범위:
+- Mux 서명 재생, 워터마크, 다운로드 방어
+- progress 디바운스 저장·복원
+- 미리보기 is_preview 게이팅
+
+완료 기준:
+- 비구매 잠금 차시 재생 불가
+- 워터마크(마스킹 이메일) 표시
+- 재진입 시 마지막 위치 근처에서 재생
+
+참조: PRD-F-06/07, UC-02",보안 영상 시청,,Highest,video;progress,,"To Do"
+Story,운영자가 클래스와 영상을 등록·게시하고 싶다,"운영자 관점: 클래스·차시·가격·공개 여부를 콘솔에서 관리하고 싶다.
+
+구현 범위:
+- admin CRUD UI ↔ Supabase
+- Mux Direct Upload, 썸네일·가격·status
+- 목업 대시보드 데이터 제거
+
+완료 기준:
+- draft/published 전환이 카탈로그에 반영
+- 비관리자 /admin 접근 차단
+
+참조: PRD-F-08, UC-03",운영자 콘솔,,High,admin,,"To Do"
+Story,운영자가 매출과 수강 현황을 한눈에 보고 싶다,"운영자 관점: 당월 매출·수강생·완주율을 실데이터로 보고 싶다.
+
+구현 범위:
+- admin_course_sales / course 집계 연동
+- KPI 카드·테이블 목업 제거
+
+완료 기준:
+- paid 주문·active enrollment와 KPI 일치
+- 팬아웃(중복 합산) 없음
+
+참조: PRD-F-11, DB-V-01",운영자 콘솔,,High,admin;dashboard,,"To Do"
+Story,수강생이 레시피 PDF를 받아 실습하고 싶다,"사용자 관점: 구매한 차시의 배합표를 안전하게 다운로드하고 싶다.
+
+구현 범위:
+- materials 메타 + Storage private
+- POST /api/materials/download-url (수강권 확인)
+
+완료 기준:
+- 수강자만 서명 URL 획득
+- 만료·재요청 가능, 비수강자 403
+
+참조: PRD-F-09, TS-API-13",학습 자료·후기,,High,materials,,"To Do"
+Story,수강생이 별점과 후기를 남기고 싶다,"사용자 관점: 수강 후 평점·후기를 남기고 상세에서 보고 싶다.
+
+구현 범위:
+- reviews INSERT(수강권+본인), 공개 SELECT
+- 클래스당 1건, 카탈로그 평점 집계
+
+완료 기준:
+- 비수강자 작성 불가
+- 상세·카드에 rating/review_count 반영
+
+참조: PRD-F-10, TS-API-05",학습 자료·후기,,High,reviews,,"To Do"
+Story,잘못 구매했을 때 환불되고 시청이 중단되길 원한다,"운영자·고객 지원 관점: 환불 시 수강권이 회수되어야 한다.
+
+구현 범위:
+- Toss 취소 API 연동
+- orders/enrollments refunded 전이
+- 재생·자료 API 차단 확인
+
+완료 기준:
+- 환불 후 has_course_access=false
+- playback-token·download-url 403
+
+참조: PRD-F-12",환불 처리,,Medium,refund,,"To Do"
+Story,한국어·영어로 막힘 없이 탐색·결제·시청하고 싶다,"사용자 관점: 언어 전환 시 전 화면이 해당 언어로 보인다.
+
+구현 범위:
+- 상세·결제·플레이어·로그인·도서·강사 메시지화
+- 날짜·숫자 로케일, zh-CN 키 구조만 준비
+
+완료 기준:
+- EN 토글 후 하드코딩 KO 잔존 없음(마케팅 카피 포함)
+- 결제 실패 메시지도 로케일별 노출
+
+참조: PRD-F-01, UXGuide §1.1 현황",다국어·현지화 완성,,High,i18n,,"To Do"
+Story,대표 파티시에를 알고 브랜드를 신뢰하고 싶다,"해외 수강생 관점: 강사 연혁·철학·Q&A로 브랜드를 신뢰하고 싶다.
+
+구현 범위:
+- InstructorScreen 정본 라우트·i18n
+- 카탈로그/도서 CTA 유지
+
+완료 기준:
+- /[locale]/instructor 정상
+- KO/EN 전환 시 본문 번역
+
+참조: PRD-F-18",도서·강사 소개,,High,instructor,,"To Do"
+Story,레시피 도서를 외부 쇼핑몰에서 구매하고 싶다,"사용자 관점: 사이트에서 도서를 살펴보고 네이버쇼핑·쿠팡에서 구매하고 싶다.
+
+구현 범위:
+- books 테이블/시드 연동
+- alert 제거 → external_purchase_url 새 탭
+- 실물 배송 문구를 외부 커머스 안내로 수정
+- 실 URL로 플레이스홀더 교체
+
+완료 기준:
+- CTA 클릭 시 외부 URL만 이동
+- 자체 결제·재고·배송 UI 없음
+
+참조: PRD-F-19, UXGuide SCR-08",도서·강사 소개,,High,books,,"To Do"
+Story,카탈로그에서 클래스를 찾고 미리보기로 결정을 돕고 싶다,"사용자 관점: 목록·상세·1차시 미리보기로 구매를 결정하고 싶다.
+
+구현 범위:
+- course_catalog / courses·lessons Supabase 연동
+- Zustand 목업 카탈로그 제거
+- is_preview 서버·RLS 정합
+
+완료 기준:
+- published만 목록 노출
+- 미리보기 차시만 비구매 재생
+
+참조: PRD-F-02",보안 영상 시청,,Highest,catalog;p0,,"To Do"
+Story,장애·이탈 없이 빠르게 페이지와 영상을 이용하고 싶다,"사용자 관점: 페이지가 빨리 뜨고 영상도 금방 재생되길 원한다.
+
+구현 범위:
+- 카탈로그 SSG/ISR, TanStack Query
+- 토큰 사전 발급, Sentry Performance
+
+완료 기준:
+- LCP/로딩 목표 모니터링
+- 정상 회선 재생 시작 < 3s 측정 가능
+
+참조: PRD-NF-01/02",품질·성능·관측성,,High,performance,,"To Do"
+Story,키보드·스크린리더로도 주요 흐름을 이용하고 싶다,"사용자 관점: 모달·플레이어·결제를 접근성 있게 쓰고 싶다.
+
+구현 범위:
+- 포커스 트랩, aria-live, 대비, reduced-motion
+- alert → 토스트
+
+완료 기준:
+- UXGuide §6.2 핵심 항목 해소
+- WCAG AA 목표에 대한 체크리스트 통과
+
+참조: PRD-NF-08",품질·성능·관측성,,Medium,a11y;p1,,"To Do"
+Task,Mux 계정·환경변수·lib 초기화,"구현 범위: Mux API 토큰·signing key를 서버 env에 등록하고 `src/lib/mux` 클라이언트를 만든다.
+
+완료 기준: 서버에서만 시크릿 접근, 로컬·staging 문서화.
+
+Estimate: 0.5일",보안 영상 시청,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,Highest,mux;setup,0.5,To Do
+Task,재생 토큰 API (수강권 확인 + Mux JWT),"구현 범위: POST `/api/video/playback-token` — enrollment 확인 후 단기 Mux 서명 JWT 발급. Zod·RFC 7807 403.
+
+완료 기준: 수강권 있음 200+token, 없음 403, 미리보기는 정책에 맞게 허용.
+
+Estimate: 1일",보안 영상 시청,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,Highest,api;mux,1,To Do
+Task,Mux Player로 PlayerScreen 영상 코어 교체,"구현 범위: HTML5 video → `@mux/mux-player-react`. 사이드바·진도바·노트 UI 유지.
+
+완료 기준: 서명 토큰으로 HLS 재생, 샘플 mp4 의존 제거.
+
+Estimate: 1일",보안 영상 시청,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,Highest,player,1,To Do
+Task,워터마크 오버레이 (부분 마스킹),"구현 범위: `<WatermarkOverlay>` — `j***@e***` 형태 반투명 오버레이.
+
+완료 기준: 재생 중 식별자 표시, 개인정보 전체 노출 없음.
+
+Estimate: 0.5일",보안 영상 시청,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,Highest,watermark,0.5,To Do
+Task,다운로드·우클릭·단축키 방어,"구현 범위: 우클릭/저장 단축키 방어 UX, Mux 서명 URL과 병행. 완전 차단 아님을 UX에 명시하지 않되 캐주얼 저장 억제.
+
+완료 기준: 일반 우클릭 저장 경로 차단, 플레이어 컨텍스트 메뉴 제한.
+
+Estimate: 0.5일",보안 영상 시청,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,High,security,0.5,To Do
+Task,진도 upsert·이어보기 복원,"구현 범위: timeupdate 디바운스(~10s) → progress UPSERT, 진입 시 watched_sec 시크.
+
+완료 기준: 새로고침 후 위치 복원, completed 플래그 갱신.
+
+Estimate: 1일",보안 영상 시청,구매한 강의를 안전하게 시청하고 진도를 이어가고 싶다,Highest,progress,1,To Do
+Task,카탈로그·상세 Supabase 연동,"구현 범위: course_catalog/lessons 조회, 목업 classesList 제거, 파생 지표(평점·수강·시간) 표시.
+
+완료 기준: published만 노출, 상세 커리큘럼 DB 기반.
+
+Estimate: 2일",보안 영상 시청,카탈로그에서 클래스를 찾고 미리보기로 결정을 돕고 싶다,Highest,catalog,2,To Do
+Task,미리보기 차시 게이팅 정합,"구현 범위: is_preview / isFree UI를 DB is_preview와 통일, 클라이언트 단독 가드 제거.
+
+완료 기준: 비구매자는 preview만, 나머지는 잠금+구매 CTA.
+
+Estimate: 1일",보안 영상 시청,카탈로그에서 클래스를 찾고 미리보기로 결정을 돕고 싶다,Highest,preview,1,To Do
+Task,OAuth 프로바이더 설정 및 콜백 검증,"구현 범위: Supabase Google/Apple 설정, 리다이렉트 URI, 로그인 UI 연결 확인.
+
+완료 기준: 소셜 로그인 e2e 성공, profiles.role=student 기본.
+
+Estimate: 1일",회원 인증,소셜 로그인으로 빠르게 가입하고 싶다,High,oauth,1,To Do
+Task,결제 e2e 검증 (service_role 키),"구현 범위: SUPABASE_SERVICE_ROLE_KEY 설정 후 주문→승인→enrollment 브라우저/수동 e2e.
+
+완료 기준: 테스트 결제 1건으로 my-classes·learn 접근 확인.
+
+Estimate: 0.5일",결제 및 수강권,해외·국내 카드로 클래스를 결제하고 바로 수강하고 싶다,Highest,payment;e2e,0.5,To Do
+Task,실 가맹 키 교체 및 웹훅 등록,"구현 범위: live 키·웹훅 엔드포인트 등록, 실패율 알림 채널 확인.
+
+완료 기준: staging/prod에서 웹훅 수신·멱등 로그 확인.
+
+Estimate: 1일",결제 및 수강권,해외·국내 카드로 클래스를 결제하고 바로 수강하고 싶다,High,payment;ops,1,To Do
+Task,클래스·차시 CRUD API/폼 연동,"구현 범위: Dashboard 모달·인라인 편집을 courses/lessons INSERT/UPDATE에 연결, status·price_krw·list_price.
+
+완료 기준: 관리자 저장 후 DB 반영, 공개 전환 시 카탈로그 노출.
+
+Estimate: 2일",운영자 콘솔,운영자가 클래스와 영상을 등록·게시하고 싶다,High,admin;crud,2,To Do
+Task,Mux Direct Upload 운영자 연동,"구현 범위: 차시별 Mux 업로드 → mux_asset_id/playback_id 저장.
+
+완료 기준: 업로드 완료 차시만 재생 ID 보유, 실패 시 에러 표시.
+
+Estimate: 2일",운영자 콘솔,운영자가 클래스와 영상을 등록·게시하고 싶다,High,mux;admin,2,To Do
+Task,대시보드 KPI 실집계 연동,"구현 범위: admin_course_sales 등 뷰 조회, 목업 KPI 제거, 완주율은 progress 기반 집계.
+
+완료 기준: 숫자와 DB paid/active 일치, 코스별 매출 팬아웃 없음.
+
+Estimate: 1일",운영자 콘솔,운영자가 매출과 수강 현황을 한눈에 보고 싶다,High,dashboard,1,To Do
+Task,자료 메타·Storage 버킷·다운로드 API,"구현 범위: materials 행, private 버킷, POST `/api/materials/download-url`.
+
+완료 기준: 수강자만 URL, 플레이어 PDF CTA가 실파일 다운로드.
+
+Estimate: 1.5일",학습 자료·후기,수강생이 레시피 PDF를 받아 실습하고 싶다,High,materials,1.5,To Do
+Task,후기 작성 UI 및 RLS 연동,"구현 범위: 별점·본문 폼, UNIQUE(user,course), 상세 후기 탭 실데이터.
+
+완료 기준: 수강자만 작성, 공개 목록 갱신.
+
+Estimate: 1일",학습 자료·후기,수강생이 별점과 후기를 남기고 싶다,High,reviews,1,To Do
+Task,후기·수강 집계 카탈로그 반영,"구현 범위: course_catalog rating/review_count/students_count 카드·상세 표시.
+
+완료 기준: 후기 추가 후 집계 반영(캐시 무효화 또는 재조회).
+
+Estimate: 0.5일",학습 자료·후기,수강생이 별점과 후기를 남기고 싶다,Medium,reviews;catalog,0.5,To Do
+Task,환불 API 및 상태 전이,"구현 범위: 관리자 환불 액션 → Toss 취소 → orders/enrollments refunded.
+
+완료 기준: 환불 후 시청·자료 403, 이력 보존.
+
+Estimate: 2일",환불 처리,잘못 구매했을 때 환불되고 시청이 중단되길 원한다,Medium,refund,2,To Do
+Task,상세·결제·플레이어 메시지 카탈로그화,"구현 범위: 해당 화면 문자열을 messages/ko.json·en.json으로 이전, t()/useTranslations 적용.
+
+완료 기준: EN 전환 시 해당 화면 번역.
+
+Estimate: 2일",다국어·현지화 완성,한국어·영어로 막힘 없이 탐색·결제·시청하고 싶다,High,i18n,2,To Do
+Task,로그인·도서·강사 화면 메시지화,"구현 범위: Login/Books/Instructor 하드코딩 제거 및 메시지 키 추가.
+
+완료 기준: EN 전환 시 세 화면 번역.
+
+Estimate: 1일",다국어·현지화 완성,한국어·영어로 막힘 없이 탐색·결제·시청하고 싶다,High,i18n,1,To Do
+Task,날짜·숫자 로케일 포맷 통일,"구현 범위: 날짜/숫자 Intl 포맷, PriceTag와 일관.
+
+완료 기준: ko/en 로케일별 표기 차이 확인.
+
+Estimate: 0.5일",다국어·현지화 완성,한국어·영어로 막힘 없이 탐색·결제·시청하고 싶다,Medium,i18n,0.5,To Do
+Task,도서 외부 커머스 CTA 전환,"구현 범위: alert 제거, external_purchase_url target=_blank, 안내 카피 수정.
+
+완료 기준: 클릭 시 외부만 이동, 가짜 구매 승인 없음.
+
+Estimate: 0.5일",도서·강사 소개,레시피 도서를 외부 쇼핑몰에서 구매하고 싶다,High,books,0.5,To Do
+Task,books 데이터 연동 및 실 URL 반영,"구현 범위: books 테이블/시드 조회, 플레이스홀더 URL을 실 판매 링크로 갱신.
+
+완료 기준: published 도서만 노출, CTA URL 유효.
+
+Estimate: 1일",도서·강사 소개,레시피 도서를 외부 쇼핑몰에서 구매하고 싶다,High,books,1,To Do
+Task,강사 소개 i18n·라우트 정리,"구현 범위: Instructor 콘텐츠 메시지화, features/instructor 또는 정본 경로 정리.
+
+완료 기준: KO/EN 강사 페이지 완결.
+
+Estimate: 1일",도서·강사 소개,대표 파티시에를 알고 브랜드를 신뢰하고 싶다,High,instructor,1,To Do
+Task,카탈로그 SSG/ISR 및 Query 캐싱,"구현 범위: 카탈로그 페이지 ISR, TanStack Query stale-while-revalidate.
+
+완료 기준: 재방문 시 캐시 히트, 게시 후 재검증 전략 문서화.
+
+Estimate: 1일",품질·성능·관측성,장애·이탈 없이 빠르게 페이지와 영상을 이용하고 싶다,High,performance,1,To Do
+Task,Route Handler Zod·RFC 7807 통일,"구현 범위: 결제·토큰·자료 API 입력검증·에러 포맷 통일.
+
+완료 기준: 잘못된 입력 400, 권한 없음 403 Problem Details.
+
+Estimate: 1일",품질·성능·관측성,장애·이탈 없이 빠르게 페이지와 영상을 이용하고 싶다,Highest,security;api,1,To Do
+Task,Feature Error Boundary 및 결제 실패 메시지,"구현 범위: feature 단위 Boundary, 결제 실패 사유별 다국어 메시지 + Sentry 컨텍스트.
+
+완료 기준: UI 크래시 시 fallback, 실패 시 재시도 CTA.
+
+Estimate: 1일",품질·성능·관측성,장애·이탈 없이 빠르게 페이지와 영상을 이용하고 싶다,High,error-handling,1,To Do
+Task,모달 포커스 트랩·aria 개선,"구현 범위: 새 클래스 모달 등 포커스 트랩/복귀, 주요 aria-label·live.
+
+완료 기준: 키보드만으로 모달 닫기·복귀 가능.
+
+Estimate: 1일",품질·성능·관측성,키보드·스크린리더로도 주요 흐름을 이용하고 싶다,Medium,a11y,1,To Do
+Task,alert를 토스트로 교체,"구현 범위: 브라우저 alert 제거, 인라인/토스트 패턴 통일.
+
+완료 기준: 결제·PDF·잠금 안내가 토스트/인라인으로만 표시.
+
+Estimate: 1일",품질·성능·관측성,키보드·스크린리더로도 주요 흐름을 이용하고 싶다,Medium,a11y;ux,1,To Do
+Task,Sentry 연동 및 결제·토큰 알림,"구현 범위: Sentry client/server, 결제 실패율·토큰 오류 알림 훅.
+
+완료 기준: 의도적 에러가 Sentry에 수집, Slack 등 채널 연결(가능 시).
+
+Estimate: 1일",품질·성능·관측성,장애·이탈 없이 빠르게 페이지와 영상을 이용하고 싶다,High,observability,1,To Do
+Task,Husky + lint-staged 커밋 게이트,"구현 범위: pre-commit에 Biome/타입체크 스테이징 파일 실행.
+
+완료 기준: 린트 실패 시 커밋 차단.
+
+Estimate: 0.5일",개발 인프라,,High,devops,0.5,To Do
+Task,Vitest 단위 테스트 기반,"구현 범위: 쿠폰 산출·enrollment 헬퍼·금액 검증 등 핵심 단위 테스트.
+
+완료 기준: CI에서 vitest 통과.
+
+Estimate: 1.5일",개발 인프라,,High,test,1.5,To Do
+Task,Playwright 결제·시청 E2E,"구현 범위: 로그인→결제(샌드박스)→수강→재생 토큰 스모크.
+
+완료 기준: develop 파이프라인에서 E2E 그린(또는 스킵 가능한 staging 전용).
+
+Estimate: 2일",개발 인프라,,High,e2e,2,To Do
+Task,Vercel 환경 분리 및 CI 파이프라인,"구현 범위: prod/staging/preview env, PR typecheck→lint→unit→preview.
+
+완료 기준: TechSpec §7.2 흐름과 동일하게 동작.
+
+Estimate: 1.5일",개발 인프라,,High,ci;vercel,1.5,To Do
+Bug,브랜드 hover 색상 토큰 불일치 및 오타,"문서(UXGuide §1.2)에 명시된 오류: 테라코타 hover 5종·골드 hover 4종이 파일마다 제각각이며 `#B1863C`는 `#B0863C` 오타로 추정된다.
+
+구현 범위:
+- brand-deep / gold-deep 단일 토큰으로 통일
+- 하드코딩 hex를 `@theme` 토큰으로 승격
+
+완료 기준:
+- hover 색상이 토큰 1종씩만 사용
+- 오타 hex 제거, 시각 회귀 확인
+
+우선순위: Medium (시각 일관성)",품질·성능·관측성,,Medium,design-token;bug,1,To Do
+Bug,[리스크] 화면 녹화 등 완전 유출 차단 불가,"문서(PRD-R-01): DRM 미적용 MVP에서 화면 녹화·DOM 조작으로 유출 우회 가능. 목표는 무단 재배포 억제+유출원 추적.
+
+구현 범위:
+- 서명 URL+워터마크 적용 후 잔여 위험 수용 기록
+- 유출 제보 시 워터마크 식별 절차 문서화
+- 피해 발생 시 DRM(PRD-F-17) 트리거 기준 명시
+
+완료 기준:
+- 운영 런북에 추적·대응 절차 존재
+- 제품 카피에 '완전 차단' 오해 소지 표현 없음
+
+유형: 수용 리스크 추적",보안 영상 시청,,High,risk;video-security,0.5,To Do
+Bug,[리스크] 해외카드 3DS 마찰로 결제 이탈,"문서(PRD-R-02/R-03): 해외카드 3DS·실패 안내 부족 시 결제 직전 이탈 가능.
+
+구현 범위:
+- 3DS/실패 사유별 다국어 안내 강화
+- 결제 실패율 모니터링(Sentry/로그)
+- 대만 카드 중심 테스트 시나리오 체크리스트
+
+완료 기준:
+- 실패 시 사용자에게 다음 행동 안내
+- 실패율 임계 알림 가능
+
+유형: 결제 리스크 완화",결제 및 수강권,,High,risk;payment,1,To Do
+Bug,[리스크] 도서 외부 URL 플레이스홀더 잔존,"문서(plan §5-5, UXGuide SCR-08): books.external_purchase_url이 플레이스홀더이며 프로토타입은 가짜 alert 구매를 보여 고객 혼란 가능.
+
+구현 범위:
+- 실 네이버쇼핑/쿠팡 URL 확보·시드 갱신
+- alert CTA 제거(Story/Task와 연계)
+
+완료 기준:
+- 프로덕션에 더미 URL·가짜 구매 승인 없음
+
+유형: 데이터·UX 리스크",도서·강사 소개,,Medium,risk;books,0.5,To Do
