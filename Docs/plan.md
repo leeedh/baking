@@ -45,7 +45,7 @@
 | 도서 상품 | PRD-F-19, TS-COMP-11, DB-T-10 | UI 완성(`BooksScreen`) + 가짜 `alert()` 구매 | **외부 커머스 링크(`external_purchase_url`) 전환**, `books` 데이터 연동(자체 결제·배송 없음) |
 | 쿠폰 할인 | PRD-F-04, TS-ADR-08, DB-T-09 | 클라 계산(`BAKING10` ₩15,000 정액) | `coupons` 테이블 + **서버 할인 산출·검증** |
 | 통화 현지화 | PRD-NF-06, TS-ADR-05 | `₩` 단일 표기 | KRW 청구 + `≈ NT$` 참고가 병기(`<PriceTag/>`) |
-| 회원 인증 | PRD-F-03 | 목업 로그인 | Supabase Auth(이메일+Google/Apple), role, 세션 |
+| 회원 인증 | PRD-F-03 | 목업 로그인 | Supabase Auth(이메일+Google), role, 세션 |
 | 결제 | PRD-F-04/04.1/04.2 | 목업 | TossPayments 결제창, 서버 검증, Webhook 멱등 |
 | 수강권(영구) | PRD-F-05 | state 배열 | `enrollments` 테이블 + `grant_enrollment` 멱등 발급 |
 | 보안 영상 | PRD-F-06/06.1/06.2 | 네이티브 video | Mux Player, 서명 JWT, 워터마크, 다운로드 방어 |
@@ -87,7 +87,8 @@
 - ✅ Supabase Auth 이메일 로그인/가입(`@supabase/ssr` 쿠키 세션), `profiles` 자동 생성 트리거 연동.
 - ✅ role(student/admin) 서버 라우트 가드: `/admin`(role), `/checkout`·`/my-classes`(인증), `/learn`·`/classes`는 공개(미리보기 퍼널).
 - ✅ 목업 로그인 state 제거(`useAuth`로 교체), 미들웨어에 세션 갱신 합성.
-- 🔲 잔여: OAuth(Google/Apple)는 코드 배선 완료 — **Supabase 대시보드 프로바이더 설정 필요**. Leaked-password 보호 토글.
+- ✅ **완료** (2026-07-21): Google OAuth 프로바이더 설정·검증 완료. Apple 로그인은 Apple Developer Program 유료 멤버십($99/년) 결제가 필요해 스코프에서 제외.
+- 🔲 잔여: Leaked-password 보호 토글.
 - **참조**: PRD-F-03, TS-COMP-02, DB-T-01, DB-TRG-01
 
 ### EPIC-D · 결제 → 수강권 (P0) — ✅ **구현 완료** (2026-07-10, 테스트 키)
