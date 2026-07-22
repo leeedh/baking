@@ -1,99 +1,92 @@
 'use client';
 
+import SecureVideoPlayer from '@/components/player/SecureVideoPlayer';
 import { useRouter } from '@/i18n/navigation';
+import type { LessonProgress, PlayerChapter, PlayerLesson } from '@/lib/lessons';
 import { useClassById } from '@/lib/store';
-import {
-  Award,
-  BookOpen,
-  CheckCircle,
-  ChevronLeft,
-  Clock,
-  FileDown,
-  Maximize,
-  Pause,
-  Play,
-  PlayCircle,
-  RotateCcw,
-  Volume2,
-} from 'lucide-react';
+import { BookOpen, CheckCircle, ChevronLeft, FileDown, Lock, PlayCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import React, { useState, useRef } from 'react';
-import { CURRICULUM_DATA } from '../data';
-import { CurriculumChapter, type CurriculumLesson } from '../types';
+import { useMemo, useState } from 'react';
 
 interface PlayerScreenProps {
   classId: string;
   /** 서버에서 enrollments로 판별한 활성 수강권 보유 여부 */
   purchased: boolean;
+  /** DB lessons(챕터별 그룹) — EPIC-E 실연동 */
+  chapters: PlayerChapter[];
+  /** 차시별 진도 맵 (lessonId → 진도) */
+  progress: Record<string, LessonProgress>;
+  /** 부분 마스킹된 워터마크 식별자 (비로그인 시 빈 문자열) */
+  watermarkLabel: string;
 }
 
-export default function PlayerScreen({ classId, purchased }: PlayerScreenProps) {
+function formatDuration(sec: number | null): string {
+  if (!sec || sec <= 0) return '--:--';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+export default function PlayerScreen({
+  classId,
+  purchased,
+  chapters,
+  progress,
+  watermarkLabel,
+}: PlayerScreenProps) {
   const cls = useClassById(classId);
   const router = useRouter();
   const onNavigateBack = () => router.push(`/classes/${cls.id}`);
   const initialLessonId = useSearchParams().get('lesson');
-  const curriculum = CURRICULUM_DATA[cls.id] || [];
 
-  // Find initial lesson or default to chapter 1 lesson 1
-  const allLessons = curriculum.flatMap((chapter) => chapter.lessons);
-  const defaultLesson = allLessons.find((l) => l.id === initialLessonId) || allLessons[0];
+  const allLessons = useMemo(() => chapters.flatMap((c) => c.lessons), [chapters]);
+  const defaultLesson = allLessons.find((l) => l.id === initialLessonId) ?? allLessons[0] ?? null;
 
-  const [currentLesson, setCurrentLesson] = useState<CurriculumLesson>(defaultLesson);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([allLessons[0]?.id || '']); // default first is watched
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(80);
+  const [currentLesson, setCurrentLesson] = useState<PlayerLesson | null>(defaultLesson);
+  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() =>
+    Object.entries(progress)
+      .filter(([, p]) => p.completed)
+      .map(([id]) => id),
+  );
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
 
-  // Computed totals
   const totalLessonsCount = allLessons.length;
-  const progressPercent = Math.round((completedLessonIds.length / totalLessonsCount) * 100);
+  const progressPercent =
+    totalLessonsCount > 0 ? Math.round((completedLessonIds.length / totalLessonsCount) * 100) : 0;
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const isLocked = (lesson: PlayerLesson) => !purchased && !lesson.isPreview;
 
-  const handleLessonSelect = (lesson: CurriculumLesson) => {
-    // If not purchased, restrict to free lesson only
-    if (!purchased && !lesson.isFree) {
+  const handleLessonSelect = (lesson: PlayerLesson) => {
+    if (isLocked(lesson)) {
       alert(
         '본 차시는 평생소장 라이선스를 구매하셔야 수강하실 수 있습니다. 1차시 무료 맛보기를 즐겨주세요!',
       );
       return;
     }
     setCurrentLesson(lesson);
-    setIsPlaying(true);
-
-    // Simulate auto-scrolling video element or resetting
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch(() => {});
-    }
-  };
-
-  const handleTogglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play().catch(() => {});
-      }
-      setIsPlaying(!isPlaying);
-    } else {
-      setIsPlaying(!isPlaying);
-    }
   };
 
   const handleCompleteCurrentLesson = () => {
-    if (!completedLessonIds.includes(currentLesson.id)) {
-      setCompletedLessonIds([...completedLessonIds, currentLesson.id]);
-    }
+    if (!currentLesson || completedLessonIds.includes(currentLesson.id)) return;
+    setCompletedLessonIds((ids) => [...ids, currentLesson.id]);
+    // 완주 등록도 progress upsert로 서버 저장 (completed=true).
+    fetch('/api/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lessonId: currentLesson.id,
+        watchedSec: currentLesson.durationSec ?? 0,
+        completed: true,
+      }),
+    }).catch(() => {});
   };
 
   const handleDownloadPDF = () => {
     setPdfDownloaded(true);
-    setTimeout(() => {
-      setPdfDownloaded(false);
-    }, 4000);
+    setTimeout(() => setPdfDownloaded(false), 4000);
   };
+
+  const currentLocked = currentLesson ? isLocked(currentLesson) : true;
 
   return (
     <div id="player-screen" className="bg-[#FAF4EA] py-6 px-4 sm:px-8 max-w-7xl mx-auto">
@@ -138,68 +131,67 @@ export default function PlayerScreen({ classId, purchased }: PlayerScreenProps) 
         {/* WIDESCREEN 16:9 VIDEO PLAYER AREA */}
         <div className="lg:col-span-8 space-y-4">
           <div className="relative aspect-[16/9] bg-black rounded-2xl overflow-hidden shadow-xl border-2 border-white">
-            {/* Custom styled video tag using sample royalty-free video format */}
-            <video
-              id="player-video-tag"
-              ref={videoRef}
-              src={currentLesson.videoUrl}
-              className="w-full h-full object-contain"
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              controls={true}
-              autoPlay={false}
-            />
-
-            {!isPlaying && (
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center pointer-events-none p-4">
-                <div className="w-14 h-14 rounded-full bg-[#B65538]/90 text-white flex items-center justify-center animate-pulse">
-                  <Play size={20} className="ml-1 fill-white" />
-                </div>
-                <span className="mt-3 text-xs bg-black/60 text-white px-2.5 py-1 rounded">
-                  {currentLesson.title}
-                </span>
+            {!currentLesson ? (
+              <div className="absolute inset-0 flex items-center justify-center text-white/70 text-sm">
+                등록된 차시가 없습니다.
               </div>
+            ) : currentLocked ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center text-white/80">
+                <Lock size={24} className="text-[#B65538]" />
+                <p className="text-sm">평생소장 라이선스 구매 후 시청할 수 있는 차시입니다.</p>
+              </div>
+            ) : (
+              <SecureVideoPlayer
+                key={currentLesson.id}
+                lessonId={currentLesson.id}
+                title={currentLesson.title}
+                watermarkLabel={watermarkLabel}
+                initialWatchedSec={progress[currentLesson.id]?.watchedSec ?? 0}
+              />
             )}
           </div>
 
           {/* Quick interactive task controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-[#EFE8DC] gap-4 shadow-sm">
-            <div>
-              <span className="text-[10px] font-bold text-[#B0863C] tracking-wide uppercase">
-                Lecture Playing
-              </span>
-              <h3 className="text-sm font-bold text-[#2A211B] mt-0.5">{currentLesson.title}</h3>
-              <p className="text-xs text-[#5F4E43] mt-1">
-                {currentLesson.isFree
-                  ? '모든 수강생 무료 상시 공개 차시'
-                  : '평생 소장 회원 전용 고난이도 빌딩 세션'}
-              </p>
-            </div>
+          {currentLesson && (
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-[#EFE8DC] gap-4 shadow-sm">
+              <div>
+                <span className="text-[10px] font-bold text-[#B0863C] tracking-wide uppercase">
+                  Lecture Playing
+                </span>
+                <h3 className="text-sm font-bold text-[#2A211B] mt-0.5">{currentLesson.title}</h3>
+                <p className="text-xs text-[#5F4E43] mt-1">
+                  {currentLesson.isPreview
+                    ? '모든 수강생 무료 상시 공개 차시'
+                    : '평생 소장 회원 전용 고난이도 빌딩 세션'}
+                </p>
+              </div>
 
-            <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
-              <button
-                id="btn-mark-complete"
-                onClick={handleCompleteCurrentLesson}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                  completedLessonIds.includes(currentLesson.id)
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-[#FAF4EA] text-[#B65538] border border-[#EFE8DC] hover:bg-[#B65538] hover:text-white'
-                }`}
-              >
-                <CheckCircle size={14} />
-                {completedLessonIds.includes(currentLesson.id) ? '완강 등록됨' : '차시 수강완료'}
-              </button>
+              <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+                <button
+                  id="btn-mark-complete"
+                  onClick={handleCompleteCurrentLesson}
+                  disabled={currentLocked}
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                    completedLessonIds.includes(currentLesson.id)
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-[#FAF4EA] text-[#B65538] border border-[#EFE8DC] hover:bg-[#B65538] hover:text-white'
+                  }`}
+                >
+                  <CheckCircle size={14} />
+                  {completedLessonIds.includes(currentLesson.id) ? '완강 등록됨' : '차시 수강완료'}
+                </button>
 
-              <button
-                id="btn-download-materials"
-                onClick={handleDownloadPDF}
-                className="px-4 py-2 bg-[#2A211B] hover:bg-[#B0863C] text-[#FAF4EA] text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-              >
-                <FileDown size={14} />
-                PDF 배합표 받기
-              </button>
+                <button
+                  id="btn-download-materials"
+                  onClick={handleDownloadPDF}
+                  className="px-4 py-2 bg-[#2A211B] hover:bg-[#B0863C] text-[#FAF4EA] text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <FileDown size={14} />
+                  PDF 배합표 받기
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Toast download trigger indicator */}
           {pdfDownloaded && (
@@ -246,27 +238,27 @@ export default function PlayerScreen({ classId, purchased }: PlayerScreenProps) 
           </div>
 
           <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">
-            {curriculum.map((chapter) => (
-              <div key={chapter.id} className="space-y-2">
+            {chapters.map((chapter) => (
+              <div key={chapter.index} className="space-y-2">
                 <span className="text-[10.5px] font-bold text-[#B0863C] block uppercase tracking-wider bg-[#FAF4EA] p-1.5 rounded">
                   {chapter.title}
                 </span>
 
                 <div className="space-y-1">
                   {chapter.lessons.map((lesson) => {
-                    const isSelected = lesson.id === currentLesson.id;
+                    const isSelected = lesson.id === currentLesson?.id;
                     const isCompleted = completedLessonIds.includes(lesson.id);
-                    const isLocked = !purchased && !lesson.isFree;
+                    const locked = isLocked(lesson);
 
                     return (
                       <button
                         key={lesson.id}
                         onClick={() => handleLessonSelect(lesson)}
-                        disabled={isLocked}
+                        disabled={locked}
                         className={`w-full p-2.5 min-h-[44px] rounded-lg flex items-center justify-between text-left text-xs transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#B65538]/10 text-[#B65538] font-bold'
-                            : isLocked
+                            : locked
                               ? 'opacity-50 bg-[#FAF4EA]/30 text-[#5F4E43]/60 cursor-not-allowed'
                               : 'hover:bg-[#FAF4EA] text-[#2A211B]'
                         }`}
@@ -287,12 +279,12 @@ export default function PlayerScreen({ classId, purchased }: PlayerScreenProps) 
                         </div>
 
                         <div className="flex items-center gap-1 text-[9px] text-[#5F4E43]/60 font-mono">
-                          {isLocked ? (
+                          {locked ? (
                             <span className="text-[8px] bg-[#B0863C]/10 text-[#B0863C] px-1 rounded">
                               잠김
                             </span>
                           ) : (
-                            <span>{lesson.duration}</span>
+                            <span>{formatDuration(lesson.durationSec)}</span>
                           )}
                         </div>
                       </button>

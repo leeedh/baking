@@ -30,6 +30,9 @@
         "--env-file",
         ".env.local"
       ]
-      }
+      },
+      "notion": {
+      "url": "https://mcp.notion.com/mcp"
+    }
     }
   }
