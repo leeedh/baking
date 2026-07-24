@@ -1,14 +1,9 @@
 import 'server-only';
 
+import { pickLocale } from '@/lib/i18n-json';
 import { maskEmail } from '@/lib/mask';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-
-/** jsonb 다국어 필드에서 로케일 값을 안전 추출 (없으면 ko → 첫 값 순 폴백). */
-function pickLocale(json: unknown, locale: string): string {
-  const map = (json ?? {}) as Record<string, string>;
-  return map[locale] ?? map.ko ?? Object.values(map)[0] ?? '';
-}
 
 /** lessons 행(민감 필드 포함)을 챕터별 PlayerLesson으로 매핑(mux_playback_id는 boolean으로만 노출). */
 type LessonRow = {

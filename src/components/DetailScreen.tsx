@@ -2,7 +2,6 @@
 
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { useClassById } from '@/lib/store';
 import {
   BookOpen,
   CheckCircle2,
@@ -20,17 +19,21 @@ import {
   User,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { CURRICULUM_DATA, REVIEWS_DATA } from '../data';
-import { CurriculumChapter, Review } from '../types';
+import type { ClassItem, DetailChapter, ReviewItem } from '../types';
 
 interface DetailScreenProps {
-  classId: string;
+  /** 서버(course_catalog)에서 로드한 클래스 메타. */
+  course: ClassItem;
+  /** 서버(lessons)에서 로드한 커리큘럼(잠긴 차시 포함). */
+  chapters: DetailChapter[];
+  /** 서버(reviews)에서 로드한 후기 목록. */
+  reviews: ReviewItem[];
   /** 서버에서 enrollments로 판별한 활성 수강권 보유 여부 */
   purchased: boolean;
 }
 
-export default function DetailScreen({ classId, purchased }: DetailScreenProps) {
-  const cls = useClassById(classId);
+export default function DetailScreen({ course, chapters, reviews, purchased }: DetailScreenProps) {
+  const cls = course;
   const router = useRouter();
   const { isLoggedIn } = useAuth();
 
@@ -48,13 +51,22 @@ export default function DetailScreen({ classId, purchased }: DetailScreenProps) 
   };
 
   const [activeTab, setActiveTab] = useState<'intro' | 'curriculum' | 'reviews'>('intro');
-  const [videoPlaying, setVideoPlaying] = useState(false);
 
-  const curriculum = CURRICULUM_DATA[cls.id] || [];
-  const reviews = REVIEWS_DATA.filter((r) => r.classId === cls.id);
+  const curriculum = chapters;
 
   // Total lessons count
   const totalLessons = curriculum.reduce((acc, curr) => acc + curr.lessons.length, 0);
+
+  // 첫 미리보기 차시 / 첫 차시 — 서버가 내려준 is_preview 기준(클라이언트 단독 가드 없음).
+  // 미리보기 차시가 없으면 firstPreviewLessonId는 빈 값 → 미리보기 CTA는 disabled 처리(잠긴
+  // 차시로 보내지 않는다).
+  const allLessons = curriculum.flatMap((ch) => ch.lessons);
+  const firstPreviewLessonId = allLessons.find((l) => l.isPreview)?.id ?? '';
+  const firstLessonId = allLessons[0]?.id ?? '';
+
+  // 정가(list_price)가 판매가보다 클 때만 할인/취소선 노출 — 정가 미설정 시 0%·NaN% 표기 방지.
+  const discountPercent =
+    cls.originalPrice > cls.price ? Math.round((1 - cls.price / cls.originalPrice) * 100) : 0;
 
   return (
     <div
@@ -78,43 +90,25 @@ export default function DetailScreen({ classId, purchased }: DetailScreenProps) 
             id="cover-video-wrapper"
             className="relative aspect-[16/9] bg-black rounded-2xl overflow-hidden shadow-lg border-2 border-white group"
           >
-            {!videoPlaying ? (
-              <>
-                <img
-                  referrerPolicy="no-referrer"
-                  src={cls.thumbnail}
-                  alt={cls.title}
-                  className="w-full h-full object-cover brightness-75 group-hover:scale-101 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/30">
-                  <button
-                    onClick={() => setVideoPlaying(true)}
-                    className="w-16 h-16 rounded-full bg-[#B65538]/90 hover:bg-[#B65538] text-[#FAF4EA] flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
-                  >
-                    <Play size={26} className="ml-1 fill-white" />
-                  </button>
-                  <span className="mt-3 text-xs bg-black/60 backdrop-blur-md text-[#FAF4EA] px-3 py-1 rounded-full font-medium tracking-wide">
-                    맛보기 오리엔테이션 및 하이라이트 (1분 30초)
-                  </span>
-                </div>
-              </>
-            ) : (
-              <div className="w-full h-full relative">
-                <iframe
-                  className="w-full h-full"
-                  src={`${curriculum[0]?.lessons[0]?.videoUrl || 'https://www.w3schools.com/html/mov_bbb.mp4'}?autoplay=1`}
-                  title="Class Preview Video"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                />
-                <button
-                  onClick={() => setVideoPlaying(false)}
-                  className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white text-xs px-3 py-1.5 rounded-md cursor-pointer"
-                >
-                  미리보기 닫기
-                </button>
-              </div>
-            )}
+            <img
+              referrerPolicy="no-referrer"
+              src={cls.thumbnail}
+              alt={cls.title}
+              className="w-full h-full object-cover brightness-75 group-hover:scale-101 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/30">
+              {/* 미리보기 재생은 서버 게이팅되는 학습 페이지(재생 토큰 API가 is_preview 검증)로 이동. */}
+              <button
+                onClick={() => onStartPreview(cls.id, firstPreviewLessonId)}
+                disabled={!firstPreviewLessonId}
+                className="w-16 h-16 rounded-full bg-[#B65538]/90 hover:bg-[#B65538] text-[#FAF4EA] flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Play size={26} className="ml-1 fill-white" />
+              </button>
+              <span className="mt-3 text-xs bg-black/60 backdrop-blur-md text-[#FAF4EA] px-3 py-1 rounded-full font-medium tracking-wide">
+                1차시 무료 미리보기 즉시 시청
+              </span>
+            </div>
 
             {/* Corner Badge */}
             <span className="absolute top-4 left-4 bg-[#B0863C] text-white text-xs font-bold px-3 py-1 rounded-md shadow-md uppercase tracking-wider">
@@ -267,7 +261,7 @@ export default function DetailScreen({ classId, purchased }: DetailScreenProps) 
 
                       <div className="divide-y divide-[#EFE8DC]">
                         {chapter.lessons.map((lesson) => {
-                          const isFreePreview = lesson.isFree;
+                          const isFreePreview = lesson.isPreview;
                           return (
                             <div
                               key={lesson.id}
@@ -397,19 +391,22 @@ export default function DetailScreen({ classId, purchased }: DetailScreenProps) 
             </div>
 
             <div className="space-y-1">
-              <span className="block text-xs text-[#5F4E43]/70 line-through">
-                ₩{cls.originalPrice.toLocaleString()}
-              </span>
+              {discountPercent > 0 && (
+                <span className="block text-xs text-[#5F4E43]/70 line-through">
+                  ₩{cls.originalPrice.toLocaleString()}
+                </span>
+              )}
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-serif font-extrabold text-[#2A211B]">
                   ₩{cls.price.toLocaleString()}
                 </span>
                 <span className="text-sm font-bold text-[#B0863C]">VAT 포함</span>
               </div>
-              <p className="text-[11px] text-[#B65538] font-bold">
-                * {Math.round((1 - cls.price / cls.originalPrice) * 100)}% 얼리버드 한정 혜택 (한
-                번만 사면 평생 소장)
-              </p>
+              {discountPercent > 0 && (
+                <p className="text-[11px] text-[#B65538] font-bold">
+                  * {discountPercent}% 얼리버드 한정 혜택 (한 번만 사면 평생 소장)
+                </p>
+              )}
             </div>
 
             <div className="h-px bg-[#EFE8DC]" />
@@ -441,7 +438,7 @@ export default function DetailScreen({ classId, purchased }: DetailScreenProps) 
                   이미 권한을 보유 중인 평생소장 강의입니다.
                 </div>
                 <button
-                  onClick={() => onStartPreview(cls.id, curriculum[0]?.lessons[0]?.id || '')}
+                  onClick={() => onStartPreview(cls.id, firstLessonId)}
                   className="w-full py-3 bg-[#2A211B] hover:bg-[#B65538] text-white font-bold text-xs sm:text-sm rounded-xl shadow transition-colors cursor-pointer text-center block"
                 >
                   시청하기 플레이어로 이동
@@ -488,9 +485,9 @@ export default function DetailScreen({ classId, purchased }: DetailScreenProps) 
             <span className="text-lg font-serif font-extrabold text-[#2A211B]">
               ₩{cls.price.toLocaleString()}
             </span>
-            <span className="text-[10px] text-[#B0863C] font-bold">
-              {Math.round((1 - cls.price / cls.originalPrice) * 100)}% 특가
-            </span>
+            {discountPercent > 0 && (
+              <span className="text-[10px] text-[#B0863C] font-bold">{discountPercent}% 특가</span>
+            )}
           </div>
         </div>
 

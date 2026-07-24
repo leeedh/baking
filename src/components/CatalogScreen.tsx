@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useAppStore } from '@/lib/store';
 import {
   Award,
   BadgeAlert,
@@ -28,10 +27,14 @@ import type { ClassItem } from '../types';
 
 const MeringueHero = dynamic(() => import('./MeringueHero'), { ssr: false });
 
-export default function CatalogScreen() {
+interface CatalogScreenProps {
+  /** course_catalog 뷰에서 서버가 로드한 게시 클래스 목록. */
+  classes: ClassItem[];
+}
+
+export default function CatalogScreen({ classes }: CatalogScreenProps) {
   const t = useTranslations();
   const router = useRouter();
-  const classes = useAppStore((s) => s.classesList);
   const onNavigateToDetail = (id: string) => router.push(`/classes/${id}`);
   const onNavigateToInstructor = () => router.push('/instructor');
   const onNavigateToBooks = () => router.push('/books');
@@ -642,9 +645,11 @@ export default function CatalogScreen() {
                     {/* Price with monthly split indicator */}
                     <div className="pt-4 border-t border-[#EFE8DC]/70 flex items-end justify-between">
                       <div className="space-y-0.5">
-                        <span className="block text-[10.5px] text-[#5F4E43]/50 line-through">
-                          ₩{cls.originalPrice.toLocaleString()}원
-                        </span>
+                        {discountPercent > 0 && (
+                          <span className="block text-[10.5px] text-[#5F4E43]/50 line-through">
+                            ₩{cls.originalPrice.toLocaleString()}원
+                          </span>
+                        )}
                         <div className="flex items-baseline gap-1.5">
                           <span className="text-lg font-bold text-[#2A211B]">
                             ₩{cls.price.toLocaleString()}
