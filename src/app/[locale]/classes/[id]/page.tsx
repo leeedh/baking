@@ -28,6 +28,9 @@ export default async function ClassDetailPage({
       course={detail.course}
       chapters={detail.chapters}
       reviews={detail.reviews}
+      canReview={detail.canReview}
+      myReview={detail.myReview}
+      courseId={detail.courseId}
       purchased={purchased}
     />
   );

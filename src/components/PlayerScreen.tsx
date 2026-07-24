@@ -2,7 +2,9 @@
 
 import SecureVideoPlayer from '@/components/player/SecureVideoPlayer';
 import { useRouter } from '@/i18n/navigation';
+import { formatBytes } from '@/lib/format';
 import type { LessonProgress, PlayerChapter, PlayerLesson } from '@/lib/lessons';
+import type { MaterialItem } from '@/lib/materials';
 import { useClassById } from '@/lib/store';
 import { BookOpen, CheckCircle, ChevronLeft, FileDown, Lock, PlayCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -18,6 +20,8 @@ interface PlayerScreenProps {
   progress: Record<string, LessonProgress>;
   /** 부분 마스킹된 워터마크 식별자 (비로그인 시 빈 문자열) */
   watermarkLabel: string;
+  /** 차시별 레시피 자료 (비구매자에겐 빈 맵 — DC-59) */
+  materials: Record<string, MaterialItem[]>;
 }
 
 function formatDuration(sec: number | null): string {
@@ -33,6 +37,7 @@ export default function PlayerScreen({
   chapters,
   progress,
   watermarkLabel,
+  materials,
 }: PlayerScreenProps) {
   const cls = useClassById(classId);
   const router = useRouter();
@@ -48,7 +53,9 @@ export default function PlayerScreen({
       .filter(([, p]) => p.completed)
       .map(([id]) => id),
   );
-  const [pdfDownloaded, setPdfDownloaded] = useState(false);
+  // 자료 다운로드 중인 항목과 실패 사유(alert 대신 인라인 표시).
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [materialError, setMaterialError] = useState<string | null>(null);
 
   const totalLessonsCount = allLessons.length;
   const progressPercent =
@@ -81,12 +88,28 @@ export default function PlayerScreen({
     }).catch(() => {});
   };
 
-  const handleDownloadPDF = () => {
-    setPdfDownloaded(true);
-    setTimeout(() => setPdfDownloaded(false), 4000);
+  // 서명 URL은 60초짜리 단기 발급 — 클릭 시점에 받아 즉시 사용한다(사전 발급·캐시 금지).
+  const handleDownloadMaterial = async (material: MaterialItem) => {
+    setDownloadingId(material.id);
+    setMaterialError(null);
+    try {
+      const res = await fetch(`/api/materials/${material.id}/download`);
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { detail?: string } | null;
+        setMaterialError(body?.detail ?? '자료를 받을 수 없습니다.');
+        return;
+      }
+      const { url } = (await res.json()) as { url: string };
+      window.location.href = url;
+    } catch {
+      setMaterialError('네트워크 오류로 자료를 받지 못했습니다.');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const currentLocked = currentLesson ? isLocked(currentLesson) : true;
+  const currentMaterials = currentLesson ? (materials[currentLesson.id] ?? []) : [];
 
   return (
     <div id="player-screen" className="bg-[#FAF4EA] py-6 px-4 sm:px-8 max-w-7xl mx-auto">
@@ -180,29 +203,51 @@ export default function PlayerScreen({
                   <CheckCircle size={14} />
                   {completedLessonIds.includes(currentLesson.id) ? '완강 등록됨' : '차시 수강완료'}
                 </button>
-
-                <button
-                  id="btn-download-materials"
-                  onClick={handleDownloadPDF}
-                  className="px-4 py-2 bg-[#2A211B] hover:bg-[#B0863C] text-[#FAF4EA] text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                >
-                  <FileDown size={14} />
-                  PDF 배합표 받기
-                </button>
               </div>
             </div>
           )}
 
-          {/* Toast download trigger indicator */}
-          {pdfDownloaded && (
-            <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs space-y-1 animate-fade-in">
-              <span className="font-bold block text-[#B1863C]">
-                📥 [아틀리에 크렘] 셰프 핵심 전수 노트 배합표 다운로드
-              </span>
-              <p className="font-normal opacity-90">
-                『{cls.instructor} 셰프 전용 소수점 원본 계량 및 이중 도구 관리 수강 노트』 가 로컬
-                디렉토리에 전송되었습니다. 정독 후 실습하여 주시기 바랍니다.
-              </p>
+          {/* 차시 레시피 자료 — 수강권 보유자에게만 목록이 내려오고, 클릭 시 60초 서명 URL 발급 */}
+          {currentLesson && (
+            <div className="p-4 bg-white rounded-xl border border-[#EFE8DC] space-y-2 shadow-sm">
+              <h4 className="text-xs font-bold text-[#2A211B] flex items-center gap-1">
+                <FileDown size={14} className="text-[#B0863C]" />
+                레시피 배합표
+              </h4>
+
+              {currentMaterials.length === 0 ? (
+                <p className="text-xs text-[#5F4E43]/70">
+                  {purchased
+                    ? '이 차시에 등록된 자료가 없습니다.'
+                    : '자료는 평생소장 라이선스 구매 후 받으실 수 있습니다.'}
+                </p>
+              ) : (
+                <ul className="space-y-1">
+                  {currentMaterials.map((material) => (
+                    <li key={material.id}>
+                      <button
+                        type="button"
+                        disabled={downloadingId === material.id}
+                        onClick={() => handleDownloadMaterial(material)}
+                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#FAF4EA] hover:bg-[#EFE8DC] disabled:opacity-50 text-xs text-[#2A211B] transition-colors cursor-pointer"
+                      >
+                        <span className="text-left">{material.title}</span>
+                        <span className="text-[10px] text-[#5F4E43]/70 font-mono shrink-0">
+                          {downloadingId === material.id
+                            ? '발급 중…'
+                            : formatBytes(material.sizeBytes)}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {materialError && (
+                <p role="alert" className="text-[11px] text-[#B65538]">
+                  {materialError}
+                </p>
+              )}
             </div>
           )}
 

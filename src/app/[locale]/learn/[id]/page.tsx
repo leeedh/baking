@@ -14,7 +14,10 @@ export default async function LearnPage({
   const { id } = await params;
   const locale = await getLocale();
 
-  const { purchased, chapters, progress, watermarkLabel } = await getLearnPageData(id, locale);
+  const { purchased, chapters, progress, watermarkLabel, materials } = await getLearnPageData(
+    id,
+    locale,
+  );
 
   return (
     <PlayerScreen
@@ -23,6 +26,7 @@ export default async function LearnPage({
       chapters={chapters}
       progress={progress}
       watermarkLabel={watermarkLabel}
+      materials={materials}
     />
   );
 }

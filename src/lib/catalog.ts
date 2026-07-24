@@ -153,7 +153,11 @@ export async function getCourseDetail(slug: string, locale: string): Promise<Cou
   const courseId = (row as CatalogRow).id;
   if (!courseId) return null;
 
-  const [lessonsRes, reviewsRes] = await Promise.all([
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [lessonsRes, reviewsRes, accessRes, myReviewRes] = await Promise.all([
     admin
       .from('lessons')
       .select(
@@ -166,6 +170,18 @@ export async function getCourseDetail(slug: string, locale: string): Promise<Cou
       .select('id, rating, content, created_at, profiles(display_name, avatar_url)')
       .eq('course_id', courseId)
       .order('created_at', { ascending: false }),
+    // 후기 작성 자격 = 활성 수강권(환불 시 자동으로 false). RLS insert 정책과 동일한 판정식.
+    user
+      ? supabase.rpc('has_course_access', { p_course_id: courseId })
+      : Promise.resolve({ data: false }),
+    user
+      ? supabase
+          .from('reviews')
+          .select('id, rating, content')
+          .eq('course_id', courseId)
+          .eq('user_id', user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const chapters = buildDetailChapters((lessonsRes.data ?? []) as DetailLessonRow[], locale);
@@ -187,5 +203,14 @@ export async function getCourseDetail(slug: string, locale: string): Promise<Cou
     content: r.content ?? '',
   }));
 
-  return { course, chapters, reviews };
+  const my = myReviewRes.data as { id: string; rating: number; content: string | null } | null;
+
+  return {
+    course,
+    courseId,
+    chapters,
+    reviews,
+    canReview: !!accessRes.data,
+    myReview: my ? { id: my.id, rating: my.rating, content: my.content ?? '' } : null,
+  };
 }

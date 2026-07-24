@@ -19,20 +19,35 @@ import {
   User,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import type { ClassItem, DetailChapter, ReviewItem } from '../types';
+import type { ClassItem, DetailChapter, MyReview, ReviewItem } from '../types';
+import ReviewForm from './ReviewForm';
 
 interface DetailScreenProps {
   /** 서버(course_catalog)에서 로드한 클래스 메타. */
   course: ClassItem;
+  /** courses.id(uuid) — 후기 API용. course.id는 라우팅 키인 slug다. */
+  courseId: string;
   /** 서버(lessons)에서 로드한 커리큘럼(잠긴 차시 포함). */
   chapters: DetailChapter[];
   /** 서버(reviews)에서 로드한 후기 목록. */
   reviews: ReviewItem[];
+  /** 후기 작성 자격(활성 수강권 보유). */
+  canReview: boolean;
+  /** 이미 작성한 본인 후기(없으면 null). */
+  myReview: MyReview | null;
   /** 서버에서 enrollments로 판별한 활성 수강권 보유 여부 */
   purchased: boolean;
 }
 
-export default function DetailScreen({ course, chapters, reviews, purchased }: DetailScreenProps) {
+export default function DetailScreen({
+  course,
+  courseId,
+  chapters,
+  reviews,
+  canReview,
+  myReview,
+  purchased,
+}: DetailScreenProps) {
   const cls = course;
   const router = useRouter();
   const { isLoggedIn } = useAuth();
@@ -333,6 +348,14 @@ export default function DetailScreen({ course, chapters, reviews, purchased }: D
                     기재합니다.
                   </p>
                 </div>
+
+                {/* key: 서버가 내려준 후기가 바뀌면 폼 입력 상태를 새로 초기화한다. */}
+                <ReviewForm
+                  key={myReview?.id ?? 'new'}
+                  courseId={courseId}
+                  canReview={canReview}
+                  myReview={myReview}
+                />
 
                 <div className="space-y-4 divide-y divide-[#EFE8DC]">
                   {reviews.length === 0 ? (

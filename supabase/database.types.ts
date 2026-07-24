@@ -303,6 +303,8 @@ export type Database = {
           created_at: string
           id: string
           lesson_id: string
+          mime_type: string | null
+          size_bytes: number | null
           storage_path: string
           title: Json
           updated_at: string
@@ -311,6 +313,8 @@ export type Database = {
           created_at?: string
           id?: string
           lesson_id: string
+          mime_type?: string | null
+          size_bytes?: number | null
           storage_path: string
           title?: Json
           updated_at?: string
@@ -319,6 +323,8 @@ export type Database = {
           created_at?: string
           id?: string
           lesson_id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
           storage_path?: string
           title?: Json
           updated_at?: string

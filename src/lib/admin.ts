@@ -3,7 +3,13 @@ import 'server-only';
 import { pickLocale } from '@/lib/i18n-json';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import type { AdminClassRow, AdminCourseLessons, AdminDashboard, AdminLesson } from '@/types';
+import type {
+  AdminClassRow,
+  AdminCourseLessons,
+  AdminDashboard,
+  AdminLesson,
+  AdminMaterial,
+} from '@/types';
 
 // 단일 브랜드(1인 파티시에) — courses에 강사명 컬럼이 없어 상수 표기(catalog.ts와 동일).
 const BRAND_INSTRUCTOR = '민소희 (Sohee Min)';
@@ -97,13 +103,33 @@ export async function getCourseLessons(courseId: string): Promise<AdminCourseLes
     .maybeSingle();
   if (!course) return null;
 
-  const { data } = await admin
-    .from('lessons')
-    .select(
-      'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id',
-    )
-    .eq('course_id', courseId)
-    .order('order_index', { ascending: true });
+  const [{ data }, { data: materialRows }] = await Promise.all([
+    admin
+      .from('lessons')
+      .select(
+        'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id',
+      )
+      .eq('course_id', courseId)
+      .order('order_index', { ascending: true }),
+    admin
+      .from('materials')
+      .select('id, lesson_id, title, size_bytes, lessons!inner(course_id)')
+      .eq('lessons.course_id', courseId)
+      .order('created_at', { ascending: true }),
+  ]);
+
+  // 자료를 차시별로 묶는다(운영자 화면은 ko 표기 기준).
+  const materialsByLesson: Record<string, AdminMaterial[]> = {};
+  for (const m of (materialRows ?? []) as unknown as Array<{
+    id: string;
+    lesson_id: string;
+    title: unknown;
+    size_bytes: number | null;
+  }>) {
+    const list = materialsByLesson[m.lesson_id] ?? [];
+    list.push({ id: m.id, title: pickLocale(m.title, 'ko'), sizeBytes: m.size_bytes });
+    materialsByLesson[m.lesson_id] = list;
+  }
 
   const lessons: AdminLesson[] = (data ?? []).map((l) => ({
     id: l.id,
@@ -116,6 +142,7 @@ export async function getCourseLessons(courseId: string): Promise<AdminCourseLes
     durationSec: l.duration_sec,
     isPreview: l.is_preview,
     hasVideo: !!l.mux_playback_id,
+    materials: materialsByLesson[l.id] ?? [],
   }));
 
   return {

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { pickLocale } from '@/lib/i18n-json';
 import { maskEmail } from '@/lib/mask';
+import { type MaterialItem, getMaterialsByLesson } from '@/lib/materials';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -76,6 +77,8 @@ export interface LearnPageData {
   progress: Record<string, LessonProgress>;
   /** 부분 마스킹된 워터마크 식별자 (비로그인 시 빈 문자열) */
   watermarkLabel: string;
+  /** 차시별 레시피 자료 (비구매자는 빈 맵 — 다운로드 API가 재검증) */
+  materials: Record<string, MaterialItem[]>;
 }
 
 /**
@@ -97,11 +100,11 @@ export async function getLearnPageData(slug: string, locale: string): Promise<Le
 
   const { data: course } = await admin.from('courses').select('id').eq('slug', slug).maybeSingle();
   if (!course) {
-    return { purchased: false, chapters: [], progress: {}, watermarkLabel };
+    return { purchased: false, chapters: [], progress: {}, watermarkLabel, materials: {} };
   }
   const courseId = course.id;
 
-  const [enrollmentRes, lessonsRes, progressRes] = await Promise.all([
+  const [enrollmentRes, lessonsRes, progressRes, isAdminRes] = await Promise.all([
     user
       ? supabase
           .from('enrollments')
@@ -125,6 +128,8 @@ export async function getLearnPageData(slug: string, locale: string): Promise<Le
           .eq('user_id', user.id)
           .eq('lessons.course_id', courseId)
       : Promise.resolve({ data: [] }),
+    // 운영자는 수강권이 없어도 자료를 확인할 수 있어야 한다(다운로드 API와 동일 기준).
+    user ? supabase.rpc('is_admin') : Promise.resolve({ data: false }),
   ]);
 
   const chapters = buildChapters((lessonsRes.data ?? []) as LessonRow[], locale);
@@ -140,5 +145,10 @@ export async function getLearnPageData(slug: string, locale: string): Promise<Le
     }
   }
 
-  return { purchased: !!enrollmentRes.data, chapters, progress, watermarkLabel };
+  // 자료 목록은 수강권 보유자(+운영자)에게만 내려보낸다(다운로드 API가 다시 검증하는 이중 방어).
+  const purchased = !!enrollmentRes.data;
+  const canSeeMaterials = purchased || !!isAdminRes.data;
+  const materials = canSeeMaterials ? await getMaterialsByLesson(courseId, locale) : {};
+
+  return { purchased, chapters, progress, watermarkLabel, materials };
 }

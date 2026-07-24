@@ -110,15 +110,27 @@
 - 현재 `PlayerScreen`의 UI(사이드바·진도바·PDF·노트)는 유지, 영상 코어만 교체.
 - **참조**: PRD-F-06/06.1/06.2/07, TS-ADR-03/04, TS-API-12, TS-COMP-S1/S2, DB-T-07
 
-### EPIC-F · 운영자 콘솔 실동작 (P1)
-- 클래스/차시 CRUD, Mux 업로드, 가격·공개(status) 설정, 자료 첨부.
-- KPI를 `admin_course_sales` 뷰로 실집계(현재 목업 KPI 대체).
-- 현재 `DashboardScreen`의 테이블/모달/인라인 편집 UI 재사용.
+### EPIC-F · 운영자 콘솔 실동작 (P1) — ✅ **완료** (2026-07-24, 커밋 `91ea246`)
+- ✅ 클래스/차시 CRUD, Mux 직접 업로드(진행률·인코딩 폴링), 가격·공개(status) 설정, 순서 변경(`reorder_lessons`).
+- ✅ KPI를 신설 `admin_course_stats` 뷰로 실집계(DB-MIG-08) — 매출·수강생·완주율. 목업 KPI 제거.
+- ✅ 자료 첨부는 EPIC-G에서 이어서 구현(`LessonManager`의 차시별 PDF 관리 UI).
 - **참조**: PRD-F-08/F-11, TS-COMP-06/09, DB-V-01
 
-### EPIC-G · 자료·후기 (P1)
-- 자료: `materials` + Storage 서명 URL 다운로드(수강권 게이팅). 현재 목업 PDF 토스트 대체.
-- 후기: `reviews` 작성(수강자 한정, 별점 1~5, 클래스당 1건) + 공개 읽기 + 집계 반영.
+### EPIC-G · 자료·후기 (P1) — ✅ **구현 완료** (2026-07-24)
+- ✅ **Storage**: `course-materials` **비공개 버킷**(20MB·`application/pdf` 한정, DB-MIG-09). `storage.objects`에 클라이언트 정책을 두지 않아 **정책 부재 = 기본 차단**이 방어선이며, 업로드·서명 URL 발급 모두 service_role 라우트를 경유한다. `materials`에 `size_bytes`·`mime_type` 추가.
+- ✅ **다운로드**: `GET /api/materials/[id]/download` — 재생 토큰 API와 동일한 이중 방어(RLS `materials_select_enrolled` → `has_course_access()` 재확인) 후 **60초 서명 URL** 발급. 영상과 달리 `is_preview` 예외 없음(자료는 수강권 전용).
+- ✅ **운영자**: `POST /api/admin/materials`(multipart, PDF·20MB 검증, 메타 등록 실패 시 업로드 롤백) / `DELETE /api/admin/materials/[id]`(Storage → 메타 순 삭제). `LessonManager`에 차시별 자료 목록·추가·삭제 UI.
+- ✅ **후기**: `POST/PATCH/DELETE /api/reviews` — 권한 판정을 전부 DB에 위임(anon+쿠키 클라이언트). `23505`→409(클래스당 1건), `42501`→403(비수강자). `ReviewForm`(별점+본문, 작성/수정/삭제) + `getCourseDetail`이 `canReview`/`myReview` 산출.
+- ✅ **집계**: `course_catalog` 뷰가 이미 `rating`/`review_count`를 파생하므로 후기 등록 후 `router.refresh()`만으로 카탈로그·상세에 반영(추가 작업 없음).
+- ✅ **플레이어**: 가짜 PDF 토스트 제거 → 현재 차시의 실제 자료 목록. 실패는 `alert()` 대신 인라인 메시지(EPIC-I 방향 정렬).
+- ✅ **원격 검증**(`sowoo`): 자료 노출 = 수강자 1 / 비수강자 0 / anon 0, **수강권 `refunded` 전이 시 0**(EPIC-H 연계 확인). 후기 = 비수강자 `42501`, 중복 `23505`, 정상 등록 시 `course_catalog` 평점 4.0/1건 → 4.5/2건 갱신. 신규 advisor 없음.
+- ✅ **코드리뷰 반영(2026-07-24)**:
+  - 운영자 우회 — `has_course_access`가 enrollments만 보는 탓에 RLS(`is_admin` 분기)가 허용한 운영자를 앱이 되막던 문제. 다운로드 API와 `getLearnPageData` 모두 `is_admin`을 함께 확인해, 운영자가 자기가 올린 자료를 검증할 수 있다.
+  - **CSRF** — 미들웨어 matcher가 `/api`를 제외하고 Route Handler엔 Next의 보호가 없다. multipart는 프리플라이트도 없어 SameSite 쿠키 한 겹에만 기대므로, `assertSameOrigin()`(`src/lib/api/origin.ts`)을 신설해 자료·후기 라우트의 상태 변경 메서드에 적용. Origin 부재는 통과(서버 간 호출), 불일치는 403.
+  - PDF **매직바이트(`%PDF-`) 검증** 추가 — `file.type`·버킷 `allowed_mime_types` 모두 클라이언트가 준 값을 신뢰하기 때문.
+  - 자료 삭제를 **행 → Storage 순**으로 변경(고아 파일이 남을지언정, 파일 없는 행이 남아 수강생 다운로드가 깨지는 쪽을 피한다).
+  - `DELETE /api/reviews`를 본문 대신 `?courseId=` 쿼리로(일부 프록시가 DELETE 본문을 버림), 빈 후기 본문은 `''` 대신 NULL 저장, `prompt()` 제거 후 인라인 제목 입력, `formatBytes` 공용화(`src/lib/format.ts`), `ReviewForm`에 `key`로 상태 재동기화.
+- **잔여**: 자료 제목 다국어 입력(현재 ko 입력값을 en에 동일 적용), 새 UI 문구의 메시지 카탈로그화 → EPIC-K에서 처리. 기존 결제·진도 라우트에도 `assertSameOrigin` 적용 검토(현재는 JSON 프리플라이트가 방어).
 - **참조**: PRD-F-09/F-10, TS-API-05/13, DB-T-04/08
 
 ### EPIC-L · 도서·강사 소개 (P1) — *프로토타입 화면의 정본화*

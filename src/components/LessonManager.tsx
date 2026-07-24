@@ -1,8 +1,19 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
+import { formatBytes } from '@/lib/format';
 import type { AdminLesson } from '@/types';
-import { ArrowLeft, ChevronDown, ChevronUp, Eye, Plus, Trash2, Upload, Video } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  FileText,
+  Plus,
+  Trash2,
+  Upload,
+  Video,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useRef, useState } from 'react';
@@ -55,6 +66,13 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   const [uploads, setUploads] = useState<Record<string, UploadState>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<string | null>(null);
+
+  // 자료(PDF) 업로드 — 제목 입력줄을 연 차시와 진행 상태.
+  const materialInputRef = useRef<HTMLInputElement>(null);
+  const materialTargetRef = useRef<string | null>(null);
+  const [materialFormLessonId, setMaterialFormLessonId] = useState<string | null>(null);
+  const [materialTitle, setMaterialTitle] = useState('');
+  const [materialUploading, setMaterialUploading] = useState<string | null>(null);
 
   const setUpload = (lessonId: string, state: UploadState | null) => {
     setUploads((prev) => {
@@ -157,6 +175,59 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
       progress: 100,
       message: '인코딩이 지연되고 있습니다. 잠시 후 새로고침해 확인하세요.',
     });
+  };
+
+  // 자료(PDF) 업로드는 Mux와 달리 서버 라우트로 곧장 multipart 전송한다
+  // (비공개 버킷에 클라이언트 정책이 없어 직접 업로드 경로가 존재하지 않는다).
+  const openMaterialForm = (lessonId: string) => {
+    setError(null);
+    setMaterialTitle('');
+    setMaterialFormLessonId((prev) => (prev === lessonId ? null : lessonId));
+  };
+
+  const pickMaterial = (lessonId: string) => {
+    setError(null);
+    materialTargetRef.current = lessonId;
+    materialInputRef.current?.click();
+  };
+
+  const onMaterialSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const lessonId = materialTargetRef.current;
+    e.target.value = '';
+    if (!file || !lessonId) return;
+
+    // 제목을 비워두면 파일명을 그대로 쓴다.
+    const title = materialTitle.trim() || file.name.replace(/\.pdf$/i, '');
+
+    setMaterialUploading(lessonId);
+    setError(null);
+    const form = new FormData();
+    form.append('lessonId', lessonId);
+    form.append('titleKo', title);
+    form.append('file', file);
+    const res = await fetch('/api/admin/materials', { method: 'POST', body: form });
+    setMaterialUploading(null);
+    if (!res.ok) {
+      setError(await readError(res));
+      return;
+    }
+    setMaterialFormLessonId(null);
+    setMaterialTitle('');
+    router.refresh();
+  };
+
+  const removeMaterial = async (materialId: string) => {
+    if (!confirm('이 자료를 삭제할까요? 되돌릴 수 없습니다.')) return;
+    setBusy(true);
+    setError(null);
+    const res = await fetch(`/api/admin/materials/${materialId}`, { method: 'DELETE' });
+    setBusy(false);
+    if (!res.ok) {
+      setError(await readError(res));
+      return;
+    }
+    router.refresh();
   };
 
   const create = async (e: React.FormEvent) => {
@@ -489,6 +560,69 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                       )}
                     </div>
                   )}
+
+                  {/* DC-58 · 차시 레시피 자료(PDF) 관리 */}
+                  <div className="mt-3 pl-9 space-y-1">
+                    {l.materials.map((m) => (
+                      <div
+                        key={m.id}
+                        className="flex items-center justify-between gap-2 text-[11px] text-[#5F4E43]"
+                      >
+                        <span className="inline-flex items-center gap-1 min-w-0">
+                          <FileText size={11} className="shrink-0 text-[#B0863C]" />
+                          <span className="truncate">{m.title}</span>
+                          <span className="font-mono text-[#5F4E43]/60 shrink-0">
+                            {formatBytes(m.sizeBytes)}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => removeMaterial(m.id)}
+                          aria-label={`자료 ${m.title} 삭제`}
+                          className="text-[#5F4E43]/60 hover:text-[#B65538] disabled:opacity-50 shrink-0"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                    {materialFormLessonId === l.id ? (
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="text"
+                          value={materialTitle}
+                          onChange={(e) => setMaterialTitle(e.target.value)}
+                          placeholder="자료 제목 (비우면 파일명)"
+                          aria-label="자료 제목"
+                          className="flex-1 min-w-0 px-2 py-1 border border-[#EFE8DC] rounded text-[11px] focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          disabled={busy || materialUploading === l.id}
+                          onClick={() => pickMaterial(l.id)}
+                          className="text-[10px] font-bold px-2 py-1 rounded text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] transition-colors disabled:opacity-50 shrink-0"
+                        >
+                          {materialUploading === l.id ? '업로드 중…' : 'PDF 선택'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMaterialFormLessonId(null)}
+                          className="text-[10px] text-[#5F4E43]/70 hover:text-[#B65538] shrink-0"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={busy || materialUploading === l.id}
+                        onClick={() => openMaterialForm(l.id)}
+                        className="text-[10px] font-bold text-[#B0863C] hover:text-[#B65538] underline disabled:opacity-50"
+                      >
+                        {materialUploading === l.id ? '자료 업로드 중…' : '+ PDF 자료 추가'}
+                      </button>
+                    )}
+                  </div>
                 </li>
               );
             })}
@@ -503,6 +637,13 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
         accept="video/*"
         className="hidden"
         onChange={onFileSelected}
+      />
+      <input
+        ref={materialInputRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={onMaterialSelected}
       />
     </div>
   );

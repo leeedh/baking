@@ -74,8 +74,21 @@ export interface ReviewItem {
 /** 상세 페이지 서버 로드 결과(클래스 메타 + 커리큘럼 + 후기). */
 export interface CourseDetail {
   course: ClassItem;
+  /** courses.id(uuid) — ClassItem.id는 라우팅 키인 slug라 후기 API에는 쓸 수 없다. */
+  courseId: string;
   chapters: DetailChapter[];
   reviews: ReviewItem[];
+  /** 활성 수강권 보유 여부 — 후기 작성 폼 노출 조건(DC-60). */
+  canReview: boolean;
+  /** 이미 작성한 본인 후기(클래스당 1건). 없으면 null. */
+  myReview: MyReview | null;
+}
+
+/** 로그인 사용자가 이 클래스에 남긴 후기. */
+export interface MyReview {
+  id: string;
+  rating: number;
+  content: string;
 }
 
 /** 운영자 대시보드 KPI(실집계). 전환율 카드는 방문자 추적 데이터 부재로 제외(DC-50). */
@@ -110,6 +123,13 @@ export interface AdminDashboard {
   classes: AdminClassRow[];
 }
 
+/** 운영자 화면의 자료 행(Storage 경로는 노출하지 않음). */
+export interface AdminMaterial {
+  id: string;
+  title: string;
+  sizeBytes: number | null;
+}
+
 /** 운영자 차시 편집용 행(lessons 원본, i18n 텍스트는 ko/en 분리 노출). */
 export interface AdminLesson {
   id: string;
@@ -123,6 +143,8 @@ export interface AdminLesson {
   isPreview: boolean;
   /** Mux 영상 준비 여부(재생 ID는 노출하지 않음). */
   hasVideo: boolean;
+  /** 차시에 등록된 레시피 자료(DC-58). */
+  materials: AdminMaterial[];
 }
 
 /** 차시 관리 페이지 서버 로드 결과. */
