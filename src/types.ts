@@ -78,23 +78,56 @@ export interface CourseDetail {
   reviews: ReviewItem[];
 }
 
-export interface KPIStats {
+/** 운영자 대시보드 KPI(실집계). 전환율 카드는 방문자 추적 데이터 부재로 제외(DC-50). */
+export interface AdminKpi {
+  /** 당월/누적 유효 매출(paid 주문 합, KRW). */
   salesTotal: number;
-  salesGrowth: string;
+  /** 누적 active 수강권 수. */
   studentsTotal: number;
-  studentsGrowth: string;
-  conversionRate: number;
-  conversionGrowth: string;
+  /** 전체 active 수강권 평균 진도율(%). */
   completionRate: number;
-  completionGrowth: string;
 }
 
-export interface ClassManagementItem {
+/** 운영자 클래스 관리 테이블 행(admin_course_stats 파생). */
+export interface AdminClassRow {
+  /** courses.id(UUID) — 실 CRUD 대상. */
   id: string;
   title: string;
   instructor: string;
+  instructorTitle: string;
   price: number;
+  listPrice: number;
+  status: 'draft' | 'published';
   salesCount: number;
   revenue: number;
+  activeEnrollments: number;
+  /** 평균 진도율(%). */
   completionRate: number;
+}
+
+export interface AdminDashboard {
+  kpi: AdminKpi;
+  classes: AdminClassRow[];
+}
+
+/** 운영자 차시 편집용 행(lessons 원본, i18n 텍스트는 ko/en 분리 노출). */
+export interface AdminLesson {
+  id: string;
+  titleKo: string;
+  titleEn: string;
+  chapterIndex: number;
+  chapterTitleKo: string;
+  chapterTitleEn: string;
+  orderIndex: number;
+  durationSec: number | null;
+  isPreview: boolean;
+  /** Mux 영상 준비 여부(재생 ID는 노출하지 않음). */
+  hasVideo: boolean;
+}
+
+/** 차시 관리 페이지 서버 로드 결과. */
+export interface AdminCourseLessons {
+  courseId: string;
+  courseTitle: string;
+  lessons: AdminLesson[];
 }

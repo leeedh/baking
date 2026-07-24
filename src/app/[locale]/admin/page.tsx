@@ -1,4 +1,5 @@
 import DashboardScreen from '@/components/DashboardScreen';
+import { getAdminDashboard } from '@/lib/admin';
 import { getProfile } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -11,5 +12,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   // 서버 role 가드: 비로그인 → 로그인, 비관리자 → 홈. (RLS가 데이터 접근도 이중 보호)
   if (!profile) redirect(`/${locale}/login`);
   if (profile.role !== 'admin') redirect(`/${locale}`);
-  return <DashboardScreen />;
+
+  const dashboard = await getAdminDashboard(locale);
+  return <DashboardScreen initialKpi={dashboard.kpi} initialClasses={dashboard.classes} />;
 }

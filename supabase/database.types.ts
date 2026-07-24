@@ -549,6 +549,21 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_course_stats: {
+        Row: {
+          active_enrollments: number | null
+          avg_completion: number | null
+          course_id: string | null
+          gross_krw: number | null
+          instructor_title: Json | null
+          list_price_krw: number | null
+          price_krw: number | null
+          sales_count: number | null
+          status: string | null
+          title: Json | null
+        }
+        Relationships: []
+      }
       course_catalog: {
         Row: {
           category: string | null
@@ -627,6 +642,10 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
+      reorder_lessons: {
+        Args: { p_course_id: string; p_ids: string[] }
+        Returns: undefined
+      }
       validate_coupon: {
         Args: { p_code: string; p_course_id: string }
         Returns: Json

@@ -1,108 +1,111 @@
 'use client';
 
-import { useAppStore } from '@/lib/store';
-import {
-  Coins,
-  FileSpreadsheet,
-  Filter,
-  GraduationCap,
-  LayoutGrid,
-  Plus,
-  Settings,
-  Sparkles,
-  Target,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+import { Link } from '@/i18n/navigation';
+import type { AdminClassRow, AdminKpi } from '@/types';
+import { Coins, Filter, GraduationCap, ListVideo, Plus, Sparkles, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useState } from 'react';
-import { CLASS_MANAGEMENT_DATA, KPI_DASHBOARD_DATA } from '../data';
-import type { ClassManagementItem, KPIStats } from '../types';
 
-export default function DashboardScreen() {
-  const onAddNewMockClass = useAppStore((s) => s.addClass);
-  const onRefreshStats = () => {
-    alert(
-      '운영 서버 자원이 원격으로 갱신되었습니다. 대만 및 전국 가맹점 결제 데이터가 정상 동기화되었습니다.',
-    );
-  };
-  const [stats, setStats] = useState<KPIStats>(KPI_DASHBOARD_DATA);
-  const [classList, setClassList] = useState<ClassManagementItem[]>(CLASS_MANAGEMENT_DATA);
+type Props = {
+  initialKpi: AdminKpi;
+  initialClasses: AdminClassRow[];
+};
 
-  // States for interactive custom pricing modifier
+async function readError(res: Response): Promise<string> {
+  try {
+    const body = (await res.json()) as { detail?: string; title?: string };
+    return body.detail ?? body.title ?? '요청을 처리하지 못했습니다.';
+  } catch {
+    return '요청을 처리하지 못했습니다.';
+  }
+}
+
+export default function DashboardScreen({ initialKpi, initialClasses }: Props) {
+  const router = useRouter();
+  const kpi = initialKpi;
+  const classList = initialClasses;
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 단가 인라인 편집
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
 
-  // States for adding a new mock class
+  // 새 클래스 등록 모달
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('제철 딸기 포레누아 컵케이크 클래스');
-  const [newInstructor, setNewInstructor] = useState('사토 유이 (Yui Sato)');
-  const [newPrice, setNewPrice] = useState(128000);
+  const [newTitle, setNewTitle] = useState('');
+  const [newInstructor, setNewInstructor] = useState('');
+  const [newPrice, setNewPrice] = useState<number>(0);
 
-  const startEditPrice = (cls: ClassManagementItem) => {
+  const startEditPrice = (cls: AdminClassRow) => {
+    setError(null);
     setEditingClassId(cls.id);
     setEditingPrice(cls.price);
   };
 
-  const savePriceEdit = (id: string) => {
-    setClassList(
-      classList.map((item) => {
-        if (item.id === id) {
-          return {
-            ...item,
-            price: editingPrice,
-            revenue: item.salesCount * editingPrice, // recalculate revenue
-          };
-        }
-        return item;
-      }),
-    );
-    setEditingClassId(null);
-    alert('클래스 판매가가 성공적으로 업데이트되었습니다.');
-  };
-
-  const handleCreateMockClass = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newInstructor || !newPrice) {
-      alert('모든 필드를 입력해 주세요.');
+  const savePriceEdit = async (id: string) => {
+    setBusy(true);
+    setError(null);
+    const res = await fetch(`/api/admin/courses/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceKrw: editingPrice }),
+    });
+    setBusy(false);
+    if (!res.ok) {
+      setError(await readError(res));
       return;
     }
+    setEditingClassId(null);
+    router.refresh();
+  };
 
-    const mockId = `mock-${Date.now()}`;
-    const newClassManagement: ClassManagementItem = {
-      id: mockId,
-      title: newTitle,
-      instructor: newInstructor,
-      price: Number(newPrice),
-      salesCount: 1,
-      revenue: Number(newPrice),
-      completionRate: 0,
-    };
-
-    setClassList([newClassManagement, ...classList]);
-
-    // Propagate up to simulated DB
-    onAddNewMockClass({
-      id: mockId,
-      title: newTitle,
-      instructor: newInstructor,
-      instructorTitle: '동경 제과 아카데미 졸업 수석 파티시에',
-      description: '단 하루 만에 완성하는 제철 과일 보존법부터 컵케이크 젤라틴 비결 레시피.',
-      price: Number(newPrice),
-      originalPrice: Number(newPrice) * 1.5,
-      rating: 5.0,
-      reviewCount: 1,
-      thumbnail:
-        'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&q=80&w=800',
-      category: '모던 타르트',
-      level: '초급',
-      duration: '총 8차시 (4시간 30분)',
-      studentsCount: 15,
-      tags: ['컵케이크', '딸기 포레누아', '초보자'],
+  const toggleStatus = async (cls: AdminClassRow) => {
+    setBusy(true);
+    setError(null);
+    const next = cls.status === 'published' ? 'draft' : 'published';
+    const res = await fetch(`/api/admin/courses/${cls.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: next }),
     });
+    setBusy(false);
+    if (!res.ok) {
+      setError(await readError(res));
+      return;
+    }
+    router.refresh();
+  };
 
+  const handleCreateClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle || !newPrice) {
+      setError('강의 명칭과 가격을 입력해 주세요.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const res = await fetch('/api/admin/courses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titleKo: newTitle,
+        instructorTitleKo: newInstructor,
+        priceKrw: Number(newPrice),
+      }),
+    });
+    setBusy(false);
+    if (!res.ok) {
+      setError(await readError(res));
+      return;
+    }
     setShowAddModal(false);
-    alert('새 클래스가 카탈로그 및 시청 목록에 긴급 배포되었습니다!');
+    setNewTitle('');
+    setNewInstructor('');
+    setNewPrice(0);
+    router.refresh();
   };
 
   return (
@@ -116,318 +119,227 @@ export default function DashboardScreen() {
           <h1 className="font-serif text-3xl font-bold text-[#2A211B] flex items-center gap-2">
             운영자 모드 대시보드
             <span className="text-xs font-sans text-[#B65538] bg-[#B65538]/10 px-2 py-0.5 rounded font-bold">
-              LIVE METRIC
+              LIVE
             </span>
           </h1>
           <p className="text-xs text-[#5F4E43] mt-1">
-            대만 및 국내 수강권 매출, 가입 전환 및 완주 인덱스 요약 정보입니다.
+            결제 완료(paid) 주문과 유효(active) 수강권 기준 실집계입니다.
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-stretch sm:self-auto">
           <button
-            id="btn-simulate-refresh"
-            onClick={onRefreshStats}
-            className="px-4 py-2 bg-white text-xs font-semibold text-[#5F4E43] rounded-lg border border-[#EFE8DC] hover:text-[#B65538] transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            설비 데이터 갱신
-          </button>
-
-          <button
-            id="btn-show-add-class"
+            type="button"
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-[#B65538] hover:bg-[#A14328] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
           >
-            <Plus size={14} /> 새 클래스 편성등록
+            <Plus size={14} /> 새 클래스 등록
           </button>
         </div>
       </div>
 
-      {/* KPI METRICS (총 4개 카드: 매출, 수강생, 구매전환율, 완주율) */}
-      <div id="kpi-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {/* KPI 1: Sales Revenue */}
-        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm transform hover:translate-y-[-2px] transition-transform">
+      {error && (
+        <div
+          role="alert"
+          className="mb-6 rounded-lg border border-[#B65538]/30 bg-[#B65538]/10 px-4 py-3 text-xs font-semibold text-[#A14328]"
+        >
+          {error}
+        </div>
+      )}
+
+      {/* KPI METRICS (매출 · 수강생 · 완주율) */}
+      <div id="kpi-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm">
           <div className="flex justify-between items-center text-[#5F4E43]">
-            <span className="text-xs font-bold uppercase tracking-wider">
-              클래스 당월 유효 매출
-            </span>
+            <span className="text-xs font-bold uppercase tracking-wider">유효 매출 (누적)</span>
             <span className="text-[#B65538] p-1.5 bg-[#B65538]/10 rounded-lg">
               <Coins size={16} />
             </span>
           </div>
-          <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
-              ₩{stats.salesTotal.toLocaleString()}
-            </span>
-            <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.salesGrowth}</p>
-          </div>
+          <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+            ₩{kpi.salesTotal.toLocaleString()}
+          </span>
         </div>
 
-        {/* KPI 2: Students */}
-        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm transform hover:translate-y-[-2px] transition-transform">
+        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm">
           <div className="flex justify-between items-center text-[#5F4E43]">
-            <span className="text-xs font-bold uppercase tracking-wider">누적 수강생 가입권</span>
+            <span className="text-xs font-bold uppercase tracking-wider">누적 수강생</span>
             <span className="text-[#B0863C] p-1.5 bg-[#B0863C]/10 rounded-lg">
               <Users size={16} />
             </span>
           </div>
-          <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
-              {stats.studentsTotal.toLocaleString()} 명
-            </span>
-            <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.studentsGrowth}</p>
-          </div>
+          <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+            {kpi.studentsTotal.toLocaleString()} 명
+          </span>
         </div>
 
-        {/* KPI 3: Conversion Rate */}
-        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm transform hover:translate-y-[-2px] transition-transform">
-          <div className="flex justify-between items-center text-[#5F4E43]">
-            <span className="text-xs font-bold uppercase tracking-wider">
-              방문자 평균 구매 전환율
-            </span>
-            <span className="text-sky-700 p-1.5 bg-sky-50 rounded-lg">
-              <Target size={16} />
-            </span>
-          </div>
-          <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
-              {stats.conversionRate.toFixed(2)} %
-            </span>
-            <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.conversionGrowth}</p>
-          </div>
-        </div>
-
-        {/* KPI 4: Completion Rate */}
-        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm transform hover:translate-y-[-2px] transition-transform">
+        <div className="bg-white rounded-xl border border-[#EFE8DC] p-5 space-y-3 shadow-sm">
           <div className="flex justify-between items-center text-[#5F4E43]">
             <span className="text-xs font-bold uppercase tracking-wider">평균 수강 완주율</span>
             <span className="text-emerald-700 p-1.5 bg-emerald-50 rounded-lg">
               <GraduationCap size={16} />
             </span>
           </div>
-          <div>
-            <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
-              {stats.completionRate.toFixed(1)} %
-            </span>
-            <p className="text-[10px] text-emerald-600 font-bold mt-1">{stats.completionGrowth}</p>
-          </div>
+          <span className="text-2xl font-serif font-extrabold text-[#2A211B]">
+            {kpi.completionRate.toFixed(1)} %
+          </span>
         </div>
       </div>
 
       {/* CLASSES MANAGEMENT TABLE */}
       <div className="bg-white rounded-2xl border border-[#EFE8DC] shadow-sm overflow-hidden">
-        {/* Table Header Controls */}
         <div className="p-6 bg-[#FAF4EA]/40 border-b border-[#EFE8DC] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-serif text-base font-bold text-[#2A211B]">
-              클래스 상품 판매 실적 관리 데스크
-            </h3>
+            <h3 className="font-serif text-base font-bold text-[#2A211B]">클래스 판매 실적 관리</h3>
             <p className="text-[11px] text-[#5F4E43] mt-0.5">
-              실시간으로 VOD 수강권 가격 조율 및 긴급 배포가 허용됩니다.
+              단가 조정·게시 상태 전환이 실시간으로 반영됩니다.
             </p>
           </div>
+          <span className="text-xs font-semibold text-[#5F4E43] flex items-center gap-1">
+            <Filter size={13} /> 정렬: 높은 매출 순
+          </span>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#5F4E43] flex items-center gap-1">
-              <Filter size={13} /> 정렬: 높은 판매액 순
-            </span>
+        {classList.length === 0 ? (
+          <div className="py-16 text-center text-sm text-[#5F4E43]">
+            아직 등록된 클래스가 없습니다. “새 클래스 등록”으로 시작하세요.
           </div>
-        </div>
-
-        {/* Mobile card list (< md) */}
-        <div className="md:hidden space-y-3">
-          {classList.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-xl border border-[#EFE8DC] p-4 space-y-3"
+        ) : (
+          <div className="overflow-x-auto">
+            <table
+              id="tbl-baking-classes"
+              className="w-full text-left border-collapse min-w-[720px]"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <span className="font-bold text-xs text-[#2A211B] block truncate">
-                    {item.title}
-                  </span>
-                  <span className="text-[10px] text-[#5F4E43]/60 font-mono">ID: {item.id}</span>
-                </div>
-                <span className="text-xs font-semibold text-[#B65538] shrink-0">
-                  {item.instructor}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-[#FAF4EA] rounded-lg p-2">
-                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">
-                    정가
-                  </span>
-                  <span className="text-xs font-bold text-[#2A211B] font-mono">
-                    ₩{item.price.toLocaleString()}
-                  </span>
-                </div>
-                <div className="bg-[#FAF4EA] rounded-lg p-2">
-                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">
-                    판매
-                  </span>
-                  <span className="text-xs font-bold text-[#2A211B] font-mono">
-                    {item.salesCount.toLocaleString()}
-                  </span>
-                </div>
-                <div className="bg-[#FAF4EA] rounded-lg p-2">
-                  <span className="text-[9px] text-[#5F4E43]/60 block uppercase tracking-wide">
-                    매출
-                  </span>
-                  <span className="text-xs font-bold text-[#B0863C] font-mono">
-                    ₩{(item.revenue / 10000).toFixed(0)}만
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 flex-1 mr-3">
-                  <span className="text-xs font-bold text-emerald-700 shrink-0">
-                    {item.completionRate}%
-                  </span>
-                  <div className="flex-1 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden border border-[#EFE8DC]">
-                    <div
-                      className="bg-emerald-600 h-full rounded-full"
-                      style={{ width: `${item.completionRate}%` }}
-                    />
-                  </div>
-                </div>
-
-                {editingClassId === item.id ? (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <input
-                      type="number"
-                      value={editingPrice}
-                      onChange={(e) => setEditingPrice(Number(e.target.value))}
-                      className="w-24 px-2 py-1.5 border border-[#B65538] text-xs font-bold rounded"
-                    />
-                    <button
-                      onClick={() => savePriceEdit(item.id)}
-                      className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded min-h-[36px]"
-                    >
-                      저장
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => startEditPrice(item)}
-                    className="px-3 py-2 text-xs font-bold text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] rounded transition-all cursor-pointer shrink-0 min-h-[36px]"
-                  >
-                    단가 조정
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Desktop table (≥ md) */}
-        <div className="hidden md:block overflow-x-auto">
-          <table id="tbl-baking-classes" className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#FAF4EA]/20 border-b border-[#EFE8DC] text-[11px] font-bold text-[#5F4E43] uppercase tracking-wider">
-                <th className="py-4 px-6">강의 고유명 / 분류</th>
-                <th className="py-4 px-6">배정 셰프</th>
-                <th className="py-4 px-6 text-right">정가 금액</th>
-                <th className="py-4 px-6 text-right">누적 판매 수량</th>
-                <th className="py-4 px-6 text-right">정산 총 매출</th>
-                <th className="py-4 px-6 text-center">평균 완주율</th>
-                <th className="py-4 px-6 text-right">운영 행동</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#EFE8DC]/60 text-xs sm:text-sm text-[#2A211B]">
-              {classList.map((item) => (
-                <tr key={item.id} className="hover:bg-[#FAF4EA]/10 transition-colors">
-                  <td className="py-4 px-6">
-                    <span className="font-bold text-xs block truncate max-w-[250px]">
-                      {item.title}
-                    </span>
-                    <span className="text-[10px] text-[#5F4E43]/60 block mt-1 font-mono">
-                      ID: {item.id}
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-6">
-                    <span className="text-xs font-semibold text-[#B65538]">{item.instructor}</span>
-                  </td>
-
-                  <td className="py-4 px-6 text-right font-mono font-medium">
-                    {editingClassId === item.id ? (
-                      <div className="flex items-center justify-end gap-1.5">
-                        <input
-                          type="number"
-                          value={editingPrice}
-                          onChange={(e) => setEditingPrice(Number(e.target.value))}
-                          className="w-20 px-1 py-0.5 border border-[#B65538] text-xs font-bold rounded"
-                        />
-                        <button
-                          onClick={() => savePriceEdit(item.id)}
-                          className="px-1.5 py-0.5 bg-emerald-600 text-white text-[10px] rounded"
-                        >
-                          저장
-                        </button>
-                      </div>
-                    ) : (
-                      <span>₩{item.price.toLocaleString()}</span>
-                    )}
-                  </td>
-
-                  <td className="py-4 px-6 text-right font-mono text-[#5F4E43]">
-                    {item.salesCount.toLocaleString()} Pass
-                  </td>
-
-                  <td className="py-4 px-6 text-right font-mono font-bold text-[#B0863C]">
-                    ₩{item.revenue.toLocaleString()}
-                  </td>
-
-                  <td className="py-4 px-6 text-center">
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs font-bold text-emerald-700">
-                        {item.completionRate}%
-                      </span>
-                      <div className="w-16 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden mt-1 border border-[#EFE8DC]">
-                        <div
-                          className="bg-emerald-600 h-full rounded-full"
-                          style={{ width: `${item.completionRate}%` }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="py-4 px-6 text-right whitespace-nowrap">
-                    {editingClassId !== item.id && (
-                      <button
-                        onClick={() => startEditPrice(item)}
-                        className="px-2.5 py-1 text-[11px] font-bold text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] rounded transition-all cursor-pointer"
-                      >
-                        단가 조정
-                      </button>
-                    )}
-                  </td>
+              <thead>
+                <tr className="bg-[#FAF4EA]/20 border-b border-[#EFE8DC] text-[11px] font-bold text-[#5F4E43] uppercase tracking-wider">
+                  <th className="py-4 px-6">강의명</th>
+                  <th className="py-4 px-6">상태</th>
+                  <th className="py-4 px-6 text-right">정가</th>
+                  <th className="py-4 px-6 text-right">판매 수량</th>
+                  <th className="py-4 px-6 text-right">정산 매출</th>
+                  <th className="py-4 px-6 text-center">완주율</th>
+                  <th className="py-4 px-6 text-right">운영</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-[#EFE8DC]/60 text-xs sm:text-sm text-[#2A211B]">
+                {classList.map((item) => (
+                  <tr key={item.id} className="hover:bg-[#FAF4EA]/10 transition-colors">
+                    <td className="py-4 px-6">
+                      <span className="font-bold text-xs block truncate max-w-[250px]">
+                        {item.title}
+                      </span>
+                      <span className="text-[10px] text-[#5F4E43]/60 block mt-1 font-mono">
+                        {item.id.slice(0, 8)}…
+                      </span>
+                    </td>
+
+                    <td className="py-4 px-6">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                          item.status === 'published'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-[#5F4E43]/10 text-[#5F4E43]'
+                        }`}
+                      >
+                        {item.status === 'published' ? '게시됨' : '초안'}
+                      </span>
+                    </td>
+
+                    <td className="py-4 px-6 text-right font-mono font-medium">
+                      {editingClassId === item.id ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <input
+                            type="number"
+                            value={editingPrice}
+                            onChange={(e) => setEditingPrice(Number(e.target.value))}
+                            className="w-24 px-1 py-0.5 border border-[#B65538] text-xs font-bold rounded"
+                          />
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => savePriceEdit(item.id)}
+                            className="px-1.5 py-0.5 bg-emerald-600 text-white text-[10px] rounded disabled:opacity-50"
+                          >
+                            저장
+                          </button>
+                        </div>
+                      ) : (
+                        <span>₩{item.price.toLocaleString()}</span>
+                      )}
+                    </td>
+
+                    <td className="py-4 px-6 text-right font-mono text-[#5F4E43]">
+                      {item.salesCount.toLocaleString()}
+                    </td>
+
+                    <td className="py-4 px-6 text-right font-mono font-bold text-[#B0863C]">
+                      ₩{item.revenue.toLocaleString()}
+                    </td>
+
+                    <td className="py-4 px-6 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs font-bold text-emerald-700">
+                          {item.completionRate.toFixed(1)}%
+                        </span>
+                        <div className="w-16 bg-[#FAF4EA] h-1.5 rounded-full overflow-hidden mt-1 border border-[#EFE8DC]">
+                          <div
+                            className="bg-emerald-600 h-full rounded-full"
+                            style={{ width: `${Math.min(item.completionRate, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-6 text-right whitespace-nowrap space-x-1.5">
+                      <Link
+                        href={`/admin/courses/${item.id}`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-[#B0863C] bg-[#B0863C]/10 hover:bg-[#B0863C] hover:text-[#FAF4EA] rounded transition-all cursor-pointer align-middle"
+                      >
+                        <ListVideo size={12} /> 차시
+                      </Link>
+                      {editingClassId !== item.id && (
+                        <button
+                          type="button"
+                          onClick={() => startEditPrice(item)}
+                          className="px-2.5 py-1 text-[11px] font-bold text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] rounded transition-all cursor-pointer"
+                        >
+                          단가 조정
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => toggleStatus(item)}
+                        className="px-2.5 py-1 text-[11px] font-bold text-[#5F4E43] bg-[#5F4E43]/10 hover:bg-[#5F4E43] hover:text-[#FAF4EA] rounded transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {item.status === 'published' ? '비공개' : '게시'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* COMPONENT 7 ADD MODAL DESIGN OVERLAY */}
+      {/* ADD CLASS MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-2xl max-w-md w-full border border-[#EFE8DC] p-6 space-y-4 shadow-2xl relative">
             <div className="border-b border-[#FAF4EA] pb-2">
               <h3 className="font-serif text-lg font-bold text-[#2A211B] flex items-center gap-1">
-                <Sparkles size={18} className="text-[#B0863C]" /> 새 클래스 편성등록 에이전트
+                <Sparkles size={18} className="text-[#B0863C]" /> 새 클래스 등록
               </h3>
               <p className="text-[10px] text-[#5F4E43] mt-0.5">
-                커뮤니티 카탈로그 및 비디오 목록에 즉시 편입되는 라이브 기능입니다.
+                초안(draft)으로 생성됩니다. 차시 구성 후 “게시”하면 카탈로그에 노출됩니다.
               </p>
             </div>
 
-            <form onSubmit={handleCreateMockClass} className="space-y-3.5">
+            <form onSubmit={handleCreateClass} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
-                  강의 명칭
+                  강의 명칭 (한국어)
                 </label>
                 <input
                   type="text"
@@ -440,25 +352,25 @@ export default function DashboardScreen() {
 
               <div>
                 <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
-                  담당 파티시에(셰프)
+                  강사 직함 (선택)
                 </label>
                 <input
                   type="text"
                   value={newInstructor}
                   onChange={(e) => setNewInstructor(e.target.value)}
                   className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#B65538] focus:outline-none"
-                  required
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
-                  출시 가격 (KRW ₩)
+                  판매가 (KRW ₩)
                 </label>
                 <input
                   type="number"
                   value={newPrice}
                   onChange={(e) => setNewPrice(Number(e.target.value))}
+                  min={0}
                   className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs font-mono font-medium focus:ring-1 focus:ring-[#B65538] focus:outline-none"
                   required
                 />
@@ -470,13 +382,14 @@ export default function DashboardScreen() {
                   onClick={() => setShowAddModal(false)}
                   className="flex-1 py-2 bg-[#FAF4EA] border border-[#EFE8DC] text-xs font-semibold rounded-lg text-[#5F4E43] hover:bg-[#FAF4EA]/80 transition-colors cursor-pointer"
                 >
-                  편성 기각
+                  취소
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-[#B65538] text-white text-xs font-bold rounded-lg hover:bg-[#A14328] transition-colors cursor-pointer"
+                  disabled={busy}
+                  className="flex-1 py-2 bg-[#B65538] text-white text-xs font-bold rounded-lg hover:bg-[#A14328] transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  클래스 신규 배포
+                  등록
                 </button>
               </div>
             </form>

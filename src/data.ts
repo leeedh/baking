@@ -1,4 +1,4 @@
-import type { ClassItem, ClassManagementItem, CurriculumChapter, KPIStats, Review } from './types';
+import type { ClassItem, CurriculumChapter, Review } from './types';
 
 export const CLASSES_DATA: ClassItem[] = [
   {
@@ -235,46 +235,5 @@ export const REVIEWS_DATA: Review[] = [
       '상급이라 확실히 정교한 계산과 감각이 많이 요구됩니다. 폰사주 할 때 매번 모서리가 찢어지던 설움이 싹 들어갔어요. 생또노레 카라멜 코팅할 때 손을 델까 봐 무서웠는데, 안전하고 고급스럽게 완성할 수 있는 팁 최고입니다!',
     avatar:
       'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150',
-  },
-];
-
-export const KPI_DASHBOARD_DATA: KPIStats = {
-  salesTotal: 48942000,
-  salesGrowth: '+12.4% (전월 대비)',
-  studentsTotal: 7580,
-  studentsGrowth: '+8.2% (전월 대비)',
-  conversionRate: 3.84,
-  conversionGrowth: '+0.54% (상승)',
-  completionRate: 64.2,
-  completionGrowth: '+2.1% (상승)',
-};
-
-export const CLASS_MANAGEMENT_DATA: ClassManagementItem[] = [
-  {
-    id: 'class-macarons',
-    title: '프렌치 정통 파티스리 - 피에르 마카롱 & 생토노레 마스터 클래스',
-    instructor: '민소희',
-    price: 189000,
-    salesCount: 2450,
-    revenue: 463050000,
-    completionRate: 68.4,
-  },
-  {
-    id: 'class-cookies',
-    title: '카라멜 테라코타 구움과자 - 리치 휘낭시에, 솔티드 쿠키 & 명품 마들렌',
-    instructor: '민소희',
-    price: 145000,
-    salesCount: 3890,
-    revenue: 564050000,
-    completionRate: 72.1,
-  },
-  {
-    id: 'class-tart',
-    title: '타르트 에디토리얼 - 제철 생과일 생또노레 & 시그니처 타르트',
-    instructor: '민소희',
-    price: 210000,
-    salesCount: 1240,
-    revenue: 260400000,
-    completionRate: 52.8,
   },
 ];
