@@ -12,7 +12,7 @@ export default function Header() {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn, user, signOut } = useAuth();
+  const { isLoggedIn, isAdmin, user, signOut } = useAuth();
   const userEmail = user?.email ?? '';
 
   const isActive = (path: string) => pathname === path;
@@ -103,18 +103,20 @@ export default function Header() {
             {t('nav.myclasses')}
           </button>
 
-          <button
-            id="nav-dashboard"
-            onClick={() => goto('/admin')}
-            className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
-              isActive('/admin')
-                ? 'text-[#B0863C] bg-[#B0863C]/5 font-bold border-b-2 border-[#B0863C]'
-                : 'text-[#5F4E43] hover:text-[#B0863C] hover:bg-[#B0863C]/3'
-            } flex items-center gap-1`}
-          >
-            <ShieldAlert size={14} className="text-[#B0863C] shrink-0" />
-            {t('nav.dashboard')}
-          </button>
+          {isAdmin && (
+            <button
+              id="nav-dashboard"
+              onClick={() => goto('/admin')}
+              className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                isActive('/admin')
+                  ? 'text-[#B0863C] bg-[#B0863C]/5 font-bold border-b-2 border-[#B0863C]'
+                  : 'text-[#5F4E43] hover:text-[#B0863C] hover:bg-[#B0863C]/3'
+              } flex items-center gap-1`}
+            >
+              <ShieldAlert size={14} className="text-[#B0863C] shrink-0" />
+              {t('nav.dashboard')}
+            </button>
+          )}
         </nav>
 
         {/* User Auth Info, Language Switcher & Hamburger Toggle */}
@@ -237,18 +239,20 @@ export default function Header() {
             {t('nav.myclasses')}
           </button>
 
-          <button
-            id="nav-dashboard-mobile"
-            onClick={() => goto('/admin')}
-            className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-              isActive('/admin')
-                ? 'text-[#B0863C] bg-[#B0863C]/5 font-bold border-l-4 border-[#B0863C]'
-                : 'text-[#5F4E43] hover:text-[#B0863C] hover:bg-[#B0863C]/5'
-            }`}
-          >
-            <ShieldAlert size={14} className="text-[#B0863C]" />
-            {t('nav.dashboard')}
-          </button>
+          {isAdmin && (
+            <button
+              id="nav-dashboard-mobile"
+              onClick={() => goto('/admin')}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                isActive('/admin')
+                  ? 'text-[#B0863C] bg-[#B0863C]/5 font-bold border-l-4 border-[#B0863C]'
+                  : 'text-[#5F4E43] hover:text-[#B0863C] hover:bg-[#B0863C]/5'
+              }`}
+            >
+              <ShieldAlert size={14} className="text-[#B0863C]" />
+              {t('nav.dashboard')}
+            </button>
+          )}
 
           <div className="my-2 border-t border-[#EFE8DC]/60" />
 
