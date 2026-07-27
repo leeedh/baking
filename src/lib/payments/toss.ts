@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { z } from 'zod';
+
 // TossPayments v2 코어 API 클라이언트 (서버 전용, TS-API-10/11)
 
 const TOSS_API_BASE = 'https://api.tosspayments.com/v1';
@@ -13,26 +15,57 @@ function authHeader() {
   return `Basic ${Buffer.from(`${secret}:`).toString('base64')}`;
 }
 
-export interface TossPayment {
-  paymentKey: string;
-  orderId: string;
-  status:
-    | 'READY'
-    | 'IN_PROGRESS'
-    | 'WAITING_FOR_DEPOSIT'
-    | 'DONE'
-    | 'CANCELED'
-    | 'PARTIAL_CANCELED'
-    | 'ABORTED'
-    | 'EXPIRED';
-  totalAmount: number;
-  method?: string;
-  approvedAt?: string;
-}
+// 외부 응답도 자체 API와 같은 기준으로 검증한다(단언 금지). 스키마에 없는 status가 오면
+// 파싱을 실패시켜 502로 반환 — 호출부의 분기를 조용히 빠져나가 주문이 pending에
+// 영구 정체되는 것을 막는다(webhook은 502를 받으면 Toss가 재전송한다).
+const TossPaymentSchema = z.object({
+  paymentKey: z.string(),
+  orderId: z.string(),
+  status: z.enum([
+    'READY',
+    'IN_PROGRESS',
+    'WAITING_FOR_DEPOSIT',
+    'DONE',
+    'CANCELED',
+    'PARTIAL_CANCELED',
+    'ABORTED',
+    'EXPIRED',
+  ]),
+  totalAmount: z.number().int(),
+  method: z.string().optional(),
+  approvedAt: z.string().optional(),
+});
+
+export type TossPayment = z.infer<typeof TossPaymentSchema>;
 
 export interface TossError {
   code: string;
   message: string;
+}
+
+/** 게이트웨이 장애로 JSON이 아닌 본문(HTML 오류 페이지 등)이 와도 예외를 던지지 않는다. */
+async function readJson(res: Response): Promise<unknown> {
+  return res.json().catch(() => ({
+    code: 'INVALID_RESPONSE',
+    message: `Toss 응답을 해석할 수 없습니다 (HTTP ${res.status}).`,
+  }));
+}
+
+/** 검증된 결제 객체로 변환. 스키마 불일치는 502 결과로 돌려준다. */
+function parsePayment(body: unknown): TossResult {
+  const parsed = TossPaymentSchema.safeParse(body);
+  if (!parsed.success) {
+    console.error(`[toss-invalid-response] ${parsed.error.message}`);
+    return {
+      ok: false,
+      status: 502,
+      error: {
+        code: 'INVALID_RESPONSE',
+        message: 'Toss 응답 형식이 예상과 다릅니다.',
+      },
+    };
+  }
+  return { ok: true, payment: parsed.data };
 }
 
 type TossResult =
@@ -78,7 +111,7 @@ export async function confirmTossPayment(
       }
       throw e;
     }
-    const body = await res.json();
+    const body = await readJson(res);
     if (!res.ok) {
       if (res.status >= 500 && attempt < CONFIRM_MAX_ATTEMPTS) {
         await sleep(CONFIRM_RETRY_DELAY_MS);
@@ -86,7 +119,7 @@ export async function confirmTossPayment(
       }
       return { ok: false, status: res.status, error: body as TossError };
     }
-    return { ok: true, payment: body as TossPayment };
+    return parsePayment(body);
   }
   // 도달 불가 (루프는 반환/throw로만 종료됨).
   throw new Error('confirmTossPayment: unreachable');
@@ -98,9 +131,9 @@ export async function getTossPayment(paymentKey: string): Promise<TossResult> {
     headers: { Authorization: authHeader() },
     cache: 'no-store',
   });
-  const body = await res.json();
+  const body = await readJson(res);
   if (!res.ok) {
     return { ok: false, status: res.status, error: body as TossError };
   }
-  return { ok: true, payment: body as TossPayment };
+  return parsePayment(body);
 }

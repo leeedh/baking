@@ -5,13 +5,16 @@ import { useRouter } from '@/i18n/navigation';
 import { formatBytes } from '@/lib/format';
 import type { LessonProgress, PlayerChapter, PlayerLesson } from '@/lib/lessons';
 import type { MaterialItem } from '@/lib/materials';
-import { useClassById } from '@/lib/store';
 import { BookOpen, CheckCircle, ChevronLeft, FileDown, Lock, PlayCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 interface PlayerScreenProps {
   classId: string;
+  /** 서버에서 조회한 코스 제목 (course_catalog 실데이터) */
+  courseTitle: string;
+  /** 표기용 강사명 */
+  instructorName: string;
   /** 서버에서 enrollments로 판별한 활성 수강권 보유 여부 */
   purchased: boolean;
   /** DB lessons(챕터별 그룹) — EPIC-E 실연동 */
@@ -33,15 +36,16 @@ function formatDuration(sec: number | null): string {
 
 export default function PlayerScreen({
   classId,
+  courseTitle,
+  instructorName,
   purchased,
   chapters,
   progress,
   watermarkLabel,
   materials,
 }: PlayerScreenProps) {
-  const cls = useClassById(classId);
   const router = useRouter();
-  const onNavigateBack = () => router.push(`/classes/${cls.id}`);
+  const onNavigateBack = () => router.push(`/classes/${classId}`);
   const initialLessonId = useSearchParams().get('lesson');
 
   const allLessons = useMemo(() => chapters.flatMap((c) => c.lessons), [chapters]);
@@ -122,9 +126,9 @@ export default function PlayerScreen({
           >
             <ChevronLeft size={14} /> 클래스 상세 페이지로 돌아가기
           </button>
-          <h1 className="font-serif text-lg sm:text-xl font-bold text-[#2A211B]">{cls.title}</h1>
+          <h1 className="font-serif text-lg sm:text-xl font-bold text-[#2A211B]">{courseTitle}</h1>
           <p className="text-xs text-[#5F4E43]">
-            강사: {cls.instructor} •{' '}
+            강사: {instructorName} •{' '}
             {purchased
               ? '✨ 평생 소장 라이선스 보관함 시청 중'
               : '🔓 1차시 무료 오리엔테이션 재생 중'}

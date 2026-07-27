@@ -2,9 +2,9 @@
 
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { useClassById } from '@/lib/store';
 import { createClient } from '@/lib/supabase/client';
 import { getSupabasePublicEnv } from '@/lib/supabase/env';
+import type { ClassItem } from '@/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { type TossPaymentsWidgets, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { AlertCircle, BadgePercent, ShoppingBag } from 'lucide-react';
@@ -15,12 +15,10 @@ import type { Database } from '../../supabase/database.types';
 
 interface PaymentScreenProps {
   classId: string; // 카탈로그 slug (예: class-macarons)
-}
-
-interface DbCourse {
-  id: string;
-  price_krw: number;
-  list_price_krw: number | null;
+  /** 서버가 course_catalog에서 조회한 코스 메타(제목·썸네일·가격). 표시 전용. */
+  course: ClassItem;
+  /** courses.id (UUID) — 쿠폰 검증·주문 생성에 사용. */
+  courseId: string;
 }
 
 interface AppliedCoupon {
@@ -41,8 +39,7 @@ const COUPON_REASON_MESSAGES: Record<string, string> = {
   course_not_found: '해당 클래스에 적용할 수 없습니다.',
 };
 
-export default function PaymentScreen({ classId }: PaymentScreenProps) {
-  const cls = useClassById(classId);
+export default function PaymentScreen({ classId, course, courseId }: PaymentScreenProps) {
   const router = useRouter();
   const locale = useLocale();
   const { user } = useAuth();
@@ -52,7 +49,6 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
     return createClient();
   }, []);
 
-  const [dbCourse, setDbCourse] = useState<DbCourse | null>(null);
   const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
   const [couponCode, setCouponCode] = useState('');
   const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -64,46 +60,34 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
   const [widgetReady, setWidgetReady] = useState(false);
   const widgetsRef = useRef<TossPaymentsWidgets | null>(null);
 
-  const listPrice = dbCourse?.list_price_krw ?? cls.originalPrice;
-  const price = dbCourse?.price_krw ?? cls.price;
+  // 가격은 서버가 course_catalog에서 조회한 값(표시 전용). 청구 금액은 create-order가
+  // courses.price_krw로 다시 산출하고 confirm이 order.amount_krw와 대조한다.
+  const listPrice = course.originalPrice;
+  const price = course.price;
+  const eventDiscount = Math.max(listPrice - price, 0);
   const finalPrice = coupon ? coupon.final_krw : price;
 
-  // 1) 판매 코스 확정 (slug → DB UUID·서버 가격). 공개 read라 anon 키로 조회 가능.
+  // Supabase 공개 env 부재는 쿠폰 검증(RPC) 불가로 이어지므로 미리 알린다.
   useEffect(() => {
     if (!supabase) {
       setPayError(
         'Supabase 환경변수가 없습니다. Vercel Environment Variables를 설정한 뒤 재배포하세요.',
       );
-      return;
     }
-    let active = true;
-    supabase
-      .from('courses')
-      .select('id, price_krw, list_price_krw')
-      .eq('slug', classId)
-      .eq('status', 'published')
-      .single()
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error || !data) {
-          setPayError('판매 중인 클래스 정보를 불러오지 못했습니다.');
-          return;
-        }
-        setDbCourse(data);
-      });
-    return () => {
-      active = false;
-    };
-  }, [classId, supabase]);
+  }, [supabase]);
 
-  // 2) Toss 결제위젯 초기화 (로그인 사용자·코스 가격 확정 후 1회)
+  // Toss 결제위젯 초기화 (로그인 사용자 확인 후 1회)
   useEffect(() => {
-    if (!user || !dbCourse) return;
+    if (!user) return;
     let cancelled = false;
     (async () => {
-      const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY as string);
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+      if (!clientKey) {
+        throw new Error('NEXT_PUBLIC_TOSS_CLIENT_KEY가 설정되지 않았습니다.');
+      }
+      const toss = await loadTossPayments(clientKey);
       const widgets = toss.widgets({ customerKey: user.id });
-      await widgets.setAmount({ currency: 'KRW', value: dbCourse.price_krw });
+      await widgets.setAmount({ currency: 'KRW', value: price });
       if (cancelled) return;
       await Promise.all([
         widgets.renderPaymentMethods({
@@ -121,9 +105,9 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
     return () => {
       cancelled = true;
     };
-  }, [user, dbCourse]);
+  }, [user, price]);
 
-  // 3) 쿠폰 적용 시 위젯 금액 동기화 (위젯이 늦게 준비돼도 최신 금액으로 맞춘다)
+  // 쿠폰 적용 시 위젯 금액 동기화 (위젯이 늦게 준비돼도 최신 금액으로 맞춘다)
   // biome-ignore lint/correctness/useExhaustiveDependencies: widgetReady는 ref 준비 시점 재동기화 트리거
   useEffect(() => {
     widgetsRef.current?.setAmount({ currency: 'KRW', value: finalPrice });
@@ -133,10 +117,10 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     setCouponMsg(null);
-    if (!supabase || !dbCourse || !couponCode.trim()) return;
+    if (!supabase || !couponCode.trim()) return;
     const { data, error } = await supabase.rpc('validate_coupon', {
       p_code: couponCode,
-      p_course_id: dbCourse.id,
+      p_course_id: courseId,
     });
     const result = data as {
       valid: boolean;
@@ -175,14 +159,14 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
       setPayError('구매 유의사항 및 평생 소장 동의 항목을 확인 및 체크해주세요.');
       return;
     }
-    if (!widgetsRef.current || !dbCourse) return;
+    if (!widgetsRef.current) return;
     setIsProcessing(true);
     try {
       const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          courseId: dbCourse.id,
+          courseId,
           couponCode: coupon?.code,
         }),
       });
@@ -320,7 +304,6 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
               />
               <button
                 type="submit"
-                disabled={!dbCourse}
                 className="px-4 py-2 bg-[#2A211B] text-white text-xs font-semibold rounded-lg hover:bg-[#B65538] transition-colors cursor-pointer disabled:opacity-50"
               >
                 할인 적용
@@ -347,15 +330,15 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
             <div className="flex gap-3 bg-[#FAF4EA]/40 p-3 rounded-xl border border-[#EFE8DC]/80">
               <img
                 referrerPolicy="no-referrer"
-                src={cls.thumbnail}
-                alt={cls.title}
+                src={course.thumbnail}
+                alt={course.title}
                 className="w-16 h-12 object-cover rounded-md"
               />
               <div>
-                <span className="text-[9px] font-bold text-[#B0863C]">{cls.category}</span>
-                <h4 className="text-xs font-bold text-[#2A211B] line-clamp-1">{cls.title}</h4>
+                <span className="text-[9px] font-bold text-[#B0863C]">{course.category}</span>
+                <h4 className="text-xs font-bold text-[#2A211B] line-clamp-1">{course.title}</h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-[#5F4E43] mt-1">
-                  <span>강사: {cls.instructor}</span>
+                  <span>강사: {course.instructor}</span>
                   <span>•</span>
                   <span className="text-[#B65538] font-bold">평생 소장 VOD</span>
                 </div>
@@ -368,10 +351,12 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
                 <span>정상가 VOD 라이선스 수강권</span>
                 <span>₩{listPrice.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between items-center text-[#5F3E43]">
-                <span>얼리버드 이벤트 자체 할인</span>
-                <span className="text-[#B65538]">- ₩{(listPrice - price).toLocaleString()}</span>
-              </div>
+              {eventDiscount > 0 && (
+                <div className="flex justify-between items-center text-[#5F3E43]">
+                  <span>얼리버드 이벤트 자체 할인</span>
+                  <span className="text-[#B65538]">- ₩{eventDiscount.toLocaleString()}</span>
+                </div>
+              )}
 
               {coupon && (
                 <div className="flex justify-between items-center text-[#B0863C] font-semibold">
@@ -445,7 +430,7 @@ export default function PaymentScreen({ classId }: PaymentScreenProps) {
 
             <button
               type="button"
-              onClick={() => router.push(`/classes/${cls.id}`)}
+              onClick={() => router.push(`/classes/${classId}`)}
               disabled={isProcessing}
               className="w-full text-center text-xs text-[#5F4E43]/80 hover:underline pt-2 font-medium cursor-pointer"
             >

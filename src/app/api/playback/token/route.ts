@@ -1,3 +1,4 @@
+import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { playbackTokenTtlSec, signPlaybackToken } from '@/lib/mux/client';
 import { createClient } from '@/lib/supabase/server';
@@ -12,6 +13,9 @@ const BodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const denied = assertSameOrigin(request);
+  if (denied) return denied;
+
   const supabase = await createClient();
   const {
     data: { user },

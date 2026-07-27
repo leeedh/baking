@@ -72,8 +72,12 @@ export async function POST(request: Request) {
       .update({ status: 'failed' })
       .eq('id', order.id)
       .eq('status', 'pending');
+  } else {
+    // READY/IN_PROGRESS/WAITING_FOR_DEPOSIT 등 중간 상태는 조치 없음.
+    // 다만 조용히 넘기지 않고 기록한다 — 여기서 침묵하면 Toss가 성공으로 간주해
+    // 재전송하지 않으므로 주문이 pending에 정체된 사실을 알 길이 없어진다.
+    console.warn(`[webhook-no-action] status=${payment.status} order=${order.id}`);
   }
-  // READY/IN_PROGRESS/WAITING_FOR_DEPOSIT 등 중간 상태는 조치 없음
 
   return NextResponse.json({ ok: true });
 }

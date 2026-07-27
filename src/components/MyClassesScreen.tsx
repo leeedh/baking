@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useAppStore } from '@/lib/store';
+import type { EnrolledCourse } from '@/lib/catalog';
 import {
   Award,
   BookOpen,
@@ -15,14 +15,12 @@ import {
 import React from 'react';
 
 interface MyClassesScreenProps {
-  /** 서버에서 조회한 활성 수강권 코스 slug 목록 (enrollments 실데이터) */
-  purchasedClassIds: string[];
+  /** 서버에서 조회한 활성 수강권 코스 (카탈로그 메타 + 진도율). */
+  courses: EnrolledCourse[];
 }
 
-export default function MyClassesScreen({ purchasedClassIds }: MyClassesScreenProps) {
+export default function MyClassesScreen({ courses: purchasedClasses }: MyClassesScreenProps) {
   const router = useRouter();
-  const classesList = useAppStore((s) => s.classesList);
-  const purchasedClasses = classesList.filter((c) => purchasedClassIds.includes(c.id));
   const onNavigateToCatalog = () => router.push('/');
   const onResumeClass = (classId: string) => router.push(`/learn/${classId}`);
   return (
@@ -111,9 +109,7 @@ export default function MyClassesScreen({ purchasedClassIds }: MyClassesScreenPr
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {purchasedClasses.map((cls) => {
-            // Give simulated progress states to test progress meter
-            const mockProgress =
-              cls.id === 'class-macarons' ? 15 : cls.id === 'class-cookies' ? 50 : 0;
+            const progress = cls.progressPercent;
 
             return (
               <div
@@ -157,17 +153,17 @@ export default function MyClassesScreen({ purchasedClassIds }: MyClassesScreenPr
                     <div className="space-y-1 bg-[#FAF4EA] p-3 rounded-xl border border-[#EFE8DC]">
                       <div className="flex justify-between items-center text-[10px] font-bold">
                         <span className="text-[#5F4E43]">수강완료률</span>
-                        <span className="text-[#B65538] font-mono">{mockProgress}% 완료</span>
+                        <span className="text-[#B65538] font-mono">{progress}% 완료</span>
                       </div>
                       <div className="w-full bg-white h-2 rounded-full overflow-hidden border border-[#EFE8DC]/60">
                         <div
                           className="bg-[#B65538] h-full rounded-full transition-all duration-300"
-                          style={{ width: `${mockProgress}%` }}
+                          style={{ width: `${progress}%` }}
                         />
                       </div>
                       <div className="flex justify-between text-[10px] text-[#5F4E43]/60 pt-0.5">
-                        <span>{mockProgress === 0 ? '학습 대기 중' : '학습 이어하기'}</span>
-                        <span>{cls.duration.split(' ')[1] || '12'} 차시</span>
+                        <span>{progress === 0 ? '학습 대기 중' : '학습 이어하기'}</span>
+                        <span>{cls.duration}</span>
                       </div>
                     </div>
                   </div>
@@ -184,7 +180,7 @@ export default function MyClassesScreen({ purchasedClassIds }: MyClassesScreenPr
                       className="px-4 py-2 bg-[#2A211B] hover:bg-[#B65538] text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <Play size={12} className="fill-white" />
-                      {mockProgress === 0 ? '첫 차시 시작하기' : '이어서 수강하기'}
+                      {progress === 0 ? '첫 차시 시작하기' : '이어서 수강하기'}
                     </button>
                   </div>
                 </div>

@@ -11,6 +11,8 @@ import { z } from 'zod';
 // 영상과 달리 미리보기(is_preview) 예외는 두지 않는다 — 자료는 수강권 보유자 전용(PRD-F-09).
 const SIGNED_URL_TTL_SEC = 60;
 
+type LessonRel = { course_id: string };
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.guid().safeParse(id).success) {
@@ -39,7 +41,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   // 방어적 재확인 (RLS와 이중 방어). 환불로 enrollments.status가 바뀌면 여기서 차단된다.
   // has_course_access는 enrollments만 보므로, RLS가 허용하는 운영자(materials_select_enrolled의
   // is_admin 분기)를 여기서 되막지 않도록 함께 확인한다 — 운영자가 올린 자료를 검증할 수 있어야 한다.
-  const courseId = (material as unknown as { lessons: { course_id: string } }).lessons.course_id;
+  // !inner 조인은 관계 카디널리티에 따라 객체 또는 배열로 오므로 두 형태를 모두 정규화한다
+  // (강제 캐스팅으로 넘기면 배열일 때 courseId가 undefined가 되어 정당한 수강생이 403을 받는다).
+  const lessonRel = (material as { lessons: LessonRel | LessonRel[] | null }).lessons;
+  const courseId = Array.isArray(lessonRel) ? lessonRel[0]?.course_id : lessonRel?.course_id;
+  if (!courseId) {
+    return problem(403, 'no-access', 'No access to material', '이 자료를 받을 권한이 없습니다.');
+  }
+
   const [{ data: hasAccess }, { data: isAdmin }] = await Promise.all([
     supabase.rpc('has_course_access', { p_course_id: courseId }),
     supabase.rpc('is_admin'),

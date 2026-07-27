@@ -95,6 +95,89 @@ export async function getCatalog(locale: string): Promise<ClassItem[]> {
   return ((data ?? []) as CatalogRow[]).map((row) => toClassItem(row, locale));
 }
 
+/**
+ * 판매 코스 단건 요약 — slug로 course_catalog를 조회해 화면용 ClassItem과 DB UUID를 함께 반환.
+ * 미게시·부재면 null → 호출부에서 notFound()로 처리한다. **폴백 금지**: 예전 목업 스토어가
+ * 없는 slug를 첫 번째 클래스로 대체하는 바람에 결제 화면이 다른 클래스를 표시했다.
+ */
+export async function getCourseSummary(
+  slug: string,
+  locale: string,
+): Promise<{ course: ClassItem; courseId: string } | null> {
+  const supabase = await createClient();
+  const { data: row } = await supabase
+    .from('course_catalog')
+    .select(CATALOG_COLUMNS)
+    .eq('slug', slug)
+    .maybeSingle();
+  if (!row) return null;
+
+  const courseId = (row as CatalogRow).id;
+  if (!courseId) return null;
+  return { course: toClassItem(row as CatalogRow, locale), courseId };
+}
+
+/** 보관함 카드용 — 카탈로그 메타에 완료 차시 기준 진도율을 얹은 형태. */
+export interface EnrolledCourse extends ClassItem {
+  /** 완료 차시 / 전체 차시 (0~100). */
+  progressPercent: number;
+}
+
+type LessonCourseRel = { course_id: string };
+
+/**
+ * 현재 사용자의 활성 수강권 코스를 카탈로그 실데이터로 반환한다(내 클래스 보관함).
+ * 목업 카탈로그를 필터링하던 예전 방식은 운영 콘솔로 만든 신규 클래스를 영영 누락시켰다.
+ */
+export async function getEnrolledCourses(locale: string): Promise<EnrolledCourse[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // RLS(enrollments): 본인 행만 조회된다.
+  const { data: enrollments } = await supabase
+    .from('enrollments')
+    .select('course_id')
+    .eq('user_id', user.id)
+    .eq('status', 'active');
+  const courseIds = (enrollments ?? [])
+    .map((e) => e.course_id)
+    .filter((id): id is string => !!id);
+  if (courseIds.length === 0) return [];
+
+  const [{ data: rows }, { data: completedRows }] = await Promise.all([
+    supabase
+      .from('course_catalog')
+      .select(CATALOG_COLUMNS)
+      .in('id', courseIds)
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('progress')
+      .select('lessons!inner(course_id)')
+      .eq('user_id', user.id)
+      .eq('completed', true),
+  ]);
+
+  const completedByCourse = new Map<string, number>();
+  for (const p of completedRows ?? []) {
+    const rel = (p as { lessons: LessonCourseRel | LessonCourseRel[] | null }).lessons;
+    const courseId = Array.isArray(rel) ? rel[0]?.course_id : rel?.course_id;
+    if (!courseId) continue;
+    completedByCourse.set(courseId, (completedByCourse.get(courseId) ?? 0) + 1);
+  }
+
+  return ((rows ?? []) as CatalogRow[]).map((row) => {
+    const total = row.lesson_count ?? 0;
+    const done = completedByCourse.get(row.id ?? '') ?? 0;
+    return {
+      ...toClassItem(row, locale),
+      progressPercent: total > 0 ? Math.min(Math.round((done / total) * 100), 100) : 0,
+    };
+  });
+}
+
 /** lessons 행을 챕터별 DetailChapter로 그룹핑(민감한 mux_playback_id는 hasVideo로만 노출). */
 type DetailLessonRow = {
   id: string;
@@ -139,19 +222,12 @@ function buildDetailChapters(lessons: DetailLessonRow[], locale: string): Detail
  * has_course_access + RLS 이중 방어로 계속 검증). 후기는 공개 RLS(anon)로 조회.
  */
 export async function getCourseDetail(slug: string, locale: string): Promise<CourseDetail | null> {
+  const summary = await getCourseSummary(slug, locale);
+  if (!summary) return null;
+  const { course, courseId } = summary;
+
   const supabase = await createClient();
   const admin = createAdminClient();
-
-  const { data: row } = await supabase
-    .from('course_catalog')
-    .select(CATALOG_COLUMNS)
-    .eq('slug', slug)
-    .maybeSingle();
-  if (!row) return null;
-
-  const course = toClassItem(row as CatalogRow, locale);
-  const courseId = (row as CatalogRow).id;
-  if (!courseId) return null;
 
   const {
     data: { user },
