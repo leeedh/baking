@@ -14,5 +14,11 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   if (profile.role !== 'admin') redirect(`/${locale}`);
 
   const dashboard = await getAdminDashboard(locale);
-  return <DashboardScreen initialKpi={dashboard.kpi} initialClasses={dashboard.classes} />;
+  return (
+    <DashboardScreen
+      initialKpi={dashboard.kpi}
+      initialClasses={dashboard.classes}
+      initialOrders={dashboard.orders}
+    />
+  );
 }

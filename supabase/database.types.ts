@@ -205,6 +205,13 @@ export type Database = {
             foreignKeyName: "enrollments_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
+            referencedRelation: "admin_course_stats"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
             referencedRelation: "course_catalog"
             referencedColumns: ["id"]
           },
@@ -286,6 +293,13 @@ export type Database = {
             foreignKeyName: "lessons_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
+            referencedRelation: "admin_course_stats"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
             referencedRelation: "course_catalog"
             referencedColumns: ["id"]
           },
@@ -342,6 +356,10 @@ export type Database = {
       orders: {
         Row: {
           amount_krw: number
+          cancel_amount_krw: number | null
+          cancel_key: string | null
+          cancel_reason: string | null
+          canceled_at: string | null
           coupon_code: string | null
           course_id: string
           created_at: string
@@ -357,6 +375,10 @@ export type Database = {
         }
         Insert: {
           amount_krw: number
+          cancel_amount_krw?: number | null
+          cancel_key?: string | null
+          cancel_reason?: string | null
+          canceled_at?: string | null
           coupon_code?: string | null
           course_id: string
           created_at?: string
@@ -372,6 +394,10 @@ export type Database = {
         }
         Update: {
           amount_krw?: number
+          cancel_amount_krw?: number | null
+          cancel_key?: string | null
+          cancel_reason?: string | null
+          canceled_at?: string | null
           coupon_code?: string | null
           course_id?: string
           created_at?: string
@@ -391,6 +417,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "admin_course_sales"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "orders_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "admin_course_stats"
             referencedColumns: ["course_id"]
           },
           {
@@ -525,6 +558,13 @@ export type Database = {
             foreignKeyName: "reviews_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
+            referencedRelation: "admin_course_stats"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "reviews_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
             referencedRelation: "course_catalog"
             referencedColumns: ["id"]
           },
@@ -553,6 +593,18 @@ export type Database = {
           gross_krw: number | null
           title: Json | null
         }
+        Insert: {
+          active_enrollments?: never
+          course_id?: string | null
+          gross_krw?: never
+          title?: Json | null
+        }
+        Update: {
+          active_enrollments?: never
+          course_id?: string | null
+          gross_krw?: never
+          title?: Json | null
+        }
         Relationships: []
       }
       admin_course_stats: {
@@ -567,6 +619,30 @@ export type Database = {
           sales_count: number | null
           status: string | null
           title: Json | null
+        }
+        Insert: {
+          active_enrollments?: never
+          avg_completion?: never
+          course_id?: string | null
+          gross_krw?: never
+          instructor_title?: Json | null
+          list_price_krw?: number | null
+          price_krw?: number | null
+          sales_count?: never
+          status?: string | null
+          title?: Json | null
+        }
+        Update: {
+          active_enrollments?: never
+          avg_completion?: never
+          course_id?: string | null
+          gross_krw?: never
+          instructor_title?: Json | null
+          list_price_krw?: number | null
+          price_krw?: number | null
+          sales_count?: never
+          status?: string | null
+          title?: Json | null
         }
         Relationships: []
       }

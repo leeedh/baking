@@ -1,8 +1,18 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
-import type { AdminClassRow, AdminKpi } from '@/types';
-import { Coins, Filter, GraduationCap, ListVideo, Plus, Sparkles, Users } from 'lucide-react';
+import type { AdminClassRow, AdminKpi, AdminOrderRow } from '@/types';
+import {
+  Coins,
+  Filter,
+  GraduationCap,
+  ListVideo,
+  Plus,
+  Receipt,
+  RotateCcw,
+  Sparkles,
+  Users,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useState } from 'react';
@@ -10,7 +20,28 @@ import { useState } from 'react';
 type Props = {
   initialKpi: AdminKpi;
   initialClasses: AdminClassRow[];
+  initialOrders: AdminOrderRow[];
 };
+
+// TODO(DC-10): 아래 한국어 문구는 메시지 카탈로그로 이전한다.
+const ORDER_STATUS_LABEL: Record<AdminOrderRow['status'], { text: string; cls: string }> = {
+  paid: { text: '결제완료', cls: 'bg-emerald-50 text-emerald-700' },
+  refunded: { text: '환불됨', cls: 'bg-[#B65538]/10 text-[#A14328]' },
+  canceled: { text: '취소됨', cls: 'bg-[#5F4E43]/10 text-[#5F4E43]' },
+  pending: { text: '대기', cls: 'bg-[#B0863C]/10 text-[#B0863C]' },
+  failed: { text: '실패', cls: 'bg-[#5F4E43]/10 text-[#5F4E43]' },
+};
+
+function formatDate(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -21,13 +52,18 @@ async function readError(res: Response): Promise<string> {
   }
 }
 
-export default function DashboardScreen({ initialKpi, initialClasses }: Props) {
+export default function DashboardScreen({ initialKpi, initialClasses, initialOrders }: Props) {
   const router = useRouter();
   const kpi = initialKpi;
   const classList = initialClasses;
+  const orderList = initialOrders;
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 환불 확인 모달
+  const [refundTarget, setRefundTarget] = useState<AdminOrderRow | null>(null);
+  const [refundReason, setRefundReason] = useState('');
 
   // 단가 인라인 편집
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
@@ -105,6 +141,30 @@ export default function DashboardScreen({ initialKpi, initialClasses }: Props) {
     setNewTitle('');
     setNewInstructor('');
     setNewPrice(0);
+    router.refresh();
+  };
+
+  const openRefund = (order: AdminOrderRow) => {
+    setError(null);
+    setRefundReason('');
+    setRefundTarget(order);
+  };
+
+  const handleRefund = async () => {
+    if (!refundTarget) return;
+    setBusy(true);
+    setError(null);
+    const res = await fetch(`/api/admin/orders/${refundTarget.id}/refund`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: refundReason.trim() || undefined }),
+    });
+    setBusy(false);
+    if (!res.ok) {
+      setError(await readError(res));
+      return;
+    }
+    setRefundTarget(null);
     router.refresh();
   };
 
@@ -322,6 +382,154 @@ export default function DashboardScreen({ initialKpi, initialClasses }: Props) {
           </div>
         )}
       </div>
+
+      {/* ORDERS · REFUND TABLE (DC-34) */}
+      <div className="mt-10 bg-white rounded-2xl border border-[#EFE8DC] shadow-sm overflow-hidden">
+        <div className="p-6 bg-[#FAF4EA]/40 border-b border-[#EFE8DC] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 className="font-serif text-base font-bold text-[#2A211B] flex items-center gap-1.5">
+              <Receipt size={16} className="text-[#B65538]" /> 주문 · 환불 관리
+            </h3>
+            <p className="text-[11px] text-[#5F4E43] mt-0.5">
+              환불 시 결제가 취소되고 수강권이 즉시 회수됩니다(이력은 보존).
+            </p>
+          </div>
+          <span className="text-xs font-semibold text-[#5F4E43] flex items-center gap-1">
+            <Filter size={13} /> 최근 주문 순
+          </span>
+        </div>
+
+        {orderList.length === 0 ? (
+          <div className="py-16 text-center text-sm text-[#5F4E43]">주문 내역이 없습니다.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[720px]">
+              <thead>
+                <tr className="bg-[#FAF4EA]/20 border-b border-[#EFE8DC] text-[11px] font-bold text-[#5F4E43] uppercase tracking-wider">
+                  <th className="py-4 px-6">주문 / 구매자</th>
+                  <th className="py-4 px-6">클래스</th>
+                  <th className="py-4 px-6 text-right">결제액</th>
+                  <th className="py-4 px-6">상태</th>
+                  <th className="py-4 px-6">결제일시</th>
+                  <th className="py-4 px-6 text-right">운영</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#EFE8DC]/60 text-xs sm:text-sm text-[#2A211B]">
+                {orderList.map((order) => (
+                  <tr key={order.id} className="hover:bg-[#FAF4EA]/10 transition-colors">
+                    <td className="py-4 px-6">
+                      <span className="font-bold text-xs block truncate max-w-[180px]">
+                        {order.buyer}
+                      </span>
+                      <span className="text-[10px] text-[#5F4E43]/60 block mt-1 font-mono">
+                        {order.id.slice(0, 8)}…
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-xs block truncate max-w-[220px]">
+                        {order.courseTitle}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-right font-mono font-medium">
+                      ₩{order.amount.toLocaleString()}
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${ORDER_STATUS_LABEL[order.status].cls}`}
+                      >
+                        {ORDER_STATUS_LABEL[order.status].text}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-[11px] text-[#5F4E43] whitespace-nowrap">
+                      {formatDate(order.paidAt)}
+                    </td>
+                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                      {order.status === 'paid' ? (
+                        <button
+                          type="button"
+                          onClick={() => openRefund(order)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] rounded transition-all cursor-pointer"
+                        >
+                          <RotateCcw size={12} /> 환불
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-[#5F4E43]/50">
+                          {order.status === 'refunded' ? formatDate(order.canceledAt) : '—'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* REFUND CONFIRM MODAL */}
+      {refundTarget && (
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-[#EFE8DC] p-6 space-y-4 shadow-2xl relative">
+            <div className="border-b border-[#FAF4EA] pb-2">
+              <h3 className="font-serif text-lg font-bold text-[#2A211B] flex items-center gap-1">
+                <RotateCcw size={18} className="text-[#B65538]" /> 환불 실행
+              </h3>
+              <p className="text-[10px] text-[#5F4E43] mt-0.5">
+                결제가 취소되고 수강권이 회수됩니다. 되돌릴 수 없습니다.
+              </p>
+            </div>
+
+            <dl className="text-xs space-y-1.5 bg-[#FAF4EA]/40 rounded-lg p-3">
+              <div className="flex justify-between">
+                <dt className="text-[#5F4E43]">구매자</dt>
+                <dd className="font-semibold">{refundTarget.buyer}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-[#5F4E43]">클래스</dt>
+                <dd className="font-semibold truncate max-w-[220px]">{refundTarget.courseTitle}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-[#5F4E43]">환불액</dt>
+                <dd className="font-mono font-bold text-[#B65538]">
+                  ₩{refundTarget.amount.toLocaleString()}
+                </dd>
+              </div>
+            </dl>
+
+            <div>
+              <label className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+                환불 사유 (선택)
+              </label>
+              <input
+                type="text"
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                maxLength={200}
+                placeholder="예: 고객 요청"
+                className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setRefundTarget(null)}
+                className="flex-1 py-2 bg-[#FAF4EA] border border-[#EFE8DC] text-xs font-semibold rounded-lg text-[#5F4E43] hover:bg-[#FAF4EA]/80 transition-colors cursor-pointer"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleRefund}
+                className="flex-1 py-2 bg-[#B65538] text-white text-xs font-bold rounded-lg hover:bg-[#A14328] transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {busy ? '처리 중…' : '환불 확정'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ADD CLASS MODAL */}
       {showAddModal && (
