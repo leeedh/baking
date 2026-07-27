@@ -1,5 +1,5 @@
 import { problem } from '@/lib/api/problem';
-import { completePaidOrder } from '@/lib/payments/orders';
+import { completePaidOrder, refundOrder } from '@/lib/payments/orders';
 import { getTossPayment } from '@/lib/payments/toss';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -59,13 +59,14 @@ export async function POST(request: Request) {
       await completePaidOrder(admin, order, payment);
     }
   } else if (payment.status === 'CANCELED' || payment.status === 'PARTIAL_CANCELED') {
-    // 환불 흐름(EPIC-H)의 기초: 결제 후 취소만 'refunded', 미결제 취소는 'canceled'.
-    const wasPaid = order.status === 'paid';
-    await admin
-      .from('orders')
-      .update({ status: wasPaid ? 'refunded' : 'canceled' })
-      .eq('id', order.id);
-    await admin.from('enrollments').update({ status: 'refunded' }).eq('order_id', order.id);
+    // 환불 흐름(DC-34/35): 운영자 취소 액션과 동일한 공유 헬퍼로 처리(멱등).
+    // 결제 후 취소만 'refunded', 미결제 취소는 'canceled'로 전이하고 수강권을 회수한다.
+    const latestCancel = payment.cancels?.[payment.cancels.length - 1];
+    await refundOrder(admin, order, {
+      reason: 'PG webhook 취소 통보',
+      cancelKey: latestCancel?.transactionKey ?? null,
+      amountKrw: latestCancel?.cancelAmount ?? null,
+    });
   } else if (payment.status === 'ABORTED' || payment.status === 'EXPIRED') {
     await admin
       .from('orders')

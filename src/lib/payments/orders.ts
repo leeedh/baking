@@ -58,3 +58,60 @@ export async function completePaidOrder(
   }
   return { enrollmentId };
 }
+
+export interface RefundInput {
+  /** 취소 사유(운영자 입력 또는 Toss 통보). */
+  reason: string;
+  /** Toss 취소 트랜잭션 식별자(있으면 이력에 기록). */
+  cancelKey?: string | null;
+  /** 취소 금액(KRW). 전액 취소 시 주문 금액과 동일. */
+  amountKrw?: number | null;
+  /** 취소 시각(ISO). 미지정 시 now(). */
+  canceledAt?: string | null;
+}
+
+/**
+ * 결제 취소를 주문·수강권에 반영한다(멱등). 운영자 환불 라우트와 webhook이 공유한다.
+ *
+ * - 결제된 주문(paid)만 'refunded'로, 미결제 주문은 'canceled'로 전이한다.
+ *   `.in('status', ...)` 가드 + `.select()`로 실제 전이자를 원자적으로 판별해
+ *   webhook·운영자 액션 동시 도착 시 이중 처리를 막는다.
+ * - 수강권은 하드 삭제하지 않고 'refunded'로 전이 → has_course_access(active만)가
+ *   자동으로 false를 반환해 영상·자료 접근이 차단된다.
+ * - 이미 refunded/canceled면 no-op 성공(중복 웹훅·재클릭 안전).
+ */
+export async function refundOrder(
+  admin: AdminClient,
+  order: OrderRow,
+  input: RefundInput,
+): Promise<{ transitioned: boolean }> {
+  const nextStatus = order.status === 'paid' ? 'refunded' : 'canceled';
+
+  const { data: transitionedRows, error: orderError } = await admin
+    .from('orders')
+    .update({
+      status: nextStatus,
+      canceled_at: input.canceledAt ?? new Date().toISOString(),
+      cancel_reason: input.reason,
+      cancel_amount_krw: input.amountKrw ?? order.amount_krw,
+      cancel_key: input.cancelKey ?? null,
+    })
+    .eq('id', order.id)
+    .in('status', ['paid', 'pending', 'failed'])
+    .select('id');
+  if (orderError) {
+    throw new Error(`주문 취소 상태 갱신 실패: ${orderError.message}`);
+  }
+  const transitioned = (transitionedRows?.length ?? 0) > 0;
+
+  // 수강권 회수 — order_id로 발급된 수강권을 refunded로. (미발급이면 0행, 안전)
+  const { error: enrollError } = await admin
+    .from('enrollments')
+    .update({ status: 'refunded' })
+    .eq('order_id', order.id);
+  if (enrollError) {
+    throw new Error(`수강권 회수 실패: ${enrollError.message}`);
+  }
+
+  return { transitioned };
+}
