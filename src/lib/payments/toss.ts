@@ -34,6 +34,18 @@ const TossPaymentSchema = z.object({
   totalAmount: z.number().int(),
   method: z.string().optional(),
   approvedAt: z.string().optional(),
+  // 취소 시 Toss가 채우는 취소 내역(최신 항목의 transactionKey를 이력에 기록).
+  cancels: z
+    .array(
+      z
+        .object({
+          transactionKey: z.string().optional(),
+          cancelAmount: z.number().int().optional(),
+        })
+        .passthrough(),
+    )
+    .nullable()
+    .optional(),
 });
 
 export type TossPayment = z.infer<typeof TossPaymentSchema>;
@@ -123,6 +135,45 @@ export async function confirmTossPayment(
   }
   // 도달 불가 (루프는 반환/throw로만 종료됨).
   throw new Error('confirmTossPayment: unreachable');
+}
+
+/**
+ * 결제 취소(전액 환불) — 운영자 환불 액션에서 호출(TS-API, DC-34).
+ *
+ * Idempotency-Key는 `${paymentKey}:cancel` — 재시도(네트워크·5xx)가 같은 키로 전송되어
+ * Toss가 중복 취소하지 않는다. 이미 취소된 결제에 대한 재요청은 Toss가 4xx로 거절하므로,
+ * 호출부(환불 라우트)가 이를 멱등 성공으로 해석한다.
+ */
+export async function cancelTossPayment(
+  paymentKey: string,
+  cancelReason: string,
+): Promise<TossResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${TOSS_API_BASE}/payments/${encodeURIComponent(paymentKey)}/cancel`, {
+      method: 'POST',
+      headers: {
+        Authorization: authHeader(),
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `${paymentKey}:cancel`,
+      },
+      body: JSON.stringify({ cancelReason }),
+      cache: 'no-store',
+    });
+  } catch (e) {
+    // 네트워크 예외 — 승인과 달리 취소는 자동 재시도하지 않는다(운영자가 재실행).
+    return {
+      ok: false,
+      status: 503,
+      error: { code: 'NETWORK_ERROR', message: e instanceof Error ? e.message : 'network error' },
+    };
+  }
+  const body = await readJson(res);
+  if (!res.ok) {
+    return { ok: false, status: res.status, error: body as TossError };
+  }
+  // 취소 성공 시 상태가 CANCELED/PARTIAL_CANCELED인 결제 객체가 온다 — 동일 스키마로 검증.
+  return parsePayment(body);
 }
 
 /** paymentKey로 결제 단건 조회 — webhook 페이로드를 신뢰하지 않고 원본을 재조회(무결성). */

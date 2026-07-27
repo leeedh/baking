@@ -118,9 +118,25 @@ export interface AdminClassRow {
   completionRate: number;
 }
 
+/** 운영자 주문·환불 목록 행. */
+export interface AdminOrderRow {
+  id: string;
+  /** 구매자 표기(이메일 또는 이름). */
+  buyer: string;
+  /** 클래스명(로케일 반영). */
+  courseTitle: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'failed' | 'canceled' | 'refunded';
+  /** 결제 완료 시각(ISO, 없으면 생성 시각). */
+  paidAt: string | null;
+  /** 환불(취소) 시각(ISO). */
+  canceledAt: string | null;
+}
+
 export interface AdminDashboard {
   kpi: AdminKpi;
   classes: AdminClassRow[];
+  orders: AdminOrderRow[];
 }
 
 /** 운영자 화면의 자료 행(Storage 경로는 노출하지 않음). */

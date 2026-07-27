@@ -9,6 +9,7 @@ import type {
   AdminDashboard,
   AdminLesson,
   AdminMaterial,
+  AdminOrderRow,
 } from '@/types';
 
 // 단일 브랜드(1인 파티시에) — courses에 강사명 컬럼이 없어 상수 표기(catalog.ts와 동일).
@@ -74,11 +75,53 @@ export async function getAdminDashboard(locale: string): Promise<AdminDashboard>
   const completionRate =
     studentsTotal > 0 ? Math.round((weightedCompletion / studentsTotal) * 10) / 10 : 0;
 
+  const orders = await getRecentOrders(locale);
+
   return {
     kpi: { salesTotal, studentsTotal, completionRate },
     classes,
+    orders,
   };
 }
+
+/**
+ * 운영자 주문·환불 목록 — 최근 결제/환불 주문을 service_role로 조회한다(호출부가 role 가드).
+ * 환불 대상을 찾기 위한 목록이라 paid/refunded/canceled만 노출한다(pending/failed 제외).
+ */
+export async function getRecentOrders(locale: string, limit = 50): Promise<AdminOrderRow[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from('orders')
+    .select(
+      'id, user_id, amount_krw, status, paid_at, canceled_at, created_at, profiles(display_name), courses(title)',
+    )
+    .in('status', ['paid', 'refunded', 'canceled'])
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  return ((data ?? []) as unknown as OrderJoinRow[]).map((row) => ({
+    id: row.id,
+    // profiles에 이메일이 없어(auth.users 소재) display_name 우선, 없으면 user_id 앞자리로 식별.
+    buyer: row.profiles?.display_name ?? `${row.user_id.slice(0, 8)}…`,
+    courseTitle: pickLocale(row.courses?.title, locale),
+    amount: row.amount_krw ?? 0,
+    status: (row.status ?? 'paid') as AdminOrderRow['status'],
+    paidAt: row.paid_at ?? row.created_at ?? null,
+    canceledAt: row.canceled_at ?? null,
+  }));
+}
+
+type OrderJoinRow = {
+  id: string;
+  user_id: string;
+  amount_krw: number | null;
+  status: string | null;
+  paid_at: string | null;
+  canceled_at: string | null;
+  created_at: string | null;
+  profiles: { display_name: string | null } | null;
+  courses: { title: unknown } | null;
+};
 
 /** jsonb {ko,en}에서 특정 로케일 문자열만 안전 추출(빈 값 폴백). */
 function pickRaw(value: unknown, key: 'ko' | 'en'): string {
