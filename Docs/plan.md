@@ -1,6 +1,6 @@
 # Atelier Crème — 남은 작업 계획 (Implementation Plan)
 
-> **작성일**: 2026-07-08 · **개정**: 2026-07-08 (EPIC-A 이관 완료 + EPIC-B 착수 반영)
+> **작성일**: 2026-07-08 · **개정**: 2026-07-27 (EPIC-C~G·L 완료, 도서·강사 정본화 반영 / Jira DC 동기화)
 > **기준 문서**: PRD v1.1(정본) · TechSpec v1.1(정본) · DBSchema v1.0(정본) · UXGuide v2.0(as-built)
 > **목적**: 가이드 문서(목표 스펙)와 현재 코드(`src/`)를 비교해 **남은 구현 작업**을 정리한다.
 >
@@ -11,6 +11,10 @@
 > - 2026-07-08 **EPIC-B 완료** — Supabase 스키마(10테이블·함수·트리거·뷰·RLS) 마이그레이션 작성 + `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 적용·검증(커밋 `1edeeaf`). 리뷰에서 `admin_course_sales` 팬아웃 버그 발견·수정.
 > - 2026-07-09 **EPIC-C 완료** — Supabase Auth 이메일 로그인/가입·세션(@supabase/ssr)·role 라우트 가드(커밋 `68a8e76`). 프로덕션 빌드 대상 브라우저 검증(관리자/학생/비로그인 시나리오). OAuth는 배선만(프로바이더 설정 대기).
 > - 2026-07-10 **EPIC-D 구현** — TossPayments v2 위젯(테스트 키), 서버 주문생성/승인검증/웹훅, `validate_coupon` 서버 산출, enrollments 실연동(my-classes/detail/learn). 위젯·쿠폰 브라우저 검증 완료, 결제→수강권 e2e는 `SUPABASE_SERVICE_ROLE_KEY` 설정 대기.
+> - 2026-07-21 **EPIC-C 마감** — Google OAuth 프로바이더 설정·검증 완료(커밋 `d7ce7c8`). Apple 로그인은 유료 멤버십 제약으로 스코프 제외.
+> - 2026-07-24 **EPIC-E/F/G 완료** — 보안 영상(Mux 서명 재생·워터마크·진도, 커밋 `1eae935`), 운영자 콘솔 실연동(클래스·차시·업로드·KPI, `91ea246`), 학습 자료·후기(서명 URL 다운로드·후기 CRUD, `e6bea9a`). 카탈로그·상세·미리보기 실데이터도 연동(`31fc866`).
+> - 2026-07-25 **EPIC-D 환불** — 운영자 환불(PG 취소·수강권 회수·접근 차단, 커밋 `0a9a9f6`). = Jira DC-34/35, 스토리 DC-15 완료.
+> - 2026-07-27 **EPIC-L 착수** — 도서 외부 커머스 CTA 전환 + `books` 데이터 연동(`src/lib/books.ts`), 강사 소개 i18n화(`instructor.*` 메시지). = Jira DC-66/68 구현. DC-67은 실제 판매 URL 확보 대기(플레이스홀더 게이팅으로 CTA 비활성).
 
 ---
 
@@ -133,9 +137,10 @@
 - **잔여**: 자료 제목 다국어 입력(현재 ko 입력값을 en에 동일 적용), 새 UI 문구의 메시지 카탈로그화 → EPIC-K에서 처리. 기존 결제·진도 라우트에도 `assertSameOrigin` 적용 검토(현재는 JSON 프리플라이트가 방어).
 - **참조**: PRD-F-09/F-10, TS-API-05/13, DB-T-04/08
 
-### EPIC-L · 도서·강사 소개 (P1) — *프로토타입 화면의 정본화*
-- **도서(PRD-F-19)**: `BooksScreen`의 가짜 `alert()` 구매를 **외부 커머스(네이버쇼핑·쿠팡) `external_purchase_url` 새 탭 이동**으로 교체. `books`(DB-T-10) 데이터 연동(소수·정적이면 앱 상수/CMS도 가능). "실물 배송" 문구 → 외부 커머스 안내로 조정. 자체 결제·재고·배송 없음.
-- **강사(PRD-F-18)**: `InstructorScreen`(연혁·철학·Q&A)을 정본 라우팅(`features/instructor`)에 편입 + 정적 콘텐츠 i18n화. 단일 브랜드(대표 파티시에) 신뢰 형성 목적.
+### EPIC-L · 도서·강사 소개 (P1) — 🔄 **구현 완료** (2026-07-27, = Jira DC-11/DC-66·68)
+- ✅ **도서(PRD-F-19)**: `BooksScreen`의 가짜 `alert()` 구매(2건)·다운로드 시뮬레이션·자체결제 state 제거 → **외부 커머스 `external_purchase_url` 새 탭 이동** CTA. `books`(DB-T-10) 실데이터를 `src/lib/books.ts`(`getBooks`, `catalog.ts` 패턴)로 서버 조회(published만), 페이지는 서버 컴포넌트화. "실물 배송/PDF 교부" 문구 → 외부 커머스 안내로 교체. 자체 결제·배송 없음.
+- ✅ **강사(PRD-F-18)**: `InstructorScreen`(연혁·철학·Q&A) 정적 콘텐츠를 `messages/{ko,en}.json`의 `instructor.*`로 이관(배열은 `t.raw()`), EN 번역 신규 작성. 이미 `/[locale]/instructor` 하위라 라우팅 정본 충족. `#B1863C` 오타 정리(이 파일 한정, DC-57 부분 반영).
+- ✅ **DC-67 완료(2026-07-28)**: 도서를 **추천 큐레이션**(외부 쿠팡 판매)으로 확정, 실제 쿠팡 파트너스 링크 2종(머랭 쿠키·마시멜로) 반영. MCP 데이터 쓰기 차단·정적 소수 도서 특성상 `books` 테이블 대신 **앱 상수 `src/lib/books-data.ts`**로 소스(파트너스 URL 원본 보존), `getBooks()`는 상수 읽도록 개편. 큐레이션 카피·파트너스 고지 문구 추가. 3번째 링크(9071474313)는 상품명 확보 후 추가 예정.
 - **참조**: PRD-F-18/F-19, TS-COMP-11/12, DB-T-10
 
 ### EPIC-H · 환불 (P1)
@@ -221,4 +226,4 @@
 
 ---
 
-*EPIC-A·B·C·D 완료. 다음 착수 권장: **EPIC-E(보안 영상 재생)** — Mux Player + 서명 JWT + 워터마크 + `progress` 실저장. 선결: Mux 계정 프로비저닝(§5-4).*
+*EPIC-A·B·C·D·E·F·G·L 완료(카탈로그 포함). 다음 착수 권장: **EPIC-K(i18n 완성, Jira DC-10)** 또는 **EPIC-I 품질(Jira DC-8: alert→토스트·접근성·색상 토큰 통일 DC-57)**. EPIC-D 잔여는 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 잔여는 실제 도서 판매 URL(§5-5).*

@@ -46,5 +46,80 @@
   "footer": {
     "rights": "© 2026 Atelier Crème Inc. All rights reserved.",
     "chef": "Head Artisan Chef: Sohee Min"
+  },
+  "books": {
+    "badge": "CURATED RECIPE BOOKS",
+    "title1": "Chef Sohee Min's Recommended",
+    "titleEm": "Hands-On Recipe Books",
+    "subtitle": "A curated pick of hands-on recipe books that pair well with the classes and are great for practicing at home. Purchases are made on Coupang.",
+    "selectEdition": "Select Book",
+    "selectedManual": "SELECTED BOOK",
+    "chaptersTitle": "What you'll learn ({count})",
+    "priceRef": "Reference price — checkout on Coupang",
+    "externalNotice": "This book is sold on Coupang.",
+    "buyCta": "Buy on Coupang",
+    "buyUnavailable": "Purchase link coming soon",
+    "noticeBadge": "NOTICE",
+    "noticeTitle": "Recommended books are sold on Coupang",
+    "noticeDesc": "This page introduces recommended books; purchase, payment, and shipping are handled on Coupang. Unlike our online classes, we do not provide in-house checkout or delivery.",
+    "disclosure": "As a Coupang Partners affiliate, we earn a commission from qualifying purchases made through the links on this page.",
+    "empty": "No books are currently featured."
+  },
+  "instructor": {
+    "chefName": "Sohee Min",
+    "chefRole": "Director & Head Patissier, Atelier Crème",
+    "heroBadge": "ATELIER OWNER CHEF PHILOSOPHY",
+    "heroTitle": "Turning a flavor few can taste into everyone's",
+    "heroTitleEm": "textbook",
+    "bio1": "Hello, I'm Sohee Min, head owner chef of Atelier Crème.",
+    "bio2": "Running the studio, I was deeply moved to meet students who flew round-trip from across Korea and from abroad — Taiwan, Singapore. Offline sessions, limited by venue, could only share that depth with a small handful of bookings.",
+    "bio3": "To fully pass on everything from Parisian classic French technique to real commercial cost-ratio know-how that drives store sales, I compiled the entire recipe foundation myself into archived VODs and books. Once you can control it precisely, your oven becomes the smartest patisserie of all.",
+    "stat1": "Students taught to date",
+    "stat2": "In-house original recipes",
+    "stat3": "Master's exclusive feedback",
+    "ctaClasses": "Watch the Chef's Classes",
+    "ctaBooks": "Browse the Books",
+    "philosophyTitle": "Master Sohee Min's Three Writing Principles",
+    "philosophyDesc": "To distill five hours of an offline class into a single book or a single lecture session, I insist on uncompromising depth alone.",
+    "philosophies": [
+      {
+        "title": "1mg of Measurement, 1℃ of Oven Tuning",
+        "desc": "Baking is precise science, not intuition. Calculating everything from the protein ratio of each flour to the saturated-fat melting point of butter, I offer precise metrics so even beginners can craft the exact same premium bake, 100% of the time."
+      },
+      {
+        "title": "Commercial Cost Structure and Streamlined Process",
+        "desc": "This is not hobby home cooking. To maximize store efficiency, I rest doughs in advance and apply smart Excel cost-ratio templates, transplanting a working founder's solution that cuts process time by up to 50%."
+      },
+      {
+        "title": "Refined Editorial Visuals",
+        "desc": "A dessert that looks good tastes sweetest. I share a design sensibility that stages every detail — plating, light reflection, even the tying of a packaging ribbon — like a work from a premium studio."
+      }
+    ],
+    "timelineTitle": "Milestones & History",
+    "timelineDesc": "The chronicle of Atelier Crème, cultivated by rigorous training and unflinching dedication.",
+    "milestones": [
+      { "year": "2016", "event": "Graduated as a Grand Diplôme scholarship student, L'École Ritz Escoffier, Paris" },
+      { "year": "2018", "event": "Founded the Hannam-dong dessert boutique \"Atelier Crème\"; all products sold out early" },
+      { "year": "2020", "event": "Sold-out baked-goods master workshops in Taipei & Kaohsiung, Taiwan (3,000 seats cumulative)" },
+      { "year": "2022", "event": "Modern patisserie directing license partnership with Happy Happy Academy" },
+      { "year": "2024", "event": "Featured advisory appearances on SBS and MBC baking-trend specials, patissier technique segment" },
+      { "year": "2025", "event": "Signature baking guidebook 'Four Seasons of Atelier Crème' became a bestseller" }
+    ],
+    "qaTitle": "The Interview Students Were Most Curious About",
+    "qaDesc": "Sharing the philosophy of Atelier Crème's one-person brand and behind-the-scenes stories from the baking studio.",
+    "qa": [
+      {
+        "q": "Why do you run every class, book, and student feedback all by yourself?",
+        "a": "Running my own dessert boutique for years, the biggest lesson was 'integrity of technique.' When multiple instructors split the teaching, explanations of meringue stiffness and mixing counts diverge, and students' results become inconsistent. From measuring to oven loading to 1:1 feedback, I run a strict one-person master system to deliver the right standard myself, staking my name on it."
+      },
+      {
+        "q": "Can people who failed at baking before be rescued too?",
+        "a": "Of course. The biggest cause of failure is usually the 'texture-transition step that the instructions skip.' If a recipe book just says 'stir until the butter is glossy,' a beginner can't tell whether that's 60% gloss or 90% gloss. Using ultra-close-up 4K autofocus filming, I prove the exact threshold of perfect moisture right before your eyes, shutting out misreading and mistakes."
+      }
+    ],
+    "bottomTitle": "\"I gladly devote to you the wisdom of never failing\"",
+    "bottomDesc": "Store the depth of Paris and its valuable golden ratios permanently in the archive, and pass them down like an heirloom. I, the chef, personally handle the entire process of instruction and recipe refinement.",
+    "bottomCtaClasses": "View the Masterclass List",
+    "bottomCtaBooks": "To the Bestselling Books"
   }
 }

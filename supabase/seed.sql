@@ -125,7 +125,9 @@ insert into public.coupons (code, discount_type, discount_value, is_active) valu
   ('BAKING10', 'fixed', 15000, true);
 
 -- -----------------------------------------------------------------------------
--- 5. books (BooksScreen 인라인 2종) — external_purchase_url 은 플레이스홀더
+-- 5. books — ⚠️ 앱은 더 이상 이 테이블을 읽지 않는다. 도서는 추천 큐레이션(외부 쿠팡 판매)
+--    으로 전환되어 정적 상수 `src/lib/books-data.ts`에서 소스한다(2026-07-28). 아래 시드는
+--    이력 보존용이며 화면에 반영되지 않는다. 테이블은 향후 admin CRUD 여지로 존치.
 -- -----------------------------------------------------------------------------
 insert into public.books (slug, title, subtitle, description, thumbnail_url, price_krw, list_price_krw,
                          chapters, external_purchase_url, status) values

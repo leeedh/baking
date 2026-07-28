@@ -1,60 +1,31 @@
 'use client';
 
+import { Award, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import {
-  ArrowRight,
-  Award,
-  BookOpen,
-  CheckCircle,
-  Flame,
-  Heart,
-  MapPin,
-  Sparkles,
-  Star,
-} from 'lucide-react';
-import React from 'react';
+
+interface Milestone {
+  year: string;
+  event: string;
+}
+interface Philosophy {
+  title: string;
+  desc: string;
+}
+interface QA {
+  q: string;
+  a: string;
+}
 
 export default function InstructorScreen() {
   const router = useRouter();
+  const t = useTranslations('instructor');
   const onNavigateToCatalog = () => router.push('/');
   const onNavigateToBooks = () => router.push('/books');
-  const milestones = [
-    { year: '2016', event: "프랑스 파리 L'École Ritz Escoffier 그랑 디플로마 장학생 졸업" },
-    { year: '2018', event: '한남동 디저트 부티크 "Atelier Crème" 설립, 전 제품 조기 완판' },
-    {
-      year: '2020',
-      event: '대만 타이베이 & 가오슝 구움과자 마스터 워크숍 전석 매진 (누적 3,000석)',
-    },
-    { year: '2022', event: 'Happy Happy Academy 모던 파티세리 디렉팅 라이선스 협업 제휴' },
-    { year: '2024', event: 'SBS, MBC 베이킹 트렌드 오너 파티시에 기술 부문 특집 자문 출연' },
-    { year: '2025', event: '시그니처 베이킹 가이드북 [아틀리에 크렘의 사계] 베스트셀러 등극' },
-  ];
 
-  const philosophies = [
-    {
-      title: '1mg의 계량, 1℃의 오븐 조율',
-      desc: '베이킹은 감이 아닌 정밀 과학입니다. 밀가루 종류의 단백질 비율과 버터의 포화 지방산 융점까지 계산하여 초보자도 100% 동일한 고급 구움을 빚어낼 수 있는 정밀 지표를 제시합니다.',
-    },
-    {
-      title: '상업적 원가 구조와 공정 단축',
-      desc: '취미에만 머무르는 홈쿠킹이 아닙니다. 매장 가동 효율을 극대화하기 위해 미리 생지를 휴지하고, 엑셀 스마트 단가 배합 양식을 적용해 공정을 최대 50% 줄이는 현업 창업 솔루션을 이식합니다.',
-    },
-    {
-      title: '세련된 에디토리얼 비주얼',
-      desc: '보기 좋은 디저트가 가장 달콤합니다. 플레이팅, 조명 반사, 패키징 리본을 묶는 디테일 하나까지도 하나의 고급 스튜디오 작품처럼 연출하는 디자인 감각을 공유합니다.',
-    },
-  ];
-
-  const qaList = [
-    {
-      q: '혼자서 전 클래스와 도서 제작, 수강생 피드백까지 운영하는 이유가 있나요?',
-      a: '수년간 직영 디저트 부티크를 운영하며 가장 크게 깨달은 것은 ‘기술의 무결성’이었습니다. 여러 명의 강사진이 나누어 설명하다 보면 머랭의 빳빳함과 믹싱 회수에 관한 설명에 불일치가 일어나고 수강생의 결과물이 들쭉날쭉해집니다. 저는 계량부터 오븐 투이, 1:1 질문 피드백까지 제 이름을 걸고 직접 올바른 기준을 전달하고자 1인 마스터 체제를 엄격하게 전개하고 있습니다.',
-    },
-    {
-      q: '이전에 베이킹에 실패했던 사람들도 구제받을 수 있을까요?',
-      a: '그럼요. 실패하는 가장 큰 요인은 보통 ‘설명이 생략된 텍스처 전이 단계’에 있습니다. 레시피 북에 ‘버터가 윤기 날 때까지 저어라’고 써 있으면, 초보자는 그 윤기가 60% 윤기인지 90% 윤기인지 파악하기 어렵기 때문이죠. 저는 초근접 4K 오토포커싱 촬영 기법으로 완벽한 촉촉함의 마지노선을 눈앞에 선명히 증명해 드림으로써 오독과 실수를 차단해 버립니다.',
-    },
-  ];
+  const milestones = t.raw('milestones') as Milestone[];
+  const philosophies = t.raw('philosophies') as Philosophy[];
+  const qaList = t.raw('qa') as QA[];
 
   return (
     <div
@@ -85,10 +56,10 @@ export default function InstructorScreen() {
                   Directing Chef
                 </p>
                 <h4 className="font-serif text-base font-bold text-[#2A211B] mt-0.5">
-                  민소희 (Sohee Min)
+                  {t('chefName')}
                 </h4>
                 <p className="text-[10px] text-[#5F4E43] font-light leading-relaxed mt-1">
-                  Atelier Crème 대표 디렉터 겸 파티시에
+                  {t('chefRole')}
                 </p>
               </div>
             </div>
@@ -98,67 +69,49 @@ export default function InstructorScreen() {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B65538]/8 text-[#B65538] text-[11px] font-bold tracking-wider uppercase border border-[#B65538]/15 shadow-sm">
               <Sparkles size={12} className="text-[#B65538]" />
-              ATELIER OWNER CHEF PHILOSOPHY
+              {t('heroBadge')}
             </div>
 
             <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#2A211B] leading-tight keep-all break-keep">
-              소수가 탐닉하는 맛을, 모두의 교과서로{' '}
-              <span className="font-serif italic text-[#B65538]">구현하다</span>
+              {t('heroTitle')} <span className="font-serif italic text-[#B65538]">{t('heroTitleEm')}</span>
             </h1>
 
-            <p className="text-sm sm:text-base text-[#5F4E43] font-light leading-relaxed keep-all break-keep space-y-4">
-              <span>
-                안녕하세요, 아틀리에 크렘의 헤드 오너 셰프 <strong>민소희</strong>입니다.
-              </span>
-              <span className="block mt-3">
-                스튜디오를 운영하며 전국은 물론 해외 대만, 싱가포르에서도 왕복 비행기를 끊어 오시는
-                수강생분들을 마주하며 깊은 울림을 받았습니다. 오프라인 강연은 장소의 한계로 소수의
-                예약자만 그 깊이를 나눠 가질 수 있었습니다.
-              </span>
-              <span className="block mt-3">
-                보다 많은 홈베이커와 꿈나무 오너분들께 파리의 프렌치 고전 테크닉부터 매장 판매율을
-                치솟게 만드는 리얼 상업용 원가 배합 노하우를 완전하게 전수하고자, 제가 직접 레시피
-                전 기틀을 아카이브 VOD와 책으로 집대성했습니다.{' '}
-                <strong>
-                  정확히 통제할 줄 안다면, 당신의 오븐은 가장 영리한 파티세리가 될 것입니다.
-                </strong>
-              </span>
-            </p>
+            <div className="text-sm sm:text-base text-[#5F4E43] font-light leading-relaxed keep-all break-keep">
+              <p>{t('bio1')}</p>
+              <p className="mt-3">{t('bio2')}</p>
+              <p className="mt-3">{t('bio3')}</p>
+            </div>
 
             {/* Quick interactive stats */}
             <div className="grid grid-cols-3 gap-4 py-4 border-t border-b border-[#EFE8DC] max-w-lg">
               <div>
                 <p className="text-2xl font-serif font-extrabold text-[#B65538]">10,500+</p>
-                <p className="text-[10.5px] text-[#5F4E43] font-light mt-0.5">
-                  누적 지도 수강생 수
-                </p>
+                <p className="text-[10.5px] text-[#5F4E43] font-light mt-0.5">{t('stat1')}</p>
               </div>
               <div>
                 <p className="text-2xl font-serif font-extrabold text-[#B0863C]">100%</p>
-                <p className="text-[10.5px] text-[#5F4E43] font-light mt-0.5">
-                  자체 기획 오리지널 레시피
-                </p>
+                <p className="text-[10.5px] text-[#5F4E43] font-light mt-0.5">{t('stat2')}</p>
               </div>
               <div>
                 <p className="text-2xl font-serif font-extrabold text-[#2A211B]">1:1</p>
-                <p className="text-[10.5px] text-[#5F4E43] font-light mt-0.5">
-                  마스터 독점 피드백 답변
-                </p>
+                <p className="text-[10.5px] text-[#5F4E43] font-light mt-0.5">{t('stat3')}</p>
               </div>
             </div>
 
             <div className="flex gap-3 pt-2">
               <button
+                type="button"
                 onClick={onNavigateToCatalog}
                 className="px-6 py-3 bg-[#2A211B] hover:bg-[#B65538] text-white text-xs font-bold rounded-xl shadow-md transition-all duration-300"
               >
-                셰프의 클래스 감상하기
+                {t('ctaClasses')}
               </button>
               <button
+                type="button"
                 onClick={onNavigateToBooks}
                 className="px-6 py-3 bg-white border border-[#EFE8DC] hover:bg-[#FAF4EA] text-[#5F4E43] text-xs font-semibold rounded-xl transition-all"
               >
-                저서 단행본 구경하기
+                {t('ctaBooks')}
               </button>
             </div>
           </div>
@@ -171,13 +124,8 @@ export default function InstructorScreen() {
           <span className="text-xs font-serif font-bold text-[#B0863C] tracking-[0.2em] uppercase">
             THE Core Values
           </span>
-          <h2 className="font-serif text-3xl font-bold text-[#2A211B]">
-            민소희 마스터의 3대 집필 원칙
-          </h2>
-          <p className="text-xs sm:text-sm text-[#5F4E43] font-light">
-            오프라인 클래스 5시간을 책 한 권, 강의 한 세션으로 담기 위해 타협 없는 깊이만을
-            고집합니다.
-          </p>
+          <h2 className="font-serif text-3xl font-bold text-[#2A211B]">{t('philosophyTitle')}</h2>
+          <p className="text-xs sm:text-sm text-[#5F4E43] font-light">{t('philosophyDesc')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -204,11 +152,9 @@ export default function InstructorScreen() {
           <div className="text-center space-y-3 mb-16">
             <Award className="mx-auto text-[#B0863C] animate-pulse" size={28} />
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#2A211B]">
-              발자취 & 히스토리
+              {t('timelineTitle')}
             </h2>
-            <p className="text-xs text-[#5F4E43] font-light">
-              엄격한 트레이닝과 가감 없는 집념이 가꾸어낸 아틀리에 크렘의 연대기입니다.
-            </p>
+            <p className="text-xs text-[#5F4E43] font-light">{t('timelineDesc')}</p>
           </div>
 
           <div className="relative border-l border-[#B0863C]/30 pl-6 sm:pl-8 space-y-10 py-2">
@@ -218,7 +164,7 @@ export default function InstructorScreen() {
                 <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-[#B0863C] border-4 border-white shadow-md group-hover:bg-[#B65538] transition-colors" />
 
                 <div className="space-y-1">
-                  <span className="font-mono text-sm font-bold text-[#B1863C] block">
+                  <span className="font-mono text-sm font-bold text-[#B0863C] block">
                     {ms.year}
                   </span>
                   <p className="text-sm font-serif font-medium text-[#2A211B] sm:text-base leading-relaxed">
@@ -239,11 +185,9 @@ export default function InstructorScreen() {
               Deep Interview
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#2A211B]">
-              수강생들이 가장 궁금해했던 셰프에 대한 인터뷰
+              {t('qaTitle')}
             </h2>
-            <p className="text-xs text-[#5F4E43] font-light">
-              Atelier Crème 1인 브랜드 철학과 베이킹 연구실 비하인드 스토리를 전해드립니다.
-            </p>
+            <p className="text-xs text-[#5F4E43] font-light">{t('qaDesc')}</p>
           </div>
 
           {qaList.map((qa) => (
@@ -272,26 +216,26 @@ export default function InstructorScreen() {
             MC
           </div>
           <h3 className="font-serif text-2xl sm:text-3xl font-bold keep-all break-keep">
-            "실패하지 않는 지혜를 당신에게 기꺼이 바칩니다"
+            {t('bottomTitle')}
           </h3>
           <p className="text-xs sm:text-sm text-white/70 font-light leading-relaxed keep-all break-keep">
-            프랑스 파리의 깊이감과 가치 있는 황금 배합비를 아카이브에 영구 저장해 두고 가보처럼
-            대대로 꺼내 보세요. 수강 및 레시피 수정에 대한 전 과정은 셰프인 제가 직접 대행
-            전담합니다.
+            {t('bottomDesc')}
           </p>
 
           <div className="flex justify-center gap-3 pt-4">
             <button
+              type="button"
               onClick={onNavigateToCatalog}
               className="px-6 py-2.5 bg-[#B65538] hover:bg-[#A0452C] text-[#FAF4EA] text-xs font-bold rounded-xl shadow-md transition-colors cursor-pointer"
             >
-              마스터 클래스 목록보기
+              {t('bottomCtaClasses')}
             </button>
             <button
+              type="button"
               onClick={onNavigateToBooks}
               className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-[#FAF4EA] text-xs font-medium rounded-xl transition-colors cursor-pointer"
             >
-              베스트 전용서 판매처로
+              {t('bottomCtaBooks')}
             </button>
           </div>
         </div>
