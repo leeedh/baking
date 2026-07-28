@@ -21,7 +21,17 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // 2) 같은 응답에 Supabase 세션 쿠키를 갱신한다(토큰 자동 리프레시).
+  // 2) 세션 쿠키가 없으면(비로그인) 토큰 리프레시가 불필요하므로 Auth 서버 왕복을 생략한다.
+  //    getUser()는 Supabase Auth로 네트워크 요청해 JWT를 검증하므로, 모든 이동마다 호출하면
+  //    비로그인 사용자에게도 지연이 붙는다. sb-*-auth-token 쿠키가 있을 때만 갱신한다.
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token'));
+  if (!hasAuthCookie) {
+    return response;
+  }
+
+  // 3) 같은 응답에 Supabase 세션 쿠키를 갱신한다(토큰 자동 리프레시).
   try {
     const supabase = createServerClient(env.url, env.anonKey, {
       cookies: {

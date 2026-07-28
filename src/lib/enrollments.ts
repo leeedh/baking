@@ -1,14 +1,12 @@
 import 'server-only';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 
 /** 현재 사용자의 활성 수강권 코스 slug 목록 (RLS: 본인 것만 조회됨). */
 export async function getEnrolledCourseSlugs(): Promise<string[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return [];
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from('enrollments')

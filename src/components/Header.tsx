@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { LogIn, LogOut, Menu, ShieldAlert, User, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -17,11 +17,6 @@ export default function Header() {
 
   const isActive = (path: string) => pathname === path;
   const isMyClassesActive = pathname === '/my-classes' || pathname.startsWith('/learn');
-
-  const goto = (path: string) => {
-    router.push(path);
-    setIsOpen(false);
-  };
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -44,9 +39,10 @@ export default function Header() {
         className="max-w-7xl mx-auto flex items-center justify-between gap-2.5"
       >
         {/* Brand Logo in Editorial Serif */}
-        <div
+        <Link
+          href="/"
           id="brand-logo-area"
-          onClick={() => goto('/')}
+          onClick={() => setIsOpen(false)}
           className="flex items-center gap-2 cursor-pointer group shrink-0"
         >
           <div className="w-10 h-10 rounded-full bg-[#B65538] flex items-center justify-center text-[#FAF4EA] font-serif font-bold text-xl shadow-md transform group-hover:rotate-12 transition-transform duration-300">
@@ -60,16 +56,17 @@ export default function Header() {
               Premium French Baking Atelier
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Desktop Navigation Items (Hidden on Mobile) */}
         <nav
           id="header-nav-desktop"
           className="hidden md:flex items-center gap-2 lg:gap-6 font-sans text-xs sm:text-sm font-medium"
         >
-          <button
+          <Link
+            href="/books"
             id="nav-books"
-            onClick={() => goto('/books')}
+            onClick={() => setIsOpen(false)}
             className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
               isActive('/books')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
@@ -77,11 +74,12 @@ export default function Header() {
             }`}
           >
             {t('nav.books')}
-          </button>
+          </Link>
 
-          <button
+          <Link
+            href="/instructor"
             id="nav-instructor"
-            onClick={() => goto('/instructor')}
+            onClick={() => setIsOpen(false)}
             className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
               isActive('/instructor')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
@@ -89,11 +87,12 @@ export default function Header() {
             }`}
           >
             {t('nav.instructor')}
-          </button>
+          </Link>
 
-          <button
+          <Link
+            href={isLoggedIn ? '/my-classes' : '/login'}
             id="nav-myclasses"
-            onClick={() => goto(isLoggedIn ? '/my-classes' : '/login')}
+            onClick={() => setIsOpen(false)}
             className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
               isMyClassesActive
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
@@ -101,12 +100,13 @@ export default function Header() {
             }`}
           >
             {t('nav.myclasses')}
-          </button>
+          </Link>
 
           {isAdmin && (
-            <button
+            <Link
+              href="/admin"
               id="nav-dashboard"
-              onClick={() => goto('/admin')}
+              onClick={() => setIsOpen(false)}
               className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
                 isActive('/admin')
                   ? 'text-[#B0863C] bg-[#B0863C]/5 font-bold border-b-2 border-[#B0863C]'
@@ -115,7 +115,7 @@ export default function Header() {
             >
               <ShieldAlert size={14} className="text-[#B0863C] shrink-0" />
               {t('nav.dashboard')}
-            </button>
+            </Link>
           )}
         </nav>
 
@@ -165,24 +165,26 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <button
+            <Link
+              href="/login"
               id="nav-login-cta"
-              onClick={() => goto('/login')}
+              onClick={() => setIsOpen(false)}
               className="hidden md:flex px-4 py-2 bg-[#2A211B] text-[#FAF4EA] text-xs font-medium rounded-lg hover:bg-[#B65538] transition-all cursor-pointer items-center gap-1.5"
             >
               <LogIn size={14} />
               {t('nav.login')}
-            </button>
+            </Link>
           )}
 
           {/* Mobile Profile Trigger (User is logged in) */}
           {isLoggedIn && (
-            <button
-              onClick={() => goto('/my-classes')}
+            <Link
+              href="/my-classes"
+              onClick={() => setIsOpen(false)}
               className="md:hidden w-8 h-8 rounded-full bg-[#B0863C]/10 border border-[#B0863C]/30 flex items-center justify-center text-[#B0863C]"
             >
               <User size={14} />
-            </button>
+            </Link>
           )}
 
           {/* Hamburger Menu Toggle Icon */}
@@ -203,9 +205,10 @@ export default function Header() {
           id="mobile-nav-panel"
           className="md:hidden mt-3 pt-3 pb-2 border-t border-[#EFE8DC] flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-3 duration-200"
         >
-          <button
+          <Link
+            href="/books"
             id="nav-books-mobile"
-            onClick={() => goto('/books')}
+            onClick={() => setIsOpen(false)}
             className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
               isActive('/books')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
@@ -213,11 +216,12 @@ export default function Header() {
             }`}
           >
             {t('nav.books')}
-          </button>
+          </Link>
 
-          <button
+          <Link
+            href="/instructor"
             id="nav-instructor-mobile"
-            onClick={() => goto('/instructor')}
+            onClick={() => setIsOpen(false)}
             className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
               isActive('/instructor')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
@@ -225,11 +229,12 @@ export default function Header() {
             }`}
           >
             {t('nav.instructor')}
-          </button>
+          </Link>
 
-          <button
+          <Link
+            href={isLoggedIn ? '/my-classes' : '/login'}
             id="nav-myclasses-mobile"
-            onClick={() => goto(isLoggedIn ? '/my-classes' : '/login')}
+            onClick={() => setIsOpen(false)}
             className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
               isMyClassesActive
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
@@ -237,12 +242,13 @@ export default function Header() {
             }`}
           >
             {t('nav.myclasses')}
-          </button>
+          </Link>
 
           {isAdmin && (
-            <button
+            <Link
+              href="/admin"
               id="nav-dashboard-mobile"
-              onClick={() => goto('/admin')}
+              onClick={() => setIsOpen(false)}
               className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                 isActive('/admin')
                   ? 'text-[#B0863C] bg-[#B0863C]/5 font-bold border-l-4 border-[#B0863C]'
@@ -251,7 +257,7 @@ export default function Header() {
             >
               <ShieldAlert size={14} className="text-[#B0863C]" />
               {t('nav.dashboard')}
-            </button>
+            </Link>
           )}
 
           <div className="my-2 border-t border-[#EFE8DC]/60" />
@@ -274,14 +280,15 @@ export default function Header() {
             </div>
           ) : (
             <div className="px-3 pt-1">
-              <button
+              <Link
+                href="/login"
                 id="nav-login-cta-mobile"
-                onClick={() => goto('/login')}
+                onClick={() => setIsOpen(false)}
                 className="w-full py-2.5 bg-[#2A211B] text-[#FAF4EA] text-xs font-bold rounded-lg hover:bg-[#B65538] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <LogIn size={13} />
                 {t('nav.login')}
-              </button>
+              </Link>
             </div>
           )}
         </div>

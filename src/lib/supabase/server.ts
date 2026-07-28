@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 import type { Database } from '../../../supabase/database.types';
 import { getSupabasePublicEnv } from './env';
 
@@ -35,22 +36,24 @@ export async function createClient() {
   );
 }
 
-/** 현재 인증 사용자(검증됨). 세션 없으면 null. */
-export async function getUser() {
+/**
+ * 현재 인증 사용자(검증됨). 세션 없으면 null.
+ * React `cache()`로 요청 스코프 메모이즈 — 같은 요청 내 페이지 가드·getProfile·catalog
+ * 헬퍼가 각각 호출해도 Supabase Auth 왕복은 1회만 발생한다.
+ */
+export const getUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
 
 /** 현재 사용자 프로필(role 포함). 세션 없으면 null. */
 export async function getProfile() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
+  const supabase = await createClient();
   const { data } = await supabase
     .from('profiles')
     .select('id, display_name, avatar_url, role, locale')

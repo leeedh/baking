@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `package.json`).
 
 - `pnpm dev` — dev server on **port 3000** (payment/origin guards assume `http://localhost:3000`)
+- **성능 진단 주의**: `pnpm dev`는 라우트를 처음 방문할 때마다 on-demand 컴파일한다 — "클릭이 느리다"는 대부분 이 dev 컴파일이지 앱 성능이 아니다. 실제 성능은 `pnpm build && pnpm start`로 검증할 것. dev 스크립트는 `--turbopack` 사용. 실행 모드 판별: `.next/BUILD_ID` 없으면 dev.
 - `pnpm build` / `pnpm start`
 - `pnpm lint` — Biome check. **주의: 커밋된 파일이 CRLF라 리포 전체에서 `format` 에러로 실패한다(main도 동일, pre-existing).** 신규 코드 검증은 `pnpm typecheck`에 의존하고, lint는 변경 파일만 개별 확인.
 - `pnpm typecheck` — `tsc --noEmit`
@@ -25,12 +26,12 @@ There is **no test suite** in this repo.
 
 ### Auth & trust boundary (read before touching anything under `src/app/api` or `src/lib/supabase`)
 Two Supabase clients, deliberately separate:
-- `lib/supabase/server.ts` `createClient()` — request-scoped, reads the user session from cookies, **subject to RLS**. Use for all normal reads. `getUser()` / `getProfile()` (role) are helpers here.
+- `lib/supabase/server.ts` `createClient()` — request-scoped, reads the user session from cookies, **subject to RLS**. Use for all normal reads. `getUser()` / `getProfile()` (role) are helpers here. `getUser()`는 **React `cache()`로 요청 스코프 메모이즈** — 같은 요청 내 여러 호출도 Supabase Auth 왕복 1회. 내부에서 `supabase.auth.getUser()`를 직접 부르지 말고 이 헬퍼를 재사용할 것.
 - `lib/supabase/admin.ts` `createAdminClient()` — `service_role`, **bypasses RLS**. Guarded by `import 'server-only'`. Use *only* for server-authoritative writes (order completion, enrollment grants, admin console mutations).
 
 Because `service_role` bypasses RLS, **RLS is never the sole gate**. Admin API routes must call `requireAdmin()` (`lib/auth/require-admin.ts`) at the app layer; the DB `is_admin()` RLS is only a backstop. Sensitive reads use **double defense**: RLS gates the row (e.g. `lessons_select_guarded`) *and* the route re-checks access (e.g. `has_course_access()` RPC in the playback route).
 
-`middleware.ts` refreshes the Supabase session cookie on every non-API request and runs next-intl locale routing on the **same** response object. Its `matcher` deliberately excludes `/api` and `/auth` — so route handlers get **no** middleware auth/CSRF protection and must guard themselves.
+`middleware.ts` refreshes the Supabase session cookie on every non-API request and runs next-intl locale routing on the **same** response object. Its `matcher` deliberately excludes `/api` and `/auth` — so route handlers get **no** middleware auth/CSRF protection and must guard themselves. 성능상 미들웨어는 **`sb-*-auth-token` 쿠키가 있을 때만** `getUser()`(Auth 서버 왕복)를 호출한다 — 비로그인 이동에서 매번 왕복하지 않도록.
 
 ### CSRF / same-origin
 State-changing route handlers call `assertSameOrigin(request)` (`lib/api/origin.ts`) first, because middleware skips `/api` and Next has no built-in CSRF for route handlers. Missing `Origin` header is allowed through on purpose (server-to-server / CLI). Prefer `x-forwarded-host` over `request.url` (Vercel proxy).

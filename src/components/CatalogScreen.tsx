@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { ClassItem } from '../types';
 
 const MeringueHero = dynamic(() => import('./MeringueHero'), { ssr: false });
@@ -38,6 +38,19 @@ export default function CatalogScreen({ classes }: CatalogScreenProps) {
   const onNavigateToDetail = (id: string) => router.push(`/classes/${id}`);
   const onNavigateToInstructor = () => router.push('/instructor');
   const onNavigateToBooks = () => router.push('/books');
+
+  // 카드가 router.push 핸들러(제목·버튼 등 클릭 타깃이 여러 개라 Link 래핑 대신)라 자동
+  // 프리페치가 안 걸린다. 상세·상단 네비 라우트를 미리 당겨 클릭 시 콜드 내비게이션을 없앤다.
+  // 개발 모드에선 프리페치가 on-demand 컴파일을 유발해 오히려 느려지므로(Next의 <Link>도
+  // dev에선 프리페치 비활성) 프로덕션에서만 수행한다.
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') return;
+    router.prefetch('/instructor');
+    router.prefetch('/books');
+    for (const cls of classes) {
+      router.prefetch(`/classes/${cls.id}`);
+    }
+  }, [router, classes]);
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const [searchQuery, setSearchQuery] = useState('');

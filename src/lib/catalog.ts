@@ -2,7 +2,7 @@ import 'server-only';
 
 import { pickLocale } from '@/lib/i18n-json';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import type { ClassItem, CourseDetail, DetailChapter, ReviewItem } from '@/types';
 
 // 단일 브랜드(1인 파티시에) — courses에 강사명 컬럼이 없어 상수로 표기. 직함만 i18n(instructor_title).
@@ -131,9 +131,7 @@ type LessonCourseRel = { course_id: string };
  */
 export async function getEnrolledCourses(locale: string): Promise<EnrolledCourse[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return [];
 
   // RLS(enrollments): 본인 행만 조회된다.
@@ -229,9 +227,7 @@ export async function getCourseDetail(slug: string, locale: string): Promise<Cou
   const supabase = await createClient();
   const admin = createAdminClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const [lessonsRes, reviewsRes, accessRes, myReviewRes] = await Promise.all([
     admin
