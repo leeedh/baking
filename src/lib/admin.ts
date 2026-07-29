@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { pickLocale } from '@/lib/i18n-json';
+import { getAdminInquiries } from '@/lib/inquiries';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import type {
@@ -75,12 +76,13 @@ export async function getAdminDashboard(locale: string): Promise<AdminDashboard>
   const completionRate =
     studentsTotal > 0 ? Math.round((weightedCompletion / studentsTotal) * 10) / 10 : 0;
 
-  const orders = await getRecentOrders(locale);
+  const [orders, inquiries] = await Promise.all([getRecentOrders(locale), getAdminInquiries()]);
 
   return {
     kpi: { salesTotal, studentsTotal, completionRate },
     classes,
     orders,
+    inquiries,
   };
 }
 

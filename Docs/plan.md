@@ -168,14 +168,14 @@
 - zh-CN 확장 구조 준비(값은 v1.1).
 - **참조**: PRD-F-01, PRD-NF-06, TS-ADR-05/07
 
-### EPIC-M · 정보구조 개편(홈/소개/온라인 클래스) (P1) — 🆕 신설(2026-07-29, = Jira DC-96)
+### EPIC-M · 정보구조 개편(홈/소개/온라인 클래스) (P1) — ✅ 완료(2026-07-29, = Jira DC-96)
 - **목표**: 단일 랜딩(`CatalogScreen.tsx`, 966줄)에 뭉친 브랜드/클래스 콘텐츠를 **홈(게이트웨이)·소개(`/about`)·온라인 클래스(`/classes`)** 3면으로 분리해 운영자가 소개와 판매를 독립 관리.
 - **섹션 배분**: 홈=히어로→요약 3카드→베스트 클래스 3개→수강생 아카이브→셰프 배너→뉴스레터. 소개=브랜드 철학 전문(3 pillars)→셰프 프로필·연혁·인터뷰→도서 CTA. 온라인 클래스=추천 퀴즈→검색·카테고리 필터→전체 그리드→FAQ.
 - **작업**: 라우트 신설(`/`, `/about`, `/classes`), `CatalogScreen` → `sections/` 분해, **검색 state를 `/classes?q=`로 이관**(히어로 push / 페이지 `searchParams` 수신), **`/instructor` → `/about` 리다이렉트**(`nav.instructor` 키 정리), `Header` 내비에 소개·온라인 클래스·문의사항 추가, `<NewsletterCTA>` 공통 추출, **prefetch 목록 갱신**(홈=`/classes`·`/about`).
 - **i18n**: 분리 대상 섹션은 KO 하드코딩 다수 → **분리를 먼저**, 전면 메시지화는 EPIC-K와 연계한 별도 작업으로.
 - **참조**: PRD-F-20, TS-COMP-13/14/S7, TS-ADR-01/07. Jira **DC-96**.
 
-### EPIC-N · 문의사항(1:1 비공개) (P1) — 🆕 신설(2026-07-29, = Jira DC-97)
+### EPIC-N · 문의사항(1:1 비공개) (P1) — ✅ 완료(2026-07-29, = Jira DC-97)
 - **목표**: **로그인 회원 전용 1:1 비공개 문의** + 운영자 답변. 반복 문의는 **FAQ 사전 안내**로 감축.
 - **DB**: `DB-MIG-10` — `inquiry_status` enum·`inquiries`(DB-T-11)·인덱스·RLS(owner-or-admin)·`set_updated_at`. (MCP `execute_sql` 쓰기 차단 유의 — `apply_migration`으로 DDL 적용 후 `generate_typescript_types` 재생성.)
 - **API**: `POST /api/inquiries`(TS-API-14, 회원·`assertSameOrigin`·Zod, `user_id` 서버 주입), `PATCH /api/admin/inquiries/[id]`(TS-API-15, `requireAdmin` 답변·상태 전이). 목록·상세는 RSC RLS 조회(TS-API-07).
@@ -242,4 +242,4 @@
 
 ---
 
-*EPIC-A·B·C·D·E·F·G·L 완료(카탈로그 포함). **신설 EPIC-M(정보구조 개편)·N(문의사항)은 문서 정본화 완료(2026-07-29), 구현 대기.** 다음 착수 권장: **EPIC-M/N** 또는 **EPIC-K(i18n 완성, Jira DC-10)** / **EPIC-I 품질(Jira DC-8: alert→토스트·접근성·색상 토큰 통일 DC-57)**. EPIC-D 잔여는 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 잔여는 실제 도서 판매 URL(§5-5).*
+*EPIC-A·B·C·D·E·F·G·L·**M·N** 완료(카탈로그·정보구조 개편·문의사항 포함, 2026-07-29). 다음 착수 권장: **EPIC-K(i18n 완성, Jira DC-10 — 분리된 섹션의 KO 하드코딩 메시지화 포함)** / **EPIC-I 품질(Jira DC-8: alert→토스트·접근성·색상 토큰 통일 DC-57)**. EPIC-D 잔여는 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 잔여는 실제 도서 판매 URL(§5-5).*

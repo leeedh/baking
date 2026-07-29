@@ -133,10 +133,26 @@ export interface AdminOrderRow {
   canceledAt: string | null;
 }
 
+/** DC-97 · 1:1 비공개 문의(DB-T-11). 작성자 화면·운영자 큐가 같은 형태를 쓴다. */
+export interface InquiryRow {
+  id: string;
+  category: string;
+  subject: string;
+  body: string;
+  status: 'open' | 'answered' | 'closed';
+  answerBody: string | null;
+  answeredAt: string | null;
+  createdAt: string;
+  /** 운영자 화면에서만 채워진다(작성자 표기). 작성자 본인 화면에서는 null. */
+  authorLabel: string | null;
+}
+
 export interface AdminDashboard {
   kpi: AdminKpi;
   classes: AdminClassRow[];
   orders: AdminOrderRow[];
+  /** 운영자 문의 큐(미답변 우선). */
+  inquiries: InquiryRow[];
 }
 
 /** 운영자 화면의 자료 행(Storage 경로는 노출하지 않음). */

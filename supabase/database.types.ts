@@ -238,6 +238,63 @@ export type Database = {
           },
         ]
       }
+      inquiries: {
+        Row: {
+          answer_body: string | null
+          answered_at: string | null
+          answered_by: string | null
+          body: string
+          category: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["inquiry_status"]
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer_body?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["inquiry_status"]
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer_body?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["inquiry_status"]
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiries_answered_by_fkey"
+            columns: ["answered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           chapter_index: number
@@ -734,7 +791,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      inquiry_status: "open" | "answered" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -861,6 +918,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      inquiry_status: ["open", "answered", "closed"],
+    },
   },
 } as const

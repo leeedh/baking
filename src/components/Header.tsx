@@ -117,6 +117,19 @@ export default function Header() {
             {t('nav.myclasses')}
           </Link>
 
+          <Link
+            href="/inquiries"
+            id="nav-inquiries"
+            onClick={() => setIsOpen(false)}
+            className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+              isActive('/inquiries')
+                ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
+                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/3'
+            }`}
+          >
+            {t('nav.inquiries')}
+          </Link>
+
           {isAdmin && (
             <Link
               href="/admin"
@@ -270,6 +283,19 @@ export default function Header() {
             }`}
           >
             {t('nav.myclasses')}
+          </Link>
+
+          <Link
+            href="/inquiries"
+            id="nav-inquiries-mobile"
+            onClick={() => setIsOpen(false)}
+            className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              isActive('/inquiries')
+                ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
+                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/5'
+            }`}
+          >
+            {t('nav.inquiries')}
           </Link>
 
           {isAdmin && (

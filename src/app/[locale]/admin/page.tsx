@@ -19,6 +19,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
       initialKpi={dashboard.kpi}
       initialClasses={dashboard.classes}
       initialOrders={dashboard.orders}
+      initialInquiries={dashboard.inquiries}
     />
   );
 }

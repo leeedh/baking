@@ -1,12 +1,13 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
-import type { AdminClassRow, AdminKpi, AdminOrderRow } from '@/types';
+import type { AdminClassRow, AdminKpi, AdminOrderRow, InquiryRow } from '@/types';
 import {
   Coins,
   Filter,
   GraduationCap,
   ListVideo,
+  MessagesSquare,
   Plus,
   Receipt,
   RotateCcw,
@@ -21,6 +22,8 @@ type Props = {
   initialKpi: AdminKpi;
   initialClasses: AdminClassRow[];
   initialOrders: AdminOrderRow[];
+  /** DC-97 · 운영자 문의 큐(미답변 우선). */
+  initialInquiries: InquiryRow[];
 };
 
 // TODO(DC-10): 아래 한국어 문구는 메시지 카탈로그로 이전한다.
@@ -30,6 +33,12 @@ const ORDER_STATUS_LABEL: Record<AdminOrderRow['status'], { text: string; cls: s
   canceled: { text: '취소됨', cls: 'bg-[#5F4E43]/10 text-[#5F4E43]' },
   pending: { text: '대기', cls: 'bg-[#B0863C]/10 text-[#B0863C]' },
   failed: { text: '실패', cls: 'bg-[#5F4E43]/10 text-[#5F4E43]' },
+};
+
+const INQUIRY_STATUS_LABEL: Record<InquiryRow['status'], string> = {
+  open: '미답변',
+  answered: '답변완료',
+  closed: '종료',
 };
 
 function formatDate(iso: string | null): string {
@@ -52,7 +61,12 @@ async function readError(res: Response): Promise<string> {
   }
 }
 
-export default function DashboardScreen({ initialKpi, initialClasses, initialOrders }: Props) {
+export default function DashboardScreen({
+  initialKpi,
+  initialClasses,
+  initialOrders,
+  initialInquiries,
+}: Props) {
   const router = useRouter();
   const kpi = initialKpi;
   const classList = initialClasses;
@@ -60,6 +74,10 @@ export default function DashboardScreen({ initialKpi, initialClasses, initialOrd
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // DC-97 문의 답변
+  const [answeringId, setAnsweringId] = useState<string | null>(null);
+  const [answerDraft, setAnswerDraft] = useState('');
 
   // 환불 확인 모달
   const [refundTarget, setRefundTarget] = useState<AdminOrderRow | null>(null);
@@ -74,6 +92,38 @@ export default function DashboardScreen({ initialKpi, initialClasses, initialOrd
   const [newTitle, setNewTitle] = useState('');
   const [newInstructor, setNewInstructor] = useState('');
   const [newPrice, setNewPrice] = useState<number>(0);
+
+  /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
+  const patchInquiry = async (id: string, patch: { answerBody?: string; status?: string }) => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) {
+        setError(await readError(res));
+        return false;
+      }
+      router.refresh();
+      return true;
+    } catch {
+      setError('요청을 처리하지 못했습니다.');
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitAnswer = async (id: string) => {
+    const ok = await patchInquiry(id, { answerBody: answerDraft.trim() });
+    if (ok) {
+      setAnsweringId(null);
+      setAnswerDraft('');
+    }
+  };
 
   const startEditPrice = (cls: AdminClassRow) => {
     setError(null);
@@ -463,6 +513,121 @@ export default function DashboardScreen({ initialKpi, initialClasses, initialOrd
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* INQUIRIES · 답변 관리 (DC-97 · PRD-F-21) */}
+      <div className="mt-10 bg-white rounded-2xl border border-[#EFE8DC] shadow-sm overflow-hidden">
+        <div className="p-6 bg-[#FAF4EA]/40 border-b border-[#EFE8DC] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 className="font-serif text-base font-bold text-[#2A211B] flex items-center gap-1.5">
+              <MessagesSquare size={16} className="text-[#B65538]" /> 문의 · 답변 관리
+            </h3>
+            <p className="text-[11px] text-[#5F4E43] mt-0.5">
+              1:1 비공개 문의입니다. 답변을 등록하면 작성자만 자신의 문의 상세에서 확인합니다.
+            </p>
+          </div>
+          <span className="text-xs font-semibold text-[#5F4E43] flex items-center gap-1">
+            <Filter size={13} /> 미답변 우선
+          </span>
+        </div>
+
+        {initialInquiries.length === 0 ? (
+          <div className="py-16 text-center text-sm text-[#5F4E43]">문의 내역이 없습니다.</div>
+        ) : (
+          <ul className="divide-y divide-[#EFE8DC]">
+            {initialInquiries.map((inq) => (
+              <li key={inq.id} className="p-6 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      inq.status === 'open'
+                        ? 'bg-[#B0863C]/10 text-[#B0863C]'
+                        : inq.status === 'answered'
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'bg-[#5F4E43]/10 text-[#5F4E43]'
+                    }`}
+                  >
+                    {INQUIRY_STATUS_LABEL[inq.status]}
+                  </span>
+                  <span className="text-[11px] text-[#5F4E43]">{inq.category}</span>
+                  <span className="text-[11px] text-[#5F4E43]/60">{inq.authorLabel}</span>
+                  <span className="text-[11px] text-[#5F4E43]/50">{formatDate(inq.createdAt)}</span>
+                </div>
+
+                <p className="font-serif text-sm font-bold text-[#2A211B]">{inq.subject}</p>
+                <p className="text-xs text-[#5F4E43] font-light leading-relaxed whitespace-pre-wrap">
+                  {inq.body}
+                </p>
+
+                {inq.answerBody && answeringId !== inq.id && (
+                  <div className="bg-[#FAF4EA]/60 rounded-xl border border-[#EFE8DC] p-3">
+                    <span className="text-[10px] font-bold text-[#B65538] uppercase tracking-wider">
+                      등록된 답변
+                    </span>
+                    <p className="text-xs text-[#2A211B] font-light leading-relaxed whitespace-pre-wrap mt-1">
+                      {inq.answerBody}
+                    </p>
+                  </div>
+                )}
+
+                {answeringId === inq.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={answerDraft}
+                      onChange={(e) => setAnswerDraft(e.target.value)}
+                      rows={4}
+                      maxLength={4000}
+                      aria-label="답변 내용"
+                      placeholder="답변 내용을 입력하세요"
+                      className="w-full px-3 py-2.5 bg-white border border-[#EFE8DC] rounded-xl text-xs text-[#2A211B] leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#B65538]"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setAnsweringId(null)}
+                        className="px-4 py-2 border border-[#EFE8DC] text-[#5F4E43] text-xs font-medium rounded-lg hover:bg-[#FAF4EA] transition-colors cursor-pointer"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy || answerDraft.trim().length === 0}
+                        onClick={() => submitAnswer(inq.id)}
+                        className="px-4 py-2 bg-[#2A211B] hover:bg-[#B65538] disabled:opacity-50 text-[#FAF4EA] text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                      >
+                        답변 등록
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError(null);
+                        setAnsweringId(inq.id);
+                        setAnswerDraft(inq.answerBody ?? '');
+                      }}
+                      className="px-4 py-2 bg-[#2A211B] hover:bg-[#B65538] text-[#FAF4EA] text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                    >
+                      {inq.answerBody ? '답변 수정' : '답변 등록'}
+                    </button>
+                    {inq.status !== 'closed' && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => patchInquiry(inq.id, { status: 'closed' })}
+                        className="px-4 py-2 border border-[#EFE8DC] text-[#5F4E43] text-xs font-medium rounded-lg hover:bg-[#FAF4EA] disabled:opacity-50 transition-colors cursor-pointer"
+                      >
+                        종료 처리
+                      </button>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
