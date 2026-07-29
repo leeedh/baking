@@ -66,19 +66,6 @@ export default function Header() {
           className="hidden md:flex items-center gap-2 lg:gap-6 font-sans text-xs sm:text-sm font-medium"
         >
           <Link
-            href="/books"
-            id="nav-books"
-            onClick={() => setIsOpen(false)}
-            className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
-              isActive('/books')
-                ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
-                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/3'
-            }`}
-          >
-            {t('nav.books')}
-          </Link>
-
-          <Link
             href="/about"
             id="nav-about"
             onClick={() => setIsOpen(false)}
@@ -105,16 +92,16 @@ export default function Header() {
           </Link>
 
           <Link
-            href={isLoggedIn ? '/my-classes' : '/login'}
-            id="nav-myclasses"
+            href="/books"
+            id="nav-books"
             onClick={() => setIsOpen(false)}
             className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
-              isMyClassesActive
+              isActive('/books')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
                 : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/3'
             }`}
           >
-            {t('nav.myclasses')}
+            {t('nav.books')}
           </Link>
 
           <Link
@@ -128,6 +115,19 @@ export default function Header() {
             }`}
           >
             {t('nav.inquiries')}
+          </Link>
+
+          <Link
+            href={isLoggedIn ? '/my-classes' : '/login'}
+            id="nav-myclasses"
+            onClick={() => setIsOpen(false)}
+            className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+              isMyClassesActive
+                ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
+                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/3'
+            }`}
+          >
+            {t('nav.myclasses')}
           </Link>
 
           {isAdmin && (
@@ -234,19 +234,6 @@ export default function Header() {
           className="md:hidden mt-3 pt-3 pb-2 border-t border-[#EFE8DC] flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-3 duration-200"
         >
           <Link
-            href="/books"
-            id="nav-books-mobile"
-            onClick={() => setIsOpen(false)}
-            className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
-              isActive('/books')
-                ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
-                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/5'
-            }`}
-          >
-            {t('nav.books')}
-          </Link>
-
-          <Link
             href="/about"
             id="nav-about-mobile"
             onClick={() => setIsOpen(false)}
@@ -273,16 +260,16 @@ export default function Header() {
           </Link>
 
           <Link
-            href={isLoggedIn ? '/my-classes' : '/login'}
-            id="nav-myclasses-mobile"
+            href="/books"
+            id="nav-books-mobile"
             onClick={() => setIsOpen(false)}
             className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
-              isMyClassesActive
+              isActive('/books')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
                 : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/5'
             }`}
           >
-            {t('nav.myclasses')}
+            {t('nav.books')}
           </Link>
 
           <Link
@@ -296,6 +283,19 @@ export default function Header() {
             }`}
           >
             {t('nav.inquiries')}
+          </Link>
+
+          <Link
+            href={isLoggedIn ? '/my-classes' : '/login'}
+            id="nav-myclasses-mobile"
+            onClick={() => setIsOpen(false)}
+            className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              isMyClassesActive
+                ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
+                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/5'
+            }`}
+          >
+            {t('nav.myclasses')}
           </Link>
 
           {isAdmin && (
