@@ -1,6 +1,6 @@
 # Atelier Crème — 남은 작업 계획 (Implementation Plan)
 
-> **작성일**: 2026-07-08 · **개정**: 2026-07-27 (EPIC-C~G·L 완료, 도서·강사 정본화 반영 / Jira DC 동기화)
+> **작성일**: 2026-07-08 · **개정**: 2026-07-29 (정보구조 개편·문의사항 정본 편입 — EPIC-M/N 신설) / 2026-07-27 (EPIC-C~G·L 완료, 도서·강사 정본화 반영 / Jira DC 동기화)
 > **기준 문서**: PRD v1.1(정본) · TechSpec v1.1(정본) · DBSchema v1.0(정본) · UXGuide v2.0(as-built)
 > **목적**: 가이드 문서(목표 스펙)와 현재 코드(`src/`)를 비교해 **남은 구현 작업**을 정리한다.
 >
@@ -62,6 +62,8 @@
 | 접근성 | PRD-NF-08 | 초기 수준 | WCAG AA(포커스/키보드/SR/대비/reduced-motion) |
 | 성능 | PRD-NF-01/02 | 클라 렌더 | SSG/ISR, TanStack Query, DB 인덱스 |
 | 관측성 | TS §6.4 | 없음 | Sentry, Supabase Logs, 분석 이벤트(M-01~05) |
+| 정보구조·내비 | PRD-F-20 | 단일 랜딩(`CatalogScreen`)에 전 섹션 뭉침, 내비 3항목 | **홈(게이트웨이)·소개·온라인 클래스 분리**(EPIC-M), 강사 소개 흡수, 검색 `/classes?q=` 이관 |
+| 문의사항 | PRD-F-21 | 없음 | **1:1 비공개 문의**(inquiries 테이블·RLS·라우트·UI) + FAQ 사전 안내(EPIC-N) |
 
 ---
 
@@ -166,6 +168,20 @@
 - zh-CN 확장 구조 준비(값은 v1.1).
 - **참조**: PRD-F-01, PRD-NF-06, TS-ADR-05/07
 
+### EPIC-M · 정보구조 개편(홈/소개/온라인 클래스) (P1) — 🆕 신설(2026-07-29, = Jira DC-96)
+- **목표**: 단일 랜딩(`CatalogScreen.tsx`, 966줄)에 뭉친 브랜드/클래스 콘텐츠를 **홈(게이트웨이)·소개(`/about`)·온라인 클래스(`/classes`)** 3면으로 분리해 운영자가 소개와 판매를 독립 관리.
+- **섹션 배분**: 홈=히어로→요약 3카드→베스트 클래스 3개→수강생 아카이브→셰프 배너→뉴스레터. 소개=브랜드 철학 전문(3 pillars)→셰프 프로필·연혁·인터뷰→도서 CTA. 온라인 클래스=추천 퀴즈→검색·카테고리 필터→전체 그리드→FAQ.
+- **작업**: 라우트 신설(`/`, `/about`, `/classes`), `CatalogScreen` → `sections/` 분해, **검색 state를 `/classes?q=`로 이관**(히어로 push / 페이지 `searchParams` 수신), **`/instructor` → `/about` 리다이렉트**(`nav.instructor` 키 정리), `Header` 내비에 소개·온라인 클래스·문의사항 추가, `<NewsletterCTA>` 공통 추출, **prefetch 목록 갱신**(홈=`/classes`·`/about`).
+- **i18n**: 분리 대상 섹션은 KO 하드코딩 다수 → **분리를 먼저**, 전면 메시지화는 EPIC-K와 연계한 별도 작업으로.
+- **참조**: PRD-F-20, TS-COMP-13/14/S7, TS-ADR-01/07. Jira **DC-96**.
+
+### EPIC-N · 문의사항(1:1 비공개) (P1) — 🆕 신설(2026-07-29, = Jira DC-97)
+- **목표**: **로그인 회원 전용 1:1 비공개 문의** + 운영자 답변. 반복 문의는 **FAQ 사전 안내**로 감축.
+- **DB**: `DB-MIG-10` — `inquiry_status` enum·`inquiries`(DB-T-11)·인덱스·RLS(owner-or-admin)·`set_updated_at`. (MCP `execute_sql` 쓰기 차단 유의 — `apply_migration`으로 DDL 적용 후 `generate_typescript_types` 재생성.)
+- **API**: `POST /api/inquiries`(TS-API-14, 회원·`assertSameOrigin`·Zod, `user_id` 서버 주입), `PATCH /api/admin/inquiries/[id]`(TS-API-15, `requireAdmin` 답변·상태 전이). 목록·상세는 RSC RLS 조회(TS-API-07).
+- **UI**: `/inquiries` = FAQ 사전 안내 블록 + 회원 문의 폼·내 문의 목록·상세(답변 표시). 운영자 콘솔에 미답변 큐·답변 UI.
+- **참조**: PRD-F-21, DB-T-11, TS-API-07/14/15, TS-COMP-13. Jira **DC-97**.
+
 ---
 
 ## 3. 데이터 모델 정합성 정리 (병행 필요)
@@ -192,7 +208,7 @@
 |------|-----------|------|---------|
 | **1. 기반** | ✅ A · ✅ B · 🔄 J | Next.js 이관 ✅ + Supabase 스키마 ✅ + (CI 등 J 잔여) | (사전) |
 | **2. Alpha** | ✅ C · ✅ D · **E**(다음) + I(성능/에러/보안) | 인증 ✅·결제 ✅·보안시청(잔여) | PRD-P-01 (Week 4) |
-| **3. Beta** | F, G, K, L | 운영콘솔·자료·후기·i18n·도서·강사 완성 | PRD-P-02 (Week 8) |
+| **3. Beta** | F, G, K, L, **M, N** | 운영콘솔·자료·후기·i18n·도서·강사 완성 + **정보구조 개편·문의사항** | PRD-P-02 (Week 8) |
 | **4. GA** | H, I(접근성/관측성) 마감 | 환불·품질·모니터링, M-01 달성 | PRD-P-03 (Week 12) |
 | **5. v1.1** | 중국결제/zh-CN/DRM | 확장 | PRD-P-04 |
 
@@ -226,4 +242,4 @@
 
 ---
 
-*EPIC-A·B·C·D·E·F·G·L 완료(카탈로그 포함). 다음 착수 권장: **EPIC-K(i18n 완성, Jira DC-10)** 또는 **EPIC-I 품질(Jira DC-8: alert→토스트·접근성·색상 토큰 통일 DC-57)**. EPIC-D 잔여는 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 잔여는 실제 도서 판매 URL(§5-5).*
+*EPIC-A·B·C·D·E·F·G·L 완료(카탈로그 포함). **신설 EPIC-M(정보구조 개편)·N(문의사항)은 문서 정본화 완료(2026-07-29), 구현 대기.** 다음 착수 권장: **EPIC-M/N** 또는 **EPIC-K(i18n 완성, Jira DC-10)** / **EPIC-I 품질(Jira DC-8: alert→토스트·접근성·색상 토큰 통일 DC-57)**. EPIC-D 잔여는 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 잔여는 실제 도서 판매 URL(§5-5).*

@@ -1,0 +1,157 @@
+'use client';
+
+import { useRouter } from '@/i18n/navigation';
+import { ChevronRight, Clock, PlayCircle, Star } from 'lucide-react';
+import type { ClassItem } from '../../types';
+
+interface ClassCardProps {
+  cls: ClassItem;
+}
+
+// DC-96 · 카탈로그 카드. 홈(베스트 3)·온라인 클래스(전체 그리드) 양쪽에서 재사용한다.
+// 클릭 타깃이 제목·버튼 둘이라 <Link> 래핑 대신 router.push를 쓴다(프리페치는 호출부에서 수행).
+export default function ClassCard({ cls }: ClassCardProps) {
+  const router = useRouter();
+  const onNavigateToDetail = () => router.push(`/classes/${cls.id}`);
+
+  const discountPercent = Math.round((1 - cls.price / cls.originalPrice) * 100);
+  const monthlyInstallment = Math.round(cls.price / 12);
+
+  return (
+    <div
+      id={`class-card-${cls.id}`}
+      className="bg-white rounded-2xl border border-[#EFE8DC] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col group"
+    >
+      {/* Image wrapper with high detail animation */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#FAF4EA]">
+        <img
+          referrerPolicy="no-referrer"
+          src={cls.thumbnail}
+          alt={cls.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-[0.97]"
+        />
+
+        {/* Dark gradient vignette edge */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-60 pointer-events-none" />
+
+        {/* Left Category Badge Overlays */}
+        <span className="absolute top-3 left-3 bg-[#2A211B]/90 backdrop-blur-md text-[#FAF4EA] text-[10px] font-semibold px-2.5 py-1 rounded-lg tracking-wider border border-white/5 uppercase">
+          {cls.category}
+        </span>
+
+        {/* Right Ownership/Discount Overlays */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
+          <span className="bg-[#B65538] text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full tracking-wider uppercase shadow-md">
+            평생 소장 VOD
+          </span>
+          {discountPercent > 0 && (
+            <span className="bg-[#B0863C] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-sm">
+              {discountPercent}% OFF
+            </span>
+          )}
+        </div>
+
+        {/* FREE PREVIEW FLOATING ACCENT BOARD */}
+        <span className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md text-[#2A211B] text-[10px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg border border-[#EFE8DC]/80 flex items-center gap-1.5">
+          <PlayCircle size={13} className="text-[#B65538] animate-pulse" />
+          <span>1차시 무료 즉시 보기 포함</span>
+        </span>
+
+        {/* Students total counter */}
+        <span className="absolute bottom-3 right-3 bg-[#2A211B]/65 backdrop-blur text-white text-[9px] px-2 py-1 rounded">
+          누적 {cls.studentsCount.toLocaleString()}명 수강
+        </span>
+      </div>
+
+      {/* Card Main Editorial Content */}
+      <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
+        <div className="space-y-3">
+          {/* Instructor detailed profile header */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#B1863C]">{cls.instructor}</span>
+            <span className="text-[10px] text-[#5F4E43]/45">|</span>
+            <span className="text-[10px] text-[#5F4E43]/90 font-light truncate max-w-[190px]">
+              {cls.instructorTitle}
+            </span>
+          </div>
+
+          {/* Title: High serif, line limit */}
+          <h3
+            onClick={onNavigateToDetail}
+            className="font-serif text-[17px] sm:text-[18px] font-bold text-[#2A211B] line-clamp-2 hover:text-[#B65538] cursor-pointer transition-colors leading-snug"
+          >
+            {cls.title}
+          </h3>
+
+          {/* Multi metrics badges bar */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-[#B0863C] bg-[#B0863C]/6 px-2 py-1 rounded-md">
+              <Star size={11} className="fill-[#B0863C] text-none" />
+              <span>{cls.rating.toFixed(1)}</span>
+              <span className="text-[10px] text-[#5F4E43]/60 font-medium">
+                ({cls.reviewCount} 리뷰)
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[10.5px] text-[#5F4E43] font-light bg-[#FAF4EA] px-2 py-1 rounded-md">
+              <Clock size={11} />
+              <span>{cls.duration}</span>
+            </div>
+            <div className="text-[10.5px] text-[#B65538] font-semibold bg-[#B65538]/6 px-2 py-1 rounded-md border border-[#B65538]/10">
+              {cls.level}마스터
+            </div>
+          </div>
+
+          {/* Detail overview text excerpt */}
+          <p className="text-xs text-[#5F4E43]/85 font-light leading-relaxed line-clamp-2">
+            {cls.description}
+          </p>
+
+          {/* Class custom highlights flags */}
+          <div className="flex flex-wrap gap-1.5 pt-1.5">
+            <span className="text-[9.5px] text-[#5F4E43]/80 bg-[#FAF4EA] rounded-full px-2 py-0.5 border border-[#EFE8DC]">
+              #원가절감 배합
+            </span>
+            <span className="text-[9.5px] text-[#5F4E43]/80 bg-[#FAF4EA] rounded-full px-2 py-0.5 border border-[#EFE8DC]">
+              #밀착 오븐피드백
+            </span>
+            <span className="text-[9.5px] text-[#5F4E43]/80 bg-[#FAF4EA] rounded-full px-2 py-0.5 border border-[#EFE8DC]">
+              #비밀 PDF북
+            </span>
+          </div>
+        </div>
+
+        {/* Price with monthly split indicator */}
+        <div className="pt-4 border-t border-[#EFE8DC]/70 flex items-end justify-between">
+          <div className="space-y-0.5">
+            {discountPercent > 0 && (
+              <span className="block text-[10.5px] text-[#5F4E43]/50 line-through">
+                ₩{cls.originalPrice.toLocaleString()}원
+              </span>
+            )}
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold text-[#2A211B]">
+                ₩{cls.price.toLocaleString()}
+              </span>
+              <span className="text-[11px] text-[#B65538] font-bold">일시불</span>
+            </div>
+            <span className="text-[10px] text-[#B0863C] block font-light">
+              무이자 12개월 할부 시{' '}
+              <strong className="font-bold text-[#B0863C]">
+                월 ₩{monthlyInstallment.toLocaleString()}원
+              </strong>
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onNavigateToDetail}
+            className="px-4 py-2.5 bg-[#2A211B] text-white text-[11px] font-bold rounded-xl hover:bg-[#B65538] transition-all cursor-pointer shadow-sm shadow-[#2A211B]/10 active:scale-95 flex items-center gap-1"
+          >
+            <span>마스터 코스 탐색</span>
+            <ChevronRight size={12} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -85,6 +85,7 @@ graph TD
 | TS-ARCH-03 | 보안 영상 재생 | 차시 진입 | 서버에서 수강권 확인 → Mux 서명 JWT 발급(TS-API-12) → Mux Player 재생 | PRD-F-06, PRD-NF-04 |
 | TS-ARCH-04 | 진도 저장 | 재생 중 | Player `timeupdate` → 디바운스 → `progress` upsert | PRD-F-07 |
 | TS-ARCH-05 | 자료 다운로드 | 다운로드 클릭 | 수강권 확인 → Storage 서명 URL 발급(TS-API-13) | PRD-F-09 |
+| TS-ARCH-06 | 문의 작성 → 답변 | 문의 등록 | 로그인 회원 → `POST /api/inquiries`(TS-API-14) → 운영자 답변 `PATCH`(TS-API-15) → 작성자 열람(RLS, TS-API-07) | PRD-F-21, PRD-NF-03 |
 
 ### 2.3 시퀀스 다이어그램 — 보안 영상 재생 (핵심)
 ```mermaid
@@ -112,10 +113,14 @@ sequenceDiagram
 src/
 ├── app/
 │   └── [locale]/           # next-intl 로케일 라우팅 (PRD-F-01)
-│       ├── (marketing)/    # 카탈로그·랜딩 (SSG/ISR)
+│       ├── page.tsx        # 홈 = 브랜드 게이트웨이 (PRD-F-20)
+│       ├── about/          # 소개: 철학 전문·셰프·연혁·도서 CTA (강사 소개 흡수)
+│       ├── classes/        # 온라인 클래스: 퀴즈·검색(?q=)·그리드·FAQ (카탈로그 본체)
+│       ├── inquiries/      # 문의사항: FAQ 사전 안내 + 1:1 문의 폼·목록 (PRD-F-21)
 │       ├── (learn)/        # 시청 페이지 (인증 필요)
-│       ├── admin/          # 운영자 콘솔
-│       └── api/            # Route Handlers (결제·토큰·webhook)
+│       ├── admin/          # 운영자 콘솔 (문의 답변 포함)
+│       └── api/            # Route Handlers (결제·토큰·webhook·inquiries)
+│   # 참고: /instructor → /about 리네이밍, 기존 경로는 리다이렉트 유지 (PRD-F-20)
 ├── features/               # 기능별 모듈 (PRD-F-XX 단위)
 │   ├── catalog/  checkout/  player/  enrollment/
 │   ├── materials/  reviews/  admin/
@@ -288,6 +293,7 @@ src/
 | TS-API-04 | UPSERT | `progress` | required | 본인 소유 | PRD-F-07 |
 | TS-API-05 | INSERT | `reviews` | required | 해당 course에 active enrollment | PRD-F-10 |
 | TS-API-06 | INSERT/UPDATE | `courses`,`lessons` | required | role = 'admin' | PRD-F-08 |
+| TS-API-07 | SELECT | `inquiries` | required | 본인 소유 OR admin | PRD-F-21 |
 
 ### 4.2 RPC 함수
 ```sql
@@ -321,6 +327,10 @@ end; $$;
 | TS-API-11 | POST `/api/payments/webhook` | PG Webhook 수신, 멱등 처리 | 서명 검증 | PRD-F-04.1, PRD-NF-05 |
 | TS-API-12 | POST `/api/video/playback-token` | 수강권 확인 후 Mux 서명 JWT 발급 | required | PRD-F-06, PRD-NF-04 |
 | TS-API-13 | POST `/api/materials/download-url` | 수강권 확인 후 Storage 서명 URL | required | PRD-F-09 |
+| TS-API-14 | POST `/api/inquiries` | 로그인 회원 1:1 문의 생성. `assertSameOrigin` + Zod 검증, `user_id`는 서버 세션에서 주입(클라 값 불신뢰) | required | PRD-F-21 |
+| TS-API-15 | PATCH `/api/admin/inquiries/[id]` | 운영자 답변 등록·상태 전이(`open→answered→closed`). `requireAdmin` + `assertSameOrigin` | admin | PRD-F-21 |
+
+> 미들웨어 matcher가 `/api`를 제외하므로 이 라우트들은 자체 가드가 필수다: `getUser()`(세션)·`assertSameOrigin()`(`src/lib/api/origin.ts`)·`requireAdmin()`(`src/lib/auth/require-admin.ts`)를 재사용하고, RLS(owner-or-admin)는 backstop이다. 문의 목록·상세 조회는 RSC에서 request-scoped 클라이언트(RLS 적용, TS-API-07)로 직접 읽는다.
 
 ```yaml
 # TS-API-12 — OpenAPI 3.1 fragment
@@ -368,7 +378,7 @@ paths:
 ### 5.1 Feature Modules
 | ID | 모듈명 | 책임 | 주요 의존성 | PRD 참조 |
 |----|--------|------|-------------|---------|
-| TS-COMP-01 | `features/catalog` | 클래스 목록·상세·미리보기 | **Supabase** (Sanity 제거) | PRD-F-02 |
+| TS-COMP-01 | `features/catalog` | 클래스 목록·상세·미리보기. **온라인 클래스 페이지(`/classes`)로 이동 — 추천 퀴즈·검색(`?q=`)·카테고리 필터·FAQ 포함** (PRD-F-20) | **Supabase** (Sanity 제거) | PRD-F-02 |
 | TS-COMP-02 | `features/auth` | 로그인·회원가입·세션 | Supabase Auth | PRD-F-03 |
 | TS-COMP-03 | `features/checkout` | 결제창·통화 분기 | TossPayments SDK / 의존: TS-API-10 | PRD-F-04 |
 | TS-COMP-04 | `features/enrollment` | 내 클래스·영구 수강권 | Supabase / 의존: TS-API-03 | PRD-F-05 |
@@ -379,7 +389,9 @@ paths:
 | TS-COMP-09 | `features/dashboard` | 매출·수강·완주율 집계 | Supabase | PRD-F-11 |
 | TS-COMP-10 | `app/[locale]` i18n provider | 로케일·통화·번역 | next-intl | PRD-F-01 |
 | TS-COMP-11 | `features/books` | 도서 목록·소개 노출, **구매는 외부 커머스(네이버쇼핑/쿠팡) `external_purchase_url`로 링크 이동** | Supabase(또는 정적 데이터) — 내부 orders/결제/배송 **없음** | PRD-F-19 |
-| TS-COMP-12 | `features/instructor` | 대표 파티시에 소개(연혁·철학·Q&A). 단일 브랜드 정적 콘텐츠 | i18n | PRD-F-18 |
+| TS-COMP-12 | `features/instructor` | 대표 파티시에 소개(연혁·철학·Q&A). 단일 브랜드 정적 콘텐츠. **PRD-F-20에서 `/about`로 통합, 기존 `/instructor`는 리다이렉트** | i18n | PRD-F-18 |
+| TS-COMP-13 | `features/inquiry` | 1:1 비공개 문의 작성·목록·상세 + 운영자 답변 UI. FAQ 사전 안내 | Supabase / 의존: TS-API-14/15/07 | PRD-F-21 |
+| TS-COMP-14 | `features/home`·`features/about` | 홈=브랜드 게이트웨이(요약 3카드·베스트 클래스 3·아카이브·셰프 배너), 소개=철학 전문·셰프·연혁·도서 CTA. 기존 `CatalogScreen`을 `sections/`로 분해해 재구성 | Supabase | PRD-F-20 |
 
 ### 5.2 Shared Components
 | ID | 컴포넌트 | 용도 | Atomic Level |
@@ -390,6 +402,13 @@ paths:
 | TS-COMP-S4 | `<PriceTag />` | 통화·로케일별 가격 표시 | Atom |
 | TS-COMP-S5 | `<CheckoutButton />` | 결제 트리거 | Molecule |
 | TS-COMP-S6 | `<ScrollRevealHero />` | GSAP ScrollTrigger 히어로(줌 리빌·크로스페이드). `ssr:false` + reduced-motion 대응 | Organism |
+| TS-COMP-S7 | `<NewsletterCTA />` | 홈·소개·온라인 클래스 3면 공통 뉴스레터 구독 CTA(기존 랜딩 하단 섹션 추출) | Molecule |
+
+> **정보구조 개편(PRD-F-20) 구현 유의점** (EPIC-M):
+> 1. **검색 state 분리** — `MeringueHero`가 홈에서 받던 `searchQuery`는 그리드가 `/classes`로 빠지면 끊긴다. 히어로 검색은 `router.push('/classes?q=...')`로 넘기고, 온라인 클래스 페이지가 `searchParams`로 초기값을 수신한다.
+> 2. **`CatalogScreen`(966줄 단일 클라 컴포넌트) 분해** — `sections/`로 퀴즈·아카이브·FAQ·Pillars·셰프·뉴스레터를 추출(각자 state를 가져 분리 용이). 홈/소개/클래스가 필요한 섹션만 조립.
+> 3. **prefetch 갱신** — 홈은 전체 클래스 상세 대신 `/classes`·`/about`를 프리페치(프로덕션 한정, dev 컴파일 회피).
+> 4. **i18n** — 분리 대상 섹션 카피 다수가 JSX 하드코딩 KO다. **분리를 먼저** 하고 전면 메시지화는 **EPIC-K와 연계한 별도 작업**으로 둔다.
 
 ### 5.3 핵심 타입 정의
 ```typescript

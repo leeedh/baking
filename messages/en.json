@@ -1,7 +1,8 @@
 {
   "nav": {
     "books": "Book Shop",
-    "instructor": "Meet Chef",
+    "about": "About",
+    "classes": "Online Classes",
     "myclasses": "My Classes",
     "dashboard": "Admin Dashboard",
     "login": "Sign In / Register",

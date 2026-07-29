@@ -4,16 +4,25 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import React, { useEffect, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface MeringueHeroProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  /**
+   * DC-96 · 히어로는 홈에 있고 클래스 그리드는 `/classes`로 빠졌다.
+   * 검색어는 홈에 머무르지 않고 온라인 클래스 페이지로 넘긴다(`/classes?q=`).
+   */
+  onSearch: (query: string) => void;
+  /** "클래스 탐색" — 온라인 클래스 목록으로 이동. */
+  onExplore: () => void;
+  /** "추천 퀴즈" — 온라인 클래스 페이지의 퀴즈 섹션으로 이동. */
+  onQuiz: () => void;
 }
 
-export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHeroProps) {
+export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHeroProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const t = useTranslations();
   const language = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -146,14 +155,10 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
     };
   }, []);
 
-  const handleExploreClick = () => {
-    const element = document.getElementById('catalog-grid-anchor');
-    element?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleQuizClick = () => {
-    const element = document.getElementById('baking-quiz-section');
-    element?.scrollIntoView({ behavior: 'smooth' });
+  // 그리드·퀴즈가 /classes로 빠졌으므로 스크롤 대신 라우팅한다(호출부가 목적지를 정함).
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(searchQuery.trim());
   };
 
   return (
@@ -185,32 +190,35 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
 
         {/* Right Search and Actions */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-end">
-          {/* Search Input */}
-          <div className="relative w-full sm:w-64">
+          {/* Search Input — 제출 시 /classes?q=로 이동한다 */}
+          <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#4E3C30]/60">
               <Search size={13} />
             </span>
             <input
               id="catalog-search-input-fixed"
-              type="text"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('hero.searchPlaceholder')}
+              aria-label={t('hero.searchPlaceholder')}
               className="w-full pl-8 pr-3 py-1.5 bg-white/80 border border-[#EFE8DC] rounded-lg text-xs text-[#2C1A12] placeholder-[#4E3C30]/50 focus:outline-none focus:ring-1 focus:ring-[#9E2D1B] focus:border-[#9E2D1B] transition-all"
             />
-          </div>
+          </form>
 
           {/* Quick Button Pair */}
           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center">
             <button
-              onClick={handleExploreClick}
+              type="button"
+              onClick={onExplore}
               className="px-4 py-1.5 bg-[#2C1A12] hover:bg-[#9E2D1B] text-[#FAF4EA] text-xs font-bold rounded-lg transition-all duration-300 cursor-pointer shadow-sm whitespace-nowrap"
             >
               {t('hero.exploreBtn')}
             </button>
 
             <button
-              onClick={handleQuizClick}
+              type="button"
+              onClick={onQuiz}
               className="px-3 py-1.5 bg-transparent border border-[#2C1A12]/20 hover:border-[#2C1A12] text-[#2C1A12] text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
             >
               {t('hero.quizBtn')}
@@ -447,13 +455,15 @@ export default function MeringueHero({ searchQuery, setSearchQuery }: MeringueHe
             {/* CTA 버튼 — pointer-events-auto로 클릭 가능하게 */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto">
               <button
-                onClick={handleExploreClick}
+                type="button"
+                onClick={onExplore}
                 className="px-7 py-3 min-h-[44px] bg-[#B0863C] hover:bg-[#9A7230] text-white text-[11px] font-bold tracking-[0.25em] uppercase rounded-full transition-all duration-300 shadow-lg shadow-[#B0863C]/30 cursor-pointer"
               >
                 {language === 'ko' ? '마스터클래스 탐색' : 'Explore Masterclasses'}
               </button>
               <button
-                onClick={handleExploreClick}
+                type="button"
+                onClick={onExplore}
                 className="px-5 py-3 min-h-[44px] border border-white/30 hover:border-white/60 text-white/80 hover:text-white text-[11px] font-medium tracking-[0.15em] uppercase rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm"
               >
                 {language === 'ko' ? '무료 맛보기 시청' : 'Watch Free Preview'}

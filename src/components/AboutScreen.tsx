@@ -1,8 +1,10 @@
 'use client';
 
+import { useRouter } from '@/i18n/navigation';
 import { Award, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
+import NewsletterCTA from './sections/NewsletterCTA';
+import PhilosophyPillars from './sections/PhilosophyPillars';
 
 interface Milestone {
   year: string;
@@ -17,10 +19,12 @@ interface QA {
   a: string;
 }
 
-export default function InstructorScreen() {
+// DC-96 (PRD-F-20) · 소개(About) = 브랜드 철학 전문 + 셰프 프로필·연혁·인터뷰 + 도서 CTA.
+// PRD-F-18(강사 소개)를 흡수했다 — 기존 /instructor는 이 화면으로 리다이렉트된다.
+export default function AboutScreen() {
   const router = useRouter();
   const t = useTranslations('instructor');
-  const onNavigateToCatalog = () => router.push('/');
+  const onNavigateToCatalog = () => router.push('/classes');
   const onNavigateToBooks = () => router.push('/books');
 
   const milestones = t.raw('milestones') as Milestone[];
@@ -29,7 +33,7 @@ export default function InstructorScreen() {
 
   return (
     <div
-      id="instructor-screen"
+      id="about-screen"
       className="bg-[#FAF4EA] min-h-screen text-[#2A211B] font-sans selection:bg-[#B65538]/20 selection:text-[#B65538]"
     >
       {/* Editorial Mini Hero */}
@@ -117,6 +121,9 @@ export default function InstructorScreen() {
           </div>
         </div>
       </section>
+
+      {/* Brand Philosophy — 홈에서 요약으로만 보던 3 pillars의 전문 (PRD-F-20) */}
+      <PhilosophyPillars variant="full" />
 
       {/* Philosophy Details Section */}
       <section className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-[#EFE8DC]/70">
@@ -240,6 +247,8 @@ export default function InstructorScreen() {
           </div>
         </div>
       </section>
+
+      <NewsletterCTA />
     </div>
   );
 }

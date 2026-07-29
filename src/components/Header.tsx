@@ -17,6 +17,8 @@ export default function Header() {
 
   const isActive = (path: string) => pathname === path;
   const isMyClassesActive = pathname === '/my-classes' || pathname.startsWith('/learn');
+  // DC-96 · 클래스 상세(/classes/[id])도 "온라인 클래스" 탭 활성으로 본다.
+  const isClassesActive = pathname.startsWith('/classes');
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -77,16 +79,29 @@ export default function Header() {
           </Link>
 
           <Link
-            href="/instructor"
-            id="nav-instructor"
+            href="/about"
+            id="nav-about"
             onClick={() => setIsOpen(false)}
             className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
-              isActive('/instructor')
+              isActive('/about')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
                 : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/3'
             }`}
           >
-            {t('nav.instructor')}
+            {t('nav.about')}
+          </Link>
+
+          <Link
+            href="/classes"
+            id="nav-classes"
+            onClick={() => setIsOpen(false)}
+            className={`px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+              isClassesActive
+                ? 'text-[#B65538] bg-[#B65538]/5 font-bold shadow-sm'
+                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/3'
+            }`}
+          >
+            {t('nav.classes')}
           </Link>
 
           <Link
@@ -219,16 +234,29 @@ export default function Header() {
           </Link>
 
           <Link
-            href="/instructor"
-            id="nav-instructor-mobile"
+            href="/about"
+            id="nav-about-mobile"
             onClick={() => setIsOpen(false)}
             className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
-              isActive('/instructor')
+              isActive('/about')
                 ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
                 : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/5'
             }`}
           >
-            {t('nav.instructor')}
+            {t('nav.about')}
+          </Link>
+
+          <Link
+            href="/classes"
+            id="nav-classes-mobile"
+            onClick={() => setIsOpen(false)}
+            className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              isClassesActive
+                ? 'text-[#B65538] bg-[#B65538]/5 font-bold'
+                : 'text-[#5F4E43] hover:text-[#B65538] hover:bg-[#B65538]/5'
+            }`}
+          >
+            {t('nav.classes')}
           </Link>
 
           <Link

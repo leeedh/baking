@@ -26,6 +26,7 @@
 | DB-T-08 | `reviews` | Activity | 후기·평점 | PRD-F-10 | TS-API-05, TS-COMP-08 |
 | DB-T-09 | `coupons` | Commerce | 할인 쿠폰(서버 측 할인 계산 근거) | PRD-F-04 | TS-ADR-08, TS-API-10 |
 | DB-T-10 | `books` | Catalog | 레시피 도서 상품(외부 커머스 링크) | PRD-F-19 | TS-COMP-11 |
+| DB-T-11 | `inquiries` | Support | 1:1 비공개 문의·운영자 답변 | PRD-F-21 | TS-API-07,14,15, TS-COMP-13 |
 
 ### 1.2 Views
 | ID | 뷰명 | 기반 테이블 | 용도 | PRD 참조 |
@@ -39,6 +40,7 @@
 | `course_status` | `'draft','published'` | DB-T-02 |
 | `order_status` | `'pending','paid','failed','canceled','refunded'` | DB-T-05 |
 | `enrollment_status` | `'active','refunded'` | DB-T-06 |
+| `inquiry_status` | `'open','answered','closed'` | DB-T-11 |
 | `coupon_discount_type` | `'fixed','percent'` | DB-T-09 |
 | `book_status` | `'draft','published'` | DB-T-10 (course_status와 동형) |
 | `course_level` | `'초급','중급','상급'` (표시값; 정본은 i18n 키 권장) | DB-T-02 `level` |
@@ -518,6 +520,57 @@ create policy "books_admin_modify" on public.books
 
 ---
 
+### DB-T-11: `inquiries`
+> **PRD 참조**: PRD-F-21 | **TS 참조**: TS-API-07/14/15, TS-COMP-13
+
+**설명**: **1:1 비공개 문의**. 로그인 회원이 작성하고 운영자가 답변한다. **작성자·운영자만 열람**(RLS로 비공개 보장). 반복 문의는 화면단 FAQ로 사전 안내하므로, 이 테이블은 개별 1:1 문의만 저장한다.
+
+**컬럼**
+| ID | 컬럼명 | 타입 | NULL | 기본값 | 설명 |
+|----|--------|------|------|--------|------|
+| C1 | `id` | uuid | NOT NULL | `gen_random_uuid()` | PK |
+| C2 | `user_id` | uuid | NOT NULL | - | 작성자 → `profiles(id)` |
+| C3 | `category` | text | NOT NULL | `'기타'` | 분류(결제/수강/영상/기타 등) |
+| C4 | `subject` | text | NOT NULL | - | 제목 |
+| C5 | `body` | text | NOT NULL | - | 문의 본문 |
+| C6 | `status` | inquiry_status | NOT NULL | `'open'` | 처리 상태 |
+| C7 | `answer_body` | text | NULL | - | 운영자 답변 본문 |
+| C8 | `answered_by` | uuid | NULL | - | 답변 운영자 → `profiles(id)` |
+| C9 | `answered_at` | timestamptz | NULL | - | 답변 시각 |
+| C10 | `created_at` | timestamptz | NOT NULL | `now()` | |
+| C11 | `updated_at` | timestamptz | NOT NULL | `now()` | |
+
+**제약**
+- `inquiries_pk`: PRIMARY KEY (`id`)
+- `inquiries_user_fk`: FOREIGN KEY (`user_id`) → `profiles(id)` ON DELETE CASCADE
+- `inquiries_answered_by_fk`: FOREIGN KEY (`answered_by`) → `profiles(id)` ON DELETE SET NULL
+- `inquiries_status_check`: CHECK (`status` IN (`'open','answered','closed'`))
+
+**인덱스**
+- `inquiries_user_created_idx`: (`user_id`, `created_at DESC`) — 작성자 문의 목록
+- `inquiries_status_idx`: (`status`) — 운영자 미답변 큐
+
+**RLS** (`policy_pattern: owner-or-admin`)
+```sql
+alter table public.inquiries enable row level security;
+-- 작성자 본인 또는 운영자만 열람(비공개)
+create policy "inquiries_select_own" on public.inquiries
+  for select using (user_id = (select auth.uid()) or public.is_admin());
+-- 로그인 회원이 자기 명의로만 작성
+create policy "inquiries_insert_own" on public.inquiries
+  for insert with check (user_id = (select auth.uid()));
+-- 답변·상태 전이는 운영자만
+create policy "inquiries_update_admin" on public.inquiries
+  for update using (public.is_admin()) with check (public.is_admin());
+```
+> 작성자 본인 수정/삭제는 정본에서 미허용(admin-only 전이로 단순화). 상태 변경·답변 쓰기는 `requireAdmin` 라우트(service_role) 경유가 원칙이며 RLS는 backstop이다(TS-SEC 정렬).
+
+**트리거**: `DB-TRG-AU`(`set_updated_at`) 재사용.
+
+**비고**: 스레드형 왕복(운영자↔작성자 다중 메시지)이 필요해지면 자식 테이블 `inquiry_replies`로 승격한다(§6.2 향후 계획). MVP는 단발 답변(`answer_body`) 구조.
+
+---
+
 ## §3. Relationships & ERD
 
 ### 3.1 Relationship Inventory
@@ -535,6 +588,8 @@ create policy "books_admin_modify" on public.books
 | DB-REL-10 | lessons → progress | 1:N | CASCADE | 차시별 진도 |
 | DB-REL-11 | profiles → reviews | 1:N | CASCADE | 사용자별 후기 |
 | DB-REL-12 | courses → reviews | 1:N | CASCADE | 클래스별 후기 |
+| DB-REL-13 | profiles → inquiries | 1:N | CASCADE | 사용자별 문의(작성자) |
+| DB-REL-14 | profiles → inquiries (answered_by) | 1:N | SET NULL | 운영자 답변자(계정 삭제 시 답변자만 해제) |
 
 ### 3.2 ERD (Mermaid)
 ```mermaid
@@ -543,6 +598,7 @@ erDiagram
     PROFILES ||--o{ ENROLLMENTS : "holds"
     PROFILES ||--o{ PROGRESS : "tracks"
     PROFILES ||--o{ REVIEWS : "writes"
+    PROFILES ||--o{ INQUIRIES : "asks"
     COURSES ||--o{ LESSONS : "contains"
     COURSES ||--o{ ORDERS : "sold via"
     COURSES ||--o{ ENROLLMENTS : "grants"
@@ -709,6 +765,9 @@ with (security_invoker = on) as
 | DB-MIG-01 | `20260608000000_initial_schema.sql` | enum CHECK·8개 테이블·인덱스 생성 |
 | DB-MIG-02 | `20260608000100_functions_triggers.sql` | DB-F-01~03, DB-TRG-AU/01, DB-V-01 |
 | DB-MIG-03 | `20260608000200_rls_policies.sql` | 전체 테이블 RLS 활성화·정책 |
+| DB-MIG-10 | `<ts>_inquiries.sql` | `inquiry_status` enum·`inquiries`(DB-T-11)·인덱스·RLS(owner-or-admin)·`set_updated_at` 트리거 |
+
+> ℹ️ 인벤토리는 초기 3건만 등재됨. 실제 원격(`sowoo`)엔 DB-MIG-04~09가 추가 적용돼 있다(하드닝·`course_catalog`·admin stats·Storage·쿠폰 추적 등, `plan.md` EPIC-B/D/F/G 참조). DB-MIG-10은 다음 순번.
 
 ### 5.2 Migration Standards
 - 도구: **Supabase CLI** (`supabase migration new <name>`)
@@ -764,6 +823,7 @@ create index idx_courses_status on public.courses(status);
 - USD 통화·MID 추가 시 `courses.currency`, `orders.currency` CHECK 확장 (PRD-F-13 연계)
 - 중국어(zh-CN) i18n 키 추가 (PRD-F-14)
 - 후기 정렬·집계 머티리얼라이즈드 뷰 (후기량 증가 시)
+- 문의 스레드화: 운영자↔작성자 다중 왕복이 필요하면 `inquiries` 단발 답변(`answer_body`)을 자식 테이블 `inquiry_replies`(inquiry_id·author_id·body·created_at)로 승격 (PRD-F-21 연계)
 
 ---
 
