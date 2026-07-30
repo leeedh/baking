@@ -397,10 +397,34 @@
 
 ### 8.6 적용 후 남은 항목 (다음 작업 후보)
 
-- **`/ko/classes/<없는-slug>`가 브랜드 404를 렌더하지만 HTTP 상태는 200**이다
-  (라우트에 없는 경로 `/ko/zzz`는 정상적으로 404). `dynamic = 'force-dynamic'` +
-  next-intl 미들웨어 rewrite 조합에서 스트리밍 시작 후 상태 코드가 고정되는 것으로 보인다.
-  변경 이전 상태 코드는 확인하지 않았다 — SEO 관점에서 별도 확인이 필요하다.
+- **`notFound()`가 항상 HTTP 200을 반환한다 (기존 이슈 · 이번 작업과 무관)** — `/ko/classes/<없는-slug>`,
+  `/ko/checkout/<없는-id>` 등은 브랜드 404 화면을 렌더하지만 상태 코드가 200이다.
+  라우트에 아예 없는 경로(`/ko/zzz`)만 정상적으로 404가 나간다.
+
+  **원인**: 이 앱은 **루트 레이아웃이 `src/app/[locale]/layout.tsx`에만 있고 `src/app/layout.tsx`가 없다**
+  (`<html>`을 로케일 레이아웃이 그린다). Next는 루트 레이아웃 밖의 not-found 처리를 할 수 없어
+  동적 세그먼트 안의 `notFound()`가 404 상태를 세팅하지 못한다.
+
+  **검증 방법(실측)**:
+  | 실험 | `/ko/classes/does-not-exist` |
+  |------|------|
+  | 커스텀 `not-found.tsx` 제거(변경 전 상태) | 200 |
+  | `export const dynamic = 'force-dynamic'` 제거 | 200 |
+  | 미들웨어 matcher에서 `ko/classes` 제외 | 200 |
+  | `notFound()`만 호출하는 최소 라우트(`/ko/statusprobe`) | 200 |
+  | 루트 레이아웃 밖(`src/app/statusprobe2`)에 페이지 생성 | **빌드 실패** — "doesn't have a root layout" |
+
+  즉 `force-dynamic`도, next-intl 미들웨어 rewrite도, 커스텀 404 페이지도 원인이 아니다.
+  커스텀 `not-found.tsx` 도입은 **렌더 결과만** 바꿨고(기본 Next 화면 → 브랜드 화면) 상태 코드는
+  이전과 동일하게 200이다.
+
+  **영향**: 검색엔진에 soft-404로 노출된다(존재하지 않는 클래스 URL이 200으로 색인될 수 있음).
+  기능·사용자 경험상의 문제는 없다.
+
+  **해결 후보**(라우팅 구조 변경이라 별도 작업으로 분리):
+  1. `src/app/layout.tsx`(최소 루트 레이아웃) + `src/app/not-found.tsx`를 추가하고
+     `[locale]/layout.tsx`에서 `<html>`을 걷어내는 구조로 이전 — next-intl 공식 권장 구성.
+  2. 상태 코드가 중요한 경로만 페이지 대신 라우트 핸들러/미들웨어에서 404를 명시적으로 반환.
 - 관리자 테이블의 **모바일 카드 뷰**(D6)는 미적용. `min-w-[720px]` + 가로 스크롤 유지.
   운영자 전용 화면이라 우선도를 가장 낮게 두었다.
 - `next/image` 전환은 **히어로(LCP)와 ClassCard 썸네일까지만**. 나머지 원격 `<img>`
