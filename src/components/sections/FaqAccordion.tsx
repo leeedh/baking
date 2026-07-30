@@ -1,7 +1,8 @@
 'use client';
 
+import { cn } from '@/lib/cn';
 import { ChevronDown, HelpCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 const FAQS = [
   {
@@ -34,41 +35,63 @@ export default function FaqAccordion({
   description = 'Atelier Crème VOD 보관함 수강 시작 전 확인해보세요.',
 }: FaqAccordionProps) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  // 이 컴포넌트는 /classes와 /inquiries 양쪽에서 쓰이므로 id가 겹치지 않게 접두어를 발급한다.
+  const idPrefix = useId();
 
   return (
-    <section className="py-20 px-6 sm:px-12 max-w-4xl mx-auto">
+    <section
+      aria-labelledby={`${idPrefix}-heading`}
+      className="py-20 px-6 sm:px-12 max-w-4xl mx-auto"
+    >
       <div className="text-center space-y-3 mb-12">
-        <HelpCircle className="mx-auto text-terracotta" size={28} />
-        <h2 className="font-serif text-3xl font-bold text-brown">{title}</h2>
-        <p className="text-xs sm:text-sm text-brown-medium font-light">{description}</p>
+        <HelpCircle className="mx-auto text-terracotta" size={28} aria-hidden />
+        <h2
+          id={`${idPrefix}-heading`}
+          className="font-serif text-3xl font-bold text-brown break-keep"
+        >
+          {title}
+        </h2>
+        <p className="text-xs sm:text-sm text-brown-medium font-light break-keep">{description}</p>
       </div>
 
       <div className="space-y-4">
         {FAQS.map((faq, idx) => {
           const isOpen = openFaqIndex === idx;
+          const panelId = `${idPrefix}-panel-${idx}`;
+          const triggerId = `${idPrefix}-trigger-${idx}`;
           return (
             <div
               key={faq.q}
-              className="bg-white rounded-2xl border border-brown-light overflow-hidden transition-all duration-300"
+              className="bg-white rounded-2xl border border-brown-light overflow-hidden transition-[border-color] duration-300 has-[button:hover]:border-terracotta/30"
             >
               <button
                 type="button"
+                id={triggerId}
                 onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                 aria-expanded={isOpen}
-                className="w-full text-left p-6 flex justify-between items-center gap-4 bg-white hover:bg-cream/40 transition-colors"
+                aria-controls={panelId}
+                className="w-full text-left p-6 flex justify-between items-center gap-4 bg-white hover:bg-cream/40 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                <p className="font-serif text-sm sm:text-base font-bold text-brown">{faq.q}</p>
-                <span
-                  className={`text-terracotta shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                >
-                  <ChevronDown size={18} />
+                <span className="font-serif text-sm sm:text-base font-bold text-brown break-keep">
+                  {faq.q}
                 </span>
+                <ChevronDown
+                  size={18}
+                  className={cn(
+                    'text-terracotta shrink-0 transition-transform duration-300 ease-out-soft',
+                    isOpen && 'rotate-180',
+                  )}
+                />
               </button>
 
               {isOpen && (
-                <div className="px-6 pb-6 pt-1 text-xs sm:text-[13px] text-brown-medium leading-relaxed font-light border-t border-cream bg-cream/20">
+                <section
+                  id={panelId}
+                  aria-labelledby={triggerId}
+                  className="px-6 pb-6 pt-4 text-xs sm:text-[13px] text-brown-medium leading-relaxed font-light border-t border-cream bg-cream/20 break-keep animate-fade-in"
+                >
                   {faq.a}
-                </div>
+                </section>
               )}
             </div>
           );

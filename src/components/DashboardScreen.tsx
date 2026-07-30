@@ -1,6 +1,12 @@
 'use client';
 
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
+import { Input, Textarea } from '@/components/ui/Field';
+import Modal from '@/components/ui/Modal';
 import { Link } from '@/i18n/navigation';
+import { readError } from '@/lib/api/read-error';
+import { ADMIN_INQUIRY_STATUS, ORDER_STATUS } from '@/lib/status-badges';
 import type { AdminClassRow, AdminKpi, AdminOrderRow, InquiryRow } from '@/types';
 import {
   Coins,
@@ -11,7 +17,6 @@ import {
   Plus,
   Receipt,
   RotateCcw,
-  Sparkles,
   Users,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -26,21 +31,6 @@ type Props = {
   initialInquiries: InquiryRow[];
 };
 
-// TODO(DC-10): 아래 한국어 문구는 메시지 카탈로그로 이전한다.
-const ORDER_STATUS_LABEL: Record<AdminOrderRow['status'], { text: string; cls: string }> = {
-  paid: { text: '결제완료', cls: 'bg-emerald-50 text-emerald-700' },
-  refunded: { text: '환불됨', cls: 'bg-terracotta/10 text-terracotta-deep' },
-  canceled: { text: '취소됨', cls: 'bg-brown-medium/10 text-brown-medium' },
-  pending: { text: '대기', cls: 'bg-gold/10 text-gold' },
-  failed: { text: '실패', cls: 'bg-brown-medium/10 text-brown-medium' },
-};
-
-const INQUIRY_STATUS_LABEL: Record<InquiryRow['status'], string> = {
-  open: '미답변',
-  answered: '답변완료',
-  closed: '종료',
-};
-
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('ko-KR', {
@@ -50,15 +40,6 @@ function formatDate(iso: string | null): string {
     hour: '2-digit',
     minute: '2-digit',
   });
-}
-
-async function readError(res: Response): Promise<string> {
-  try {
-    const body = (await res.json()) as { detail?: string; title?: string };
-    return body.detail ?? body.title ?? '요청을 처리하지 못했습니다.';
-  } catch {
-    return '요청을 처리하지 못했습니다.';
-  }
 }
 
 export default function DashboardScreen({
@@ -484,11 +465,9 @@ export default function DashboardScreen({
                       ₩{order.amount.toLocaleString()}
                     </td>
                     <td className="py-4 px-6">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${ORDER_STATUS_LABEL[order.status].cls}`}
-                      >
-                        {ORDER_STATUS_LABEL[order.status].text}
-                      </span>
+                      <Badge tone={ORDER_STATUS[order.status].tone}>
+                        {ORDER_STATUS[order.status].text}
+                      </Badge>
                     </td>
                     <td className="py-4 px-6 text-[11px] text-brown-medium whitespace-nowrap">
                       {formatDate(order.paidAt)}
@@ -539,20 +518,14 @@ export default function DashboardScreen({
             {initialInquiries.map((inq) => (
               <li key={inq.id} className="p-6 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      inq.status === 'open'
-                        ? 'bg-gold/10 text-gold'
-                        : inq.status === 'answered'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-brown-medium/10 text-brown-medium'
-                    }`}
-                  >
-                    {INQUIRY_STATUS_LABEL[inq.status]}
-                  </span>
+                  <Badge tone={ADMIN_INQUIRY_STATUS[inq.status].tone}>
+                    {ADMIN_INQUIRY_STATUS[inq.status].text}
+                  </Badge>
                   <span className="text-[11px] text-brown-medium">{inq.category}</span>
-                  <span className="text-[11px] text-brown-medium/60">{inq.authorLabel}</span>
-                  <span className="text-[11px] text-brown-medium/50">{formatDate(inq.createdAt)}</span>
+                  <span className="text-[11px] text-brown-medium/80">{inq.authorLabel}</span>
+                  <span className="text-[11px] text-brown-medium/80">
+                    {formatDate(inq.createdAt)}
+                  </span>
                 </div>
 
                 <p className="font-serif text-sm font-bold text-brown">{inq.subject}</p>
@@ -573,55 +546,50 @@ export default function DashboardScreen({
 
                 {answeringId === inq.id ? (
                   <div className="space-y-2">
-                    <textarea
+                    <Textarea
+                      label="답변 내용"
+                      hideLabel
                       value={answerDraft}
                       onChange={(e) => setAnswerDraft(e.target.value)}
                       rows={4}
                       maxLength={4000}
-                      aria-label="답변 내용"
                       placeholder="답변 내용을 입력하세요"
-                      className="w-full px-3 py-2.5 bg-white border border-brown-light rounded-xl text-xs text-brown leading-relaxed focus:outline-none focus:ring-1 focus:ring-terracotta"
                     />
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setAnsweringId(null)}
-                        className="px-4 py-2 border border-brown-light text-brown-medium text-xs font-medium rounded-lg hover:bg-cream transition-colors cursor-pointer"
-                      >
+                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                      <Button variant="outline" size="sm" onClick={() => setAnsweringId(null)}>
                         취소
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || answerDraft.trim().length === 0}
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={answerDraft.trim().length === 0}
+                        loading={busy}
                         onClick={() => submitAnswer(inq.id)}
-                        className="px-4 py-2 bg-brown hover:bg-terracotta disabled:opacity-50 text-cream text-xs font-bold rounded-lg transition-colors cursor-pointer"
                       >
                         답변 등록
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
                       onClick={() => {
                         setError(null);
                         setAnsweringId(inq.id);
                         setAnswerDraft(inq.answerBody ?? '');
                       }}
-                      className="px-4 py-2 bg-brown hover:bg-terracotta text-cream text-xs font-bold rounded-lg transition-colors cursor-pointer"
                     >
                       {inq.answerBody ? '답변 수정' : '답변 등록'}
-                    </button>
+                    </Button>
                     {inq.status !== 'closed' && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="outline"
+                        size="sm"
                         disabled={busy}
                         onClick={() => patchInquiry(inq.id, { status: 'closed' })}
-                        className="px-4 py-2 border border-brown-light text-brown-medium text-xs font-medium rounded-lg hover:bg-cream disabled:opacity-50 transition-colors cursor-pointer"
                       >
                         종료 처리
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
@@ -632,28 +600,35 @@ export default function DashboardScreen({
       </div>
 
       {/* REFUND CONFIRM MODAL */}
-      {refundTarget && (
-        <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-brown-light p-6 space-y-4 shadow-2xl relative">
-            <div className="border-b border-cream pb-2">
-              <h3 className="font-serif text-lg font-bold text-brown flex items-center gap-1">
-                <RotateCcw size={18} className="text-terracotta" /> 환불 실행
-              </h3>
-              <p className="text-[10px] text-brown-medium mt-0.5">
-                결제가 취소되고 수강권이 회수됩니다. 되돌릴 수 없습니다.
-              </p>
-            </div>
-
+      <Modal
+        open={refundTarget !== null}
+        onClose={() => setRefundTarget(null)}
+        title="환불 실행"
+        description="결제가 취소되고 수강권이 회수됩니다. 되돌릴 수 없습니다."
+        className="max-w-md"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setRefundTarget(null)} disabled={busy}>
+              취소
+            </Button>
+            <Button variant="secondary" onClick={handleRefund} loading={busy}>
+              {busy ? '처리 중…' : '환불 확정'}
+            </Button>
+          </>
+        }
+      >
+        {refundTarget && (
+          <>
             <dl className="text-xs space-y-1.5 bg-cream/40 rounded-lg p-3">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <dt className="text-brown-medium">구매자</dt>
-                <dd className="font-semibold">{refundTarget.buyer}</dd>
+                <dd className="font-semibold truncate">{refundTarget.buyer}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <dt className="text-brown-medium">클래스</dt>
                 <dd className="font-semibold truncate max-w-[220px]">{refundTarget.courseTitle}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <dt className="text-brown-medium">환불액</dt>
                 <dd className="font-mono font-bold text-terracotta">
                   ₩{refundTarget.amount.toLocaleString()}
@@ -661,114 +636,60 @@ export default function DashboardScreen({
               </div>
             </dl>
 
-            <div>
-              <label className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
-                환불 사유 (선택)
-              </label>
-              <input
-                type="text"
-                value={refundReason}
-                onChange={(e) => setRefundReason(e.target.value)}
-                maxLength={200}
-                placeholder="예: 고객 요청"
-                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs font-medium focus:ring-1 focus:ring-terracotta focus:outline-none"
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setRefundTarget(null)}
-                className="flex-1 py-2 bg-cream border border-brown-light text-xs font-semibold rounded-lg text-brown-medium hover:bg-cream/80 transition-colors cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={handleRefund}
-                className="flex-1 py-2 bg-terracotta text-white text-xs font-bold rounded-lg hover:bg-terracotta-deep transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {busy ? '처리 중…' : '환불 확정'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <Input
+              label="환불 사유 (선택)"
+              type="text"
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              maxLength={200}
+              placeholder="예: 고객 요청"
+            />
+          </>
+        )}
+      </Modal>
 
       {/* ADD CLASS MODAL */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-brown-light p-6 space-y-4 shadow-2xl relative">
-            <div className="border-b border-cream pb-2">
-              <h3 className="font-serif text-lg font-bold text-brown flex items-center gap-1">
-                <Sparkles size={18} className="text-gold" /> 새 클래스 등록
-              </h3>
-              <p className="text-[10px] text-brown-medium mt-0.5">
-                초안(draft)으로 생성됩니다. 차시 구성 후 “게시”하면 카탈로그에 노출됩니다.
-              </p>
-            </div>
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="새 클래스 등록"
+        description="초안(draft)으로 생성됩니다. 차시 구성 후 “게시”하면 카탈로그에 노출됩니다."
+        className="max-w-md"
+      >
+        <form onSubmit={handleCreateClass} className="space-y-3.5">
+          <Input
+            label="강의 명칭 (한국어)"
+            type="text"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            required
+          />
+          <Input
+            label="강사 직함 (선택)"
+            type="text"
+            value={newInstructor}
+            onChange={(e) => setNewInstructor(e.target.value)}
+          />
+          <Input
+            label="판매가 (KRW ₩)"
+            type="number"
+            value={newPrice}
+            onChange={(e) => setNewPrice(Number(e.target.value))}
+            min={0}
+            className="font-mono"
+            required
+          />
 
-            <form onSubmit={handleCreateClass} className="space-y-3.5">
-              <div>
-                <label className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
-                  강의 명칭 (한국어)
-                </label>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs font-medium focus:ring-1 focus:ring-terracotta focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
-                  강사 직함 (선택)
-                </label>
-                <input
-                  type="text"
-                  value={newInstructor}
-                  onChange={(e) => setNewInstructor(e.target.value)}
-                  className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs font-medium focus:ring-1 focus:ring-terracotta focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
-                  판매가 (KRW ₩)
-                </label>
-                <input
-                  type="number"
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(Number(e.target.value))}
-                  min={0}
-                  className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs font-mono font-medium focus:ring-1 focus:ring-terracotta focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-2 bg-cream border border-brown-light text-xs font-semibold rounded-lg text-brown-medium hover:bg-cream/80 transition-colors cursor-pointer"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="flex-1 py-2 bg-terracotta text-white text-xs font-bold rounded-lg hover:bg-terracotta-deep transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  등록
-                </button>
-              </div>
-            </form>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowAddModal(false)} disabled={busy}>
+              취소
+            </Button>
+            <Button type="submit" variant="secondary" loading={busy}>
+              등록
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

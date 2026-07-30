@@ -40,11 +40,7 @@ export default function ConfirmDialog({
           <Button variant="outline" onClick={onCancel} disabled={busy}>
             {cancelLabel}
           </Button>
-          <Button
-            variant={destructive ? 'danger' : 'primary'}
-            onClick={onConfirm}
-            loading={busy}
-          >
+          <Button variant={destructive ? 'danger' : 'primary'} onClick={onConfirm} loading={busy}>
             {confirmLabel}
           </Button>
         </>

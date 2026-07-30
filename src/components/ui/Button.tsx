@@ -11,7 +11,8 @@ const VARIANT: Record<ButtonVariant, string> = {
   // 에스프레소 → 테라코타. 앱 전역의 기본 CTA.
   primary: 'bg-brown text-white hover:bg-terracotta shadow-card',
   secondary: 'bg-terracotta text-white hover:bg-terracotta-deep shadow-card',
-  outline: 'bg-white text-brown border border-brown-light hover:border-terracotta hover:text-terracotta',
+  outline:
+    'bg-white text-brown border border-brown-light hover:border-terracotta hover:text-terracotta',
   ghost: 'bg-transparent text-brown-medium hover:text-terracotta hover:bg-terracotta/5',
   danger: 'bg-white text-terracotta-deep border border-terracotta/30 hover:bg-terracotta/10',
 };

@@ -1,25 +1,18 @@
 'use client';
 
+import Badge from '@/components/ui/Badge';
+import Button, { buttonClasses } from '@/components/ui/Button';
+import { Input, Select, Textarea } from '@/components/ui/Field';
 import { Link } from '@/i18n/navigation';
+import { cn } from '@/lib/cn';
+import { INQUIRY_STATUS } from '@/lib/status-badges';
 import type { InquiryRow } from '@/types';
 import { CheckCircle2, ChevronDown, Lock, MessageSquarePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import FaqAccordion from './sections/FaqAccordion';
 
 const CATEGORIES = ['결제', '수강', '영상', '자료', '기타'] as const;
-
-const STATUS_LABEL: Record<InquiryRow['status'], string> = {
-  open: '접수',
-  answered: '답변완료',
-  closed: '종료',
-};
-
-const STATUS_STYLE: Record<InquiryRow['status'], string> = {
-  open: 'bg-gold/10 text-gold border-gold/20',
-  answered: 'bg-terracotta/10 text-terracotta border-terracotta/20',
-  closed: 'bg-brown/8 text-brown-medium border-brown-light',
-};
 
 interface InquiriesScreenProps {
   /** 비로그인이면 null — 폼 대신 로그인 유도를 보여준다. */
@@ -37,6 +30,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const idPrefix = useId();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,15 +65,13 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
       className="bg-ivory min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       <section className="pt-12 pb-4 px-6 sm:px-12 max-w-4xl mx-auto text-center space-y-3">
-        <span className="text-xs font-bold text-gold tracking-[0.25em] uppercase">
-          Support
-        </span>
+        <p className="text-xs font-bold text-gold tracking-[0.25em] uppercase">Support</p>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight">
           문의사항
         </h1>
         <p className="text-sm text-brown-medium font-light max-w-2xl mx-auto break-keep">
-          자주 묻는 질문에서 먼저 답을 찾아보세요. 해결되지 않는 내용은 1:1 비공개 문의로
-          남겨주시면 운영자가 직접 답변드립니다.
+          자주 묻는 질문에서 먼저 답을 찾아보세요. 해결되지 않는 내용은 1:1 비공개 문의로 남겨주시면
+          운영자가 직접 답변드립니다.
         </p>
       </section>
 
@@ -106,43 +98,37 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
           {isLoggedIn ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-3">
-                <label className="block">
-                  <span className="sr-only">문의 분류</span>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    aria-label="문의 분류"
-                    className="w-full px-3 py-2.5 bg-white border border-brown-light rounded-xl text-xs text-brown focus:outline-none focus:ring-1 focus:ring-terracotta"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="문의 분류"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </Select>
 
-                <input
+                <Input
+                  label="문의 제목"
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="제목을 입력해주세요"
-                  aria-label="문의 제목"
                   maxLength={120}
                   required
-                  className="w-full px-3 py-2.5 bg-white border border-brown-light rounded-xl text-xs text-brown placeholder-brown-medium/50 focus:outline-none focus:ring-1 focus:ring-terracotta"
                 />
               </div>
 
-              <textarea
+              <Textarea
+                label="문의 내용"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="문의 내용을 자세히 적어주시면 더 정확히 안내해드릴 수 있습니다."
-                aria-label="문의 내용"
                 rows={6}
                 maxLength={4000}
                 required
-                className="w-full px-3 py-2.5 bg-white border border-brown-light rounded-xl text-xs text-brown placeholder-brown-medium/50 leading-relaxed focus:outline-none focus:ring-1 focus:ring-terracotta"
               />
 
               {error && (
@@ -152,13 +138,9 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
               )}
 
               <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-6 py-3 bg-brown hover:bg-terracotta disabled:opacity-50 disabled:cursor-not-allowed text-cream text-xs font-bold rounded-xl shadow-md transition-colors cursor-pointer"
-                >
+                <Button type="submit" loading={submitting}>
                   {submitting ? '등록 중…' : '문의 등록'}
-                </button>
+                </Button>
               </div>
             </form>
           ) : (
@@ -166,10 +148,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
               <p className="text-xs text-brown-medium font-light">
                 1:1 문의는 로그인 회원만 작성할 수 있습니다.
               </p>
-              <Link
-                href="/login"
-                className="inline-block px-6 py-3 bg-brown hover:bg-terracotta text-cream text-xs font-bold rounded-xl shadow-md transition-colors"
-              >
+              <Link href="/login" className={buttonClasses()}>
                 로그인하고 문의하기
               </Link>
             </div>
@@ -195,19 +174,19 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
                   >
                     <button
                       type="button"
+                      id={`${idPrefix}-trigger-${inq.id}`}
                       onClick={() => setOpenId(isOpen ? null : inq.id)}
                       aria-expanded={isOpen}
-                      className="w-full text-left p-5 flex items-center justify-between gap-4 hover:bg-cream/40 transition-colors"
+                      aria-controls={`${idPrefix}-panel-${inq.id}`}
+                      className="w-full text-left p-5 flex items-center justify-between gap-4 hover:bg-cream/40 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                     >
                       <div className="min-w-0 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded border ${STATUS_STYLE[inq.status]}`}
-                          >
-                            {STATUS_LABEL[inq.status]}
-                          </span>
-                          <span className="text-[10px] text-brown-medium/70">{inq.category}</span>
-                          <span className="text-[10px] text-brown-medium/50">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge tone={INQUIRY_STATUS[inq.status].tone}>
+                            {INQUIRY_STATUS[inq.status].text}
+                          </Badge>
+                          <span className="text-[11px] text-brown-medium">{inq.category}</span>
+                          <span className="text-[11px] text-brown-medium/80">
                             {new Date(inq.createdAt).toLocaleDateString('ko-KR')}
                           </span>
                         </div>
@@ -217,12 +196,19 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
                       </div>
                       <ChevronDown
                         size={18}
-                        className={`text-terracotta shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                        className={cn(
+                          'text-terracotta shrink-0 transition-transform duration-300 ease-out-soft',
+                          isOpen && 'rotate-180',
+                        )}
                       />
                     </button>
 
                     {isOpen && (
-                      <div className="px-5 pb-5 space-y-4 border-t border-cream">
+                      <section
+                        id={`${idPrefix}-panel-${inq.id}`}
+                        aria-labelledby={`${idPrefix}-trigger-${inq.id}`}
+                        className="px-5 pb-5 space-y-4 border-t border-cream animate-fade-in"
+                      >
                         <p className="text-xs text-brown-medium leading-relaxed font-light whitespace-pre-wrap pt-4">
                           {inq.body}
                         </p>
@@ -231,11 +217,11 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
                           <div className="bg-cream/60 rounded-xl border border-brown-light p-4 space-y-2">
                             <div className="flex items-center gap-1.5 text-terracotta">
                               <CheckCircle2 size={13} />
-                              <span className="text-[10px] font-bold uppercase tracking-wider">
+                              <span className="text-[11px] font-bold uppercase tracking-wider">
                                 운영자 답변
                               </span>
                               {inq.answeredAt && (
-                                <span className="text-[10px] text-brown-medium/50 font-normal">
+                                <span className="text-[11px] text-brown-medium/80 font-normal">
                                   {new Date(inq.answeredAt).toLocaleDateString('ko-KR')}
                                 </span>
                               )}
@@ -245,11 +231,12 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
                             </p>
                           </div>
                         ) : (
-                          <p className="text-[11px] text-brown-medium/60 font-light">
-                            운영자가 확인 중입니다. 답변이 등록되면 이 화면에서 확인하실 수 있습니다.
+                          <p className="text-[11px] text-brown-medium/80 font-light">
+                            운영자가 확인 중입니다. 답변이 등록되면 이 화면에서 확인하실 수
+                            있습니다.
                           </p>
                         )}
-                      </div>
+                      </section>
                     )}
                   </div>
                 );

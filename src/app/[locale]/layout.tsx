@@ -47,8 +47,14 @@ export default async function LocaleLayout({
               초기 user는 null로 두고 클라이언트 AuthProvider가 세션 쿠키로 하이드레이션.
               실제 보호는 각 페이지의 서버 가드 + RLS가 담당. */}
           <AuthProvider initialUser={null}>
+            {/* 키보드 사용자가 매 페이지에서 내비를 통과하지 않도록 — 포커스될 때만 보인다. */}
+            <a href="#main" className="skip-link">
+              본문으로 건너뛰기
+            </a>
             <Header />
-            <main className="flex-grow pb-24">{children}</main>
+            <main id="main" className="flex-grow pb-24">
+              {children}
+            </main>
             <Footer />
           </AuthProvider>
         </NextIntlClientProvider>

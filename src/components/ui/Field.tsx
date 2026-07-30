@@ -1,7 +1,12 @@
 'use client';
 
 import { cn } from '@/lib/cn';
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react';
 import { useId } from 'react';
 
 const CONTROL =
@@ -34,10 +39,7 @@ function FieldShell({
     <div className={cn('space-y-1.5', className)}>
       <label
         htmlFor={id}
-        className={cn(
-          'block text-[11px] font-bold text-brown-medium',
-          hideLabel && 'sr-only',
-        )}
+        className={cn('block text-[11px] font-bold text-brown-medium', hideLabel && 'sr-only')}
       >
         {label}
       </label>
@@ -124,7 +126,12 @@ export function Textarea({
         rows={rows}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
-        className={cn(CONTROL, 'text-xs px-3.5 py-2.5 leading-relaxed', error && 'border-terracotta', className)}
+        className={cn(
+          CONTROL,
+          'text-xs px-3.5 py-2.5 leading-relaxed',
+          error && 'border-terracotta',
+          className,
+        )}
         {...rest}
       />
     </FieldShell>

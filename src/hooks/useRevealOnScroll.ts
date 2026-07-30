@@ -21,14 +21,14 @@ export function useRevealOnScroll<T extends HTMLElement = HTMLDivElement>(
     const root = ref.current;
     if (!root) return;
 
-    const targets = self
-      ? [root]
-      : Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'));
-    if (targets.length === 0) return;
+    const collect = () =>
+      self ? [root] : Array.from(root.querySelectorAll<HTMLElement>('[data-reveal="out"]'));
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // 모션 감소 선호 시에는 관찰 없이 즉시 표시한다(CSS도 이중으로 막지만 상태를 정리해 둔다).
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      for (const el of targets) el.dataset.reveal = 'in';
+    if (reduced) {
+      for (const el of collect()) el.dataset.reveal = 'in';
       return;
     }
 
@@ -44,8 +44,24 @@ export function useRevealOnScroll<T extends HTMLElement = HTMLDivElement>(
       { rootMargin: '0px 0px -12% 0px', threshold: 0.05 },
     );
 
-    for (const el of targets) observer.observe(el);
-    return () => observer.disconnect();
+    const observeAll = () => {
+      for (const el of collect()) observer.observe(el);
+    };
+    observeAll();
+
+    // 필터·검색으로 목록이 다시 렌더되면 새 카드가 생긴다. 이때 관찰을 붙이지 않으면
+    // data-reveal="out" 상태로 영구히 감춰지므로 DOM 변화를 따라간다.
+    const mutations = self
+      ? null
+      : new MutationObserver(() => {
+          observeAll();
+        });
+    mutations?.observe(root, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutations?.disconnect();
+    };
   }, [self]);
 
   return ref;

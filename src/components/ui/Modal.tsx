@@ -96,6 +96,7 @@ export default function Modal({
     >
       <div
         ref={panelRef}
+        // biome-ignore lint/a11y/useSemanticElements: 네이티브 <dialog>는 백드롭 blur 스타일을 유지할 수 없어 의도적으로 쓰지 않는다(파일 상단 주석 참고)
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
