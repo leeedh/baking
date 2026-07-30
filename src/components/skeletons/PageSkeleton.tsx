@@ -6,19 +6,19 @@ export default function PageSkeleton() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 animate-pulse" aria-hidden>
       {/* 상단 히어로/제목 영역 */}
-      <div className="h-8 w-2/3 sm:w-1/3 rounded-lg bg-[#EFE8DC]" />
-      <div className="mt-3 h-4 w-1/2 rounded bg-[#EFE8DC]/70" />
+      <div className="h-8 w-2/3 sm:w-1/3 rounded-lg bg-brown-light" />
+      <div className="mt-3 h-4 w-1/2 rounded bg-brown-light/70" />
 
       {/* 카드 그리드 */}
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 6 }).map((_, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: 정적 플레이스홀더라 인덱스 키로 충분.
-          <div key={i} className="rounded-2xl border border-[#EFE8DC] overflow-hidden bg-white/40">
-            <div className="h-40 w-full bg-[#EFE8DC]" />
+          <div key={i} className="rounded-2xl border border-brown-light overflow-hidden bg-white/40">
+            <div className="h-40 w-full bg-brown-light" />
             <div className="p-4 space-y-3">
-              <div className="h-5 w-3/4 rounded bg-[#EFE8DC]" />
-              <div className="h-4 w-1/2 rounded bg-[#EFE8DC]/70" />
-              <div className="h-4 w-1/3 rounded bg-[#EFE8DC]/70" />
+              <div className="h-5 w-3/4 rounded bg-brown-light" />
+              <div className="h-4 w-1/2 rounded bg-brown-light/70" />
+              <div className="h-4 w-1/3 rounded bg-brown-light/70" />
             </div>
           </div>
         ))}

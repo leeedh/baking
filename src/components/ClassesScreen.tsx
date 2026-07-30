@@ -31,16 +31,16 @@ export default function ClassesScreen({ classes, initialSearchQuery }: ClassesSc
   return (
     <div
       id="classes-screen"
-      className="bg-[#FDFBF7] min-h-screen text-[#2A211B] font-sans selection:bg-[#B65538]/20 selection:text-[#B65538]"
+      className="bg-ivory min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       <section className="pt-12 pb-4 px-6 sm:px-12 max-w-7xl mx-auto text-center space-y-3">
-        <span className="text-xs font-bold text-[#B0863C] tracking-[0.25em] uppercase">
+        <span className="text-xs font-bold text-gold tracking-[0.25em] uppercase">
           Online Classes
         </span>
-        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#2A211B] leading-tight keep-all break-keep">
+        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep">
           온라인 클래스
         </h1>
-        <p className="text-sm text-[#5F4E43] font-light max-w-2xl mx-auto keep-all break-keep">
+        <p className="text-sm text-brown-medium font-light max-w-2xl mx-auto break-keep">
           평생 소장 VOD로 만나는 Atelier Crème의 프렌치 디저트 마스터 코스입니다. 추천 퀴즈로 나에게
           맞는 클래스를 먼저 찾아보세요.
         </p>

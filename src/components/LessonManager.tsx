@@ -313,28 +313,28 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   };
 
   return (
-    <div className="bg-[#FAF4EA] py-10 px-4 sm:px-8 max-w-5xl mx-auto min-h-screen">
+    <div className="bg-cream py-10 px-4 sm:px-8 max-w-5xl mx-auto min-h-screen">
       <Link
         href="/admin"
-        className="inline-flex items-center gap-1 text-xs font-semibold text-[#5F4E43] hover:text-[#B65538] mb-4"
+        className="inline-flex items-center gap-1 text-xs font-semibold text-brown-medium hover:text-terracotta mb-4"
       >
         <ArrowLeft size={14} /> 대시보드로
       </Link>
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <span className="text-xs font-bold text-[#B0863C] tracking-wider uppercase block">
+          <span className="text-xs font-bold text-gold tracking-wider uppercase block">
             CURRICULUM
           </span>
-          <h1 className="font-serif text-2xl font-bold text-[#2A211B]">{courseTitle}</h1>
-          <p className="text-xs text-[#5F4E43] mt-1">
+          <h1 className="font-serif text-2xl font-bold text-brown">{courseTitle}</h1>
+          <p className="text-xs text-brown-medium mt-1">
             차시 등록·수정·순서 변경 (총 {lessons.length}개)
           </p>
         </div>
         <button
           type="button"
           onClick={() => setShowAdd((v) => !v)}
-          className="px-4 py-2 bg-[#B65538] hover:bg-[#A14328] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+          className="px-4 py-2 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
         >
           <Plus size={14} /> 차시 추가
         </button>
@@ -343,7 +343,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
       {error && (
         <div
           role="alert"
-          className="mb-6 rounded-lg border border-[#B65538]/30 bg-[#B65538]/10 px-4 py-3 text-xs font-semibold text-[#A14328]"
+          className="mb-6 rounded-lg border border-terracotta/30 bg-terracotta/10 px-4 py-3 text-xs font-semibold text-terracotta-deep"
         >
           {error}
         </div>
@@ -352,11 +352,11 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
       {showAdd && (
         <form
           onSubmit={create}
-          className="bg-white rounded-2xl border border-[#EFE8DC] shadow-sm p-6 mb-6 space-y-4"
+          className="bg-white rounded-2xl border border-brown-light shadow-sm p-6 mb-6 space-y-4"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="block sm:col-span-2">
-              <span className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+              <span className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
                 차시 명칭 (한국어)
               </span>
               <input
@@ -364,11 +364,11 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
               />
             </label>
             <label className="block">
-              <span className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+              <span className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
                 챕터 번호
               </span>
               <input
@@ -376,22 +376,22 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 min={1}
                 value={chapterIndex}
                 onChange={(e) => setChapterIndex(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
               />
             </label>
             <label className="block">
-              <span className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+              <span className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
                 챕터 제목 (선택)
               </span>
               <input
                 type="text"
                 value={chapterTitle}
                 onChange={(e) => setChapterTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
               />
             </label>
             <label className="block">
-              <span className="block text-[11px] font-bold text-[#5F4E43] uppercase mb-1">
+              <span className="block text-[11px] font-bold text-brown-medium uppercase mb-1">
                 재생시간 (분)
               </span>
               <input
@@ -399,7 +399,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 min={0}
                 value={durationMin}
                 onChange={(e) => setDurationMin(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EFE8DC] rounded-lg text-xs focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
               />
             </label>
             <label className="flex items-center gap-2 mt-6">
@@ -408,21 +408,21 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 checked={isPreview}
                 onChange={(e) => setIsPreview(e.target.checked)}
               />
-              <span className="text-xs font-semibold text-[#5F4E43]">무료 미리보기 차시</span>
+              <span className="text-xs font-semibold text-brown-medium">무료 미리보기 차시</span>
             </label>
           </div>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setShowAdd(false)}
-              className="px-4 py-2 bg-[#FAF4EA] border border-[#EFE8DC] text-xs font-semibold rounded-lg text-[#5F4E43]"
+              className="px-4 py-2 bg-cream border border-brown-light text-xs font-semibold rounded-lg text-brown-medium"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="px-4 py-2 bg-[#B65538] text-white text-xs font-bold rounded-lg hover:bg-[#A14328] disabled:opacity-50"
+              className="px-4 py-2 bg-terracotta text-white text-xs font-bold rounded-lg hover:bg-terracotta-deep disabled:opacity-50"
             >
               등록
             </button>
@@ -430,13 +430,13 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
         </form>
       )}
 
-      <div className="bg-white rounded-2xl border border-[#EFE8DC] shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-brown-light shadow-sm overflow-hidden">
         {lessons.length === 0 ? (
-          <div className="py-16 text-center text-sm text-[#5F4E43]">
+          <div className="py-16 text-center text-sm text-brown-medium">
             아직 차시가 없습니다. “차시 추가”로 커리큘럼을 구성하세요.
           </div>
         ) : (
-          <ul className="divide-y divide-[#EFE8DC]/60">
+          <ul className="divide-y divide-brown-light/60">
             {lessons.map((l, i) => {
               const up = uploads[l.id];
               return (
@@ -448,7 +448,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         disabled={busy || i === 0}
                         onClick={() => move(i, -1)}
                         aria-label="위로 이동"
-                        className="text-[#5F4E43] hover:text-[#B65538] disabled:opacity-30"
+                        className="text-brown-medium hover:text-terracotta disabled:opacity-30"
                       >
                         <ChevronUp size={16} />
                       </button>
@@ -457,21 +457,21 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         disabled={busy || i === lessons.length - 1}
                         onClick={() => move(i, 1)}
                         aria-label="아래로 이동"
-                        className="text-[#5F4E43] hover:text-[#B65538] disabled:opacity-30"
+                        className="text-brown-medium hover:text-terracotta disabled:opacity-30"
                       >
                         <ChevronDown size={16} />
                       </button>
                     </div>
 
-                    <span className="font-mono text-xs text-[#5F4E43]/60 w-6 shrink-0">
+                    <span className="font-mono text-xs text-brown-medium/60 w-6 shrink-0">
                       {i + 1}
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-[#2A211B] truncate">
+                      <span className="block text-sm font-bold text-brown truncate">
                         {l.titleKo || '(제목 없음)'}
                       </span>
-                      <span className="text-[11px] text-[#5F4E43]/70">
+                      <span className="text-[11px] text-brown-medium/70">
                         챕터 {l.chapterIndex}
                         {l.chapterTitleKo ? ` · ${l.chapterTitleKo}` : ''} · {clock(l.durationSec)}
                       </span>
@@ -482,7 +482,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         <Video size={11} /> 영상
                       </span>
                     ) : (
-                      <span className="hidden sm:inline text-[10px] font-bold text-[#5F4E43]/50 bg-[#5F4E43]/5 px-2 py-0.5 rounded">
+                      <span className="hidden sm:inline text-[10px] font-bold text-brown-medium/50 bg-brown-medium/5 px-2 py-0.5 rounded">
                         영상 없음
                       </span>
                     )}
@@ -491,7 +491,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                       type="button"
                       disabled={busy || !!up}
                       onClick={() => pickFile(l.id)}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded text-terracotta bg-terracotta/10 hover:bg-terracotta hover:text-cream transition-colors disabled:opacity-50"
                     >
                       <Upload size={11} /> {l.hasVideo ? '교체' : '업로드'}
                     </button>
@@ -502,8 +502,8 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                       onClick={() => patch(l.id, { isPreview: !l.isPreview })}
                       className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded transition-colors disabled:opacity-50 ${
                         l.isPreview
-                          ? 'text-[#B0863C] bg-[#B0863C]/10'
-                          : 'text-[#5F4E43] bg-[#5F4E43]/10'
+                          ? 'text-gold bg-gold/10'
+                          : 'text-brown-medium bg-brown-medium/10'
                       }`}
                       aria-pressed={l.isPreview}
                     >
@@ -515,7 +515,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                       disabled={busy || !!up}
                       onClick={() => remove(l.id)}
                       aria-label="차시 삭제"
-                      className="text-[#5F4E43]/60 hover:text-[#B65538] disabled:opacity-50"
+                      className="text-brown-medium/60 hover:text-terracotta disabled:opacity-50"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -525,13 +525,13 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                     <div className="mt-3 pl-9">
                       {up.phase === 'error' ? (
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-[11px] font-semibold text-[#A14328]">
+                          <span className="text-[11px] font-semibold text-terracotta-deep">
                             {up.message ?? '업로드에 실패했습니다.'}
                           </span>
                           <button
                             type="button"
                             onClick={() => pickFile(l.id)}
-                            className="text-[10px] font-bold text-[#B65538] underline shrink-0"
+                            className="text-[10px] font-bold text-terracotta underline shrink-0"
                           >
                             다시 시도
                           </button>
@@ -539,18 +539,18 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                       ) : (
                         <>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-semibold text-[#5F4E43]">
+                            <span className="text-[11px] font-semibold text-brown-medium">
                               {up.phase === 'uploading'
                                 ? '업로드 중…'
                                 : '인코딩 중… (완료까지 대기)'}
                             </span>
-                            <span className="text-[11px] font-mono text-[#5F4E43]">
+                            <span className="text-[11px] font-mono text-brown-medium">
                               {up.phase === 'uploading' ? `${up.progress}%` : ''}
                             </span>
                           </div>
-                          <div className="h-1.5 bg-[#FAF4EA] rounded-full overflow-hidden border border-[#EFE8DC]">
+                          <div className="h-1.5 bg-cream rounded-full overflow-hidden border border-brown-light">
                             <div
-                              className={`h-full rounded-full ${up.phase === 'encoding' ? 'bg-[#B0863C] animate-pulse w-full' : 'bg-[#B65538]'}`}
+                              className={`h-full rounded-full ${up.phase === 'encoding' ? 'bg-gold animate-pulse w-full' : 'bg-terracotta'}`}
                               style={
                                 up.phase === 'uploading' ? { width: `${up.progress}%` } : undefined
                               }
@@ -566,12 +566,12 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                     {l.materials.map((m) => (
                       <div
                         key={m.id}
-                        className="flex items-center justify-between gap-2 text-[11px] text-[#5F4E43]"
+                        className="flex items-center justify-between gap-2 text-[11px] text-brown-medium"
                       >
                         <span className="inline-flex items-center gap-1 min-w-0">
-                          <FileText size={11} className="shrink-0 text-[#B0863C]" />
+                          <FileText size={11} className="shrink-0 text-gold" />
                           <span className="truncate">{m.title}</span>
-                          <span className="font-mono text-[#5F4E43]/60 shrink-0">
+                          <span className="font-mono text-brown-medium/60 shrink-0">
                             {formatBytes(m.sizeBytes)}
                           </span>
                         </span>
@@ -580,7 +580,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                           disabled={busy}
                           onClick={() => removeMaterial(m.id)}
                           aria-label={`자료 ${m.title} 삭제`}
-                          className="text-[#5F4E43]/60 hover:text-[#B65538] disabled:opacity-50 shrink-0"
+                          className="text-brown-medium/60 hover:text-terracotta disabled:opacity-50 shrink-0"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -594,20 +594,20 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                           onChange={(e) => setMaterialTitle(e.target.value)}
                           placeholder="자료 제목 (비우면 파일명)"
                           aria-label="자료 제목"
-                          className="flex-1 min-w-0 px-2 py-1 border border-[#EFE8DC] rounded text-[11px] focus:ring-1 focus:ring-[#B65538] focus:outline-none"
+                          className="flex-1 min-w-0 px-2 py-1 border border-brown-light rounded text-[11px] focus:ring-1 focus:ring-terracotta focus:outline-none"
                         />
                         <button
                           type="button"
                           disabled={busy || materialUploading === l.id}
                           onClick={() => pickMaterial(l.id)}
-                          className="text-[10px] font-bold px-2 py-1 rounded text-[#B65538] bg-[#B65538]/10 hover:bg-[#B65538] hover:text-[#FAF4EA] transition-colors disabled:opacity-50 shrink-0"
+                          className="text-[10px] font-bold px-2 py-1 rounded text-terracotta bg-terracotta/10 hover:bg-terracotta hover:text-cream transition-colors disabled:opacity-50 shrink-0"
                         >
                           {materialUploading === l.id ? '업로드 중…' : 'PDF 선택'}
                         </button>
                         <button
                           type="button"
                           onClick={() => setMaterialFormLessonId(null)}
-                          className="text-[10px] text-[#5F4E43]/70 hover:text-[#B65538] shrink-0"
+                          className="text-[10px] text-brown-medium/70 hover:text-terracotta shrink-0"
                         >
                           취소
                         </button>
@@ -617,7 +617,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         type="button"
                         disabled={busy || materialUploading === l.id}
                         onClick={() => openMaterialForm(l.id)}
-                        className="text-[10px] font-bold text-[#B0863C] hover:text-[#B65538] underline disabled:opacity-50"
+                        className="text-[10px] font-bold text-gold hover:text-terracotta underline disabled:opacity-50"
                       >
                         {materialUploading === l.id ? '자료 업로드 중…' : '+ PDF 자료 추가'}
                       </button>

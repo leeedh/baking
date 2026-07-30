@@ -1,10 +1,10 @@
 // DC-96 · 상단 프로모션 고지 바. 기존 CatalogScreen 최상단 블록을 그대로 추출(홈 전용).
 export default function AnnouncementBar() {
   return (
-    <div className="bg-[#2A211B] text-[#FAF4EA] text-xs py-2 px-4 shadow-sm border-b border-[#FAF4EA]/15 overflow-hidden">
+    <div className="bg-brown text-cream text-xs py-2 px-4 shadow-sm border-b border-cream/15 overflow-hidden">
       <div id="announcement-scroll" className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="bg-[#B65538] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase">
+          <span className="bg-terracotta text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase">
             PROMO
           </span>
           <span className="text-[11px] font-light tracking-wide">

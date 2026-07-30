@@ -54,20 +54,20 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
   return (
     <section
       id="baking-quiz-section"
-      className="py-16 px-6 sm:px-12 bg-[#FAF4EA] border-b border-[#EFE8DC]/80"
+      className="py-16 px-6 sm:px-12 bg-cream border-b border-brown-light/80"
     >
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-[#EFE8DC] overflow-hidden shadow-xl">
+      <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-brown-light overflow-hidden shadow-xl">
         <div className="grid grid-cols-1 md:grid-cols-5">
           {/* Left title section */}
-          <div className="md:col-span-2 bg-[#2A211B] text-[#FAF4EA] p-8 sm:p-10 flex flex-col justify-between">
+          <div className="md:col-span-2 bg-brown text-cream p-8 sm:p-10 flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="text-[10px] font-bold text-[#B0863C] tracking-widest uppercase">
+              <span className="text-[10px] font-bold text-gold tracking-widest uppercase">
                 {t('quiz.badge')}
               </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold leading-tight keep-all break-keep">
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold leading-tight break-keep">
                 {t('quiz.title')}
               </h3>
-              <p className="text-xs text-white/70 font-light leading-relaxed keep-all break-keep">
+              <p className="text-xs text-white/70 font-light leading-relaxed break-keep">
                 {t('quiz.desc')}
               </p>
             </div>
@@ -81,8 +81,8 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
           <div className="md:col-span-3 p-8 sm:p-10 flex flex-col justify-center">
             {quizStep === 1 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-1.5 text-[#B65538]">
-                  <span className="text-xs font-bold bg-[#B65538]/10 px-2 py-0.5 rounded">
+                <div className="flex items-center gap-1.5 text-terracotta">
+                  <span className="text-xs font-bold bg-terracotta/10 px-2 py-0.5 rounded">
                     STEP 01
                   </span>
                   <span className="text-xs font-semibold">현재 나의 오븐 숙련도는 어느 쪽인가요?</span>
@@ -92,40 +92,40 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                   <button
                     type="button"
                     onClick={() => handleQuizAnswer(1, 'beginner')}
-                    className="w-full text-left p-4 rounded-xl border border-[#EFE8DC] hover:border-[#B65538] hover:bg-[#FAF4EA]/50 transition-all font-medium text-sm text-[#2A211B] flex items-center justify-between group"
+                    className="w-full text-left p-4 rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all font-medium text-sm text-brown flex items-center justify-between group"
                   >
                     <span>베이킹 초보 (기초적인 계량과 도구를 배우고 싶어요)</span>
                     <ChevronRight
                       size={14}
-                      className="text-[#5F4E43]/40 group-hover:text-[#B65538] transition-colors"
+                      className="text-brown-medium/40 group-hover:text-terracotta transition-colors"
                     />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleQuizAnswer(1, 'hobbyist')}
-                    className="w-full text-left p-4 rounded-xl border border-[#EFE8DC] hover:border-[#B65538] hover:bg-[#FAF4EA]/50 transition-all font-medium text-sm text-[#2A211B] flex items-center justify-between group"
+                    className="w-full text-left p-4 rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all font-medium text-sm text-brown flex items-center justify-between group"
                   >
                     <span>
                       디저트 홈베이커 (마카롱, 까눌레 구운 성적이 있고 품질을 높이고 싶어요)
                     </span>
                     <ChevronRight
                       size={14}
-                      className="text-[#5F4E43]/40 group-hover:text-[#B65538] transition-colors"
+                      className="text-brown-medium/40 group-hover:text-terracotta transition-colors"
                     />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleQuizAnswer(1, 'expert')}
-                    className="w-full text-left p-4 rounded-xl border border-[#EFE8DC] hover:border-[#B65538] hover:bg-[#FAF4EA]/50 transition-all font-medium text-sm text-[#2A211B] flex items-center justify-between group"
+                    className="w-full text-left p-4 rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all font-medium text-sm text-brown flex items-center justify-between group"
                   >
                     <span>
                       현직 파티시에 / 카페 자영업 (원가 세밀 배합과 판매 전개 노하우가 필요합니다)
                     </span>
                     <ChevronRight
                       size={14}
-                      className="text-[#5F4E43]/40 group-hover:text-[#B65538] transition-colors"
+                      className="text-brown-medium/40 group-hover:text-terracotta transition-colors"
                     />
                   </button>
                 </div>
@@ -134,8 +134,8 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
 
             {quizStep === 2 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-1.5 text-[#B65538]">
-                  <span className="text-xs font-bold bg-[#B65538]/10 px-2 py-0.5 rounded">
+                <div className="flex items-center gap-1.5 text-terracotta">
+                  <span className="text-xs font-bold bg-terracotta/10 px-2 py-0.5 rounded">
                     STEP 02
                   </span>
                   <span className="text-xs font-semibold">
@@ -147,38 +147,38 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                   <button
                     type="button"
                     onClick={() => handleQuizAnswer(2, 'sweet')}
-                    className="w-full text-left p-4 rounded-xl border border-[#EFE8DC] hover:border-[#B65538] hover:bg-[#FAF4EA]/50 transition-all font-medium text-sm text-[#2A211B] flex items-center justify-between group"
+                    className="w-full text-left p-4 rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all font-medium text-sm text-brown flex items-center justify-between group"
                   >
                     <span>밀착 쫀득하고 화려한 달콤함 (정밀한 정통 마카롱과 가나슈 필링)</span>
                     <ChevronRight
                       size={14}
-                      className="text-[#5F4E43]/40 group-hover:text-[#B65538] transition-colors"
+                      className="text-brown-medium/40 group-hover:text-terracotta transition-colors"
                     />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleQuizAnswer(2, 'butter')}
-                    className="w-full text-left p-4 rounded-xl border border-[#EFE8DC] hover:border-[#B65538] hover:bg-[#FAF4EA]/50 transition-all font-medium text-sm text-[#2A211B] flex items-center justify-between group"
+                    className="w-full text-left p-4 rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all font-medium text-sm text-brown flex items-center justify-between group"
                   >
                     <span>진하고 고소한 구운 구움과자 향 (깊은 탄버터 휘낭시에, 명품 마들렌)</span>
                     <ChevronRight
                       size={14}
-                      className="text-[#5F4E43]/40 group-hover:text-[#B65538] transition-colors"
+                      className="text-brown-medium/40 group-hover:text-terracotta transition-colors"
                     />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleQuizAnswer(2, 'french')}
-                    className="w-full text-left p-4 rounded-xl border border-[#EFE8DC] hover:border-[#B65538] hover:bg-[#FAF4EA]/50 transition-all font-medium text-sm text-[#2A211B] flex items-center justify-between group"
+                    className="w-full text-left p-4 rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all font-medium text-sm text-brown flex items-center justify-between group"
                   >
                     <span>
                       예술 작품 같은 페이스트리 프레임 (사블레 도우, 바닐라 타르트, 생또노레)
                     </span>
                     <ChevronRight
                       size={14}
-                      className="text-[#5F4E43]/40 group-hover:text-[#B65538] transition-colors"
+                      className="text-brown-medium/40 group-hover:text-terracotta transition-colors"
                     />
                   </button>
                 </div>
@@ -187,8 +187,8 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
 
             {quizStep === 3 && quizResult && (
               <div className="space-y-6">
-                <div className="flex items-center gap-1.5 text-[#B0863C]">
-                  <span className="text-xs font-bold bg-[#B0863C]/10 px-2 py-0.5 rounded">
+                <div className="flex items-center gap-1.5 text-gold">
+                  <span className="text-xs font-bold bg-gold/10 px-2 py-0.5 rounded">
                     MATCH COMPLETE
                   </span>
                   <span className="text-xs font-semibold">
@@ -197,28 +197,28 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                 </div>
 
                 {/* Recommendation card shortcut */}
-                <div className="p-4 bg-[#FAF4EA]/50 rounded-2xl border border-[#EFE8DC] flex gap-4 items-center">
+                <div className="p-4 bg-cream/50 rounded-2xl border border-brown-light flex gap-4 items-center">
                   <img
                     referrerPolicy="no-referrer"
                     src={quizResult.thumbnail}
                     alt=""
-                    className="w-20 h-20 rounded-lg object-cover border border-[#EFE8DC]/80 shadow"
+                    className="w-20 h-20 rounded-lg object-cover border border-brown-light/80 shadow"
                   />
                   <div className="flex-1 space-y-1">
-                    <span className="text-[10px] text-[#B65538] font-bold uppercase">
+                    <span className="text-[10px] text-terracotta font-bold uppercase">
                       {quizResult.category}
                     </span>
-                    <h4 className="font-serif text-sm font-bold text-[#2A211B] leading-tight line-clamp-1">
+                    <h4 className="font-serif text-sm font-bold text-brown leading-tight line-clamp-1">
                       {quizResult.title}
                     </h4>
-                    <p className="text-[11px] text-[#5F4E43] font-light">
+                    <p className="text-[11px] text-brown-medium font-light">
                       추천 강사: <strong>{quizResult.instructor}</strong> ({quizResult.level}자용
                       코스)
                     </p>
 
                     <div className="flex items-center gap-1 pt-1">
-                      <Star size={11} className="text-[#B0863C] fill-[#B0863C]" />
-                      <span className="text-[10.5px] text-[#5F4E43] font-bold">
+                      <Star size={11} className="text-gold fill-gold" />
+                      <span className="text-[10.5px] text-brown-medium font-bold">
                         {quizResult.rating.toFixed(1)}
                       </span>
                       <span className="text-[10px] text-gray-400">
@@ -232,14 +232,14 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                   <button
                     type="button"
                     onClick={() => router.push(`/classes/${quizResult.id}`)}
-                    className="flex-1 py-3 bg-[#2A211B] hover:bg-[#B65538] text-[#FAF4EA] text-xs font-bold rounded-xl shadow transition-colors text-center cursor-pointer"
+                    className="flex-1 py-3 bg-brown hover:bg-terracotta text-cream text-xs font-bold rounded-xl shadow transition-colors text-center cursor-pointer"
                   >
                     매칭 클래스 상세보증 보러가기
                   </button>
                   <button
                     type="button"
                     onClick={resetQuiz}
-                    className="px-4 py-3 bg-white hover:bg-[#FAF4EA] border border-[#EFE8DC] text-[#5F4E43] text-xs font-medium rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-3 bg-white hover:bg-cream border border-brown-light text-brown-medium text-xs font-medium rounded-xl transition-colors cursor-pointer"
                   >
                     다시 테스트
                   </button>

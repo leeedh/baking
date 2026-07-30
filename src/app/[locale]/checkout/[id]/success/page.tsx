@@ -61,15 +61,15 @@ export default function CheckoutSuccessPage() {
   }, [searchParams, router]);
 
   return (
-    <div className="flex items-center justify-center min-h-[70vh] px-4 bg-[#FAF4EA]">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#EFE8DC] p-10 text-center space-y-5">
+    <div className="flex items-center justify-center min-h-[70vh] px-4 bg-cream">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-brown-light p-10 text-center space-y-5">
         {phase === 'confirming' && (
           <>
-            <span className="mx-auto block w-10 h-10 border-4 border-t-transparent border-[#B65538] rounded-full animate-spin" />
-            <h1 className="font-serif text-xl font-bold text-[#2A211B]">
+            <span className="mx-auto block w-10 h-10 border-4 border-t-transparent border-terracotta rounded-full animate-spin" />
+            <h1 className="font-serif text-xl font-bold text-brown">
               결제 승인 및 수강권 발급 중...
             </h1>
-            <p className="text-xs text-[#5F4E43]">
+            <p className="text-xs text-brown-medium">
               서버에서 결제 금액을 검증하고 있습니다. 잠시만 기다려주세요.
             </p>
           </>
@@ -77,23 +77,23 @@ export default function CheckoutSuccessPage() {
         {phase === 'done' && (
           <>
             <CheckCircle2 size={44} className="mx-auto text-emerald-600" />
-            <h1 className="font-serif text-xl font-bold text-[#2A211B]">
+            <h1 className="font-serif text-xl font-bold text-brown">
               평생 소장권이 발급되었습니다!
             </h1>
-            <p className="text-xs text-[#5F4E43]">내 클래스 보관함으로 이동합니다...</p>
+            <p className="text-xs text-brown-medium">내 클래스 보관함으로 이동합니다...</p>
           </>
         )}
         {phase === 'error' && (
           <>
             <CircleAlert size={44} className="mx-auto text-red-500" />
-            <h1 className="font-serif text-xl font-bold text-[#2A211B]">
+            <h1 className="font-serif text-xl font-bold text-brown">
               결제를 완료하지 못했습니다
             </h1>
             <p className="text-xs text-red-600">{errorMsg}</p>
             <button
               type="button"
               onClick={() => router.push(`/checkout/${params.id}`)}
-              className="px-6 py-2.5 bg-[#B65538] hover:bg-[#A14328] text-white text-xs font-bold rounded-xl cursor-pointer"
+              className="px-6 py-2.5 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-xl cursor-pointer"
             >
               결제 다시 시도
             </button>

@@ -41,7 +41,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={fraunces.variable}>
-      <body className="flex flex-col min-h-screen bg-[#FAF4EA] text-[#2A211B] font-sans">
+      <body className="flex flex-col min-h-screen bg-cream text-brown font-sans">
         <NextIntlClientProvider messages={messages}>
           {/* 카탈로그 SSG 유지를 위해 레이아웃은 쿠키를 읽지 않는다(정적).
               초기 user는 null로 두고 클라이언트 AuthProvider가 세션 쿠키로 하이드레이션.

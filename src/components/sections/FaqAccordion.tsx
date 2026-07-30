@@ -38,9 +38,9 @@ export default function FaqAccordion({
   return (
     <section className="py-20 px-6 sm:px-12 max-w-4xl mx-auto">
       <div className="text-center space-y-3 mb-12">
-        <HelpCircle className="mx-auto text-[#B65538]" size={28} />
-        <h2 className="font-serif text-3xl font-bold text-[#2A211B]">{title}</h2>
-        <p className="text-xs sm:text-sm text-[#5F4E43] font-light">{description}</p>
+        <HelpCircle className="mx-auto text-terracotta" size={28} />
+        <h2 className="font-serif text-3xl font-bold text-brown">{title}</h2>
+        <p className="text-xs sm:text-sm text-brown-medium font-light">{description}</p>
       </div>
 
       <div className="space-y-4">
@@ -49,24 +49,24 @@ export default function FaqAccordion({
           return (
             <div
               key={faq.q}
-              className="bg-white rounded-2xl border border-[#EFE8DC] overflow-hidden transition-all duration-300"
+              className="bg-white rounded-2xl border border-brown-light overflow-hidden transition-all duration-300"
             >
               <button
                 type="button"
                 onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                 aria-expanded={isOpen}
-                className="w-full text-left p-6 flex justify-between items-center gap-4 bg-white hover:bg-[#FAF4EA]/40 transition-colors"
+                className="w-full text-left p-6 flex justify-between items-center gap-4 bg-white hover:bg-cream/40 transition-colors"
               >
-                <p className="font-serif text-sm sm:text-base font-bold text-[#2A211B]">{faq.q}</p>
+                <p className="font-serif text-sm sm:text-base font-bold text-brown">{faq.q}</p>
                 <span
-                  className={`text-[#B65538] shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                  className={`text-terracotta shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
                 >
                   <ChevronDown size={18} />
                 </span>
               </button>
 
               {isOpen && (
-                <div className="px-6 pb-6 pt-1 text-xs sm:text-[13px] text-[#5F4E43] leading-relaxed font-light border-t border-[#FAF4EA] bg-[#FAF4EA]/20">
+                <div className="px-6 pb-6 pt-1 text-xs sm:text-[13px] text-brown-medium leading-relaxed font-light border-t border-cream bg-cream/20">
                   {faq.a}
                 </div>
               )}

@@ -165,7 +165,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
     <div
       ref={containerRef}
       id="meringue-scroll-wrapper"
-      className="relative w-full h-screen bg-[#FDFBF7] overflow-hidden"
+      className="relative w-full h-screen bg-ivory overflow-hidden"
     >
       {/* 
         ========================================================================
@@ -175,15 +175,15 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
       */}
       <div
         id="hero-fixed-action-bar"
-        className="absolute top-0 inset-x-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EFE8DC]/70 py-3.5 px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm pointer-events-auto"
+        className="absolute top-0 inset-x-0 z-30 bg-ivory/90 backdrop-blur-md border-b border-brown-light/70 py-3.5 px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm pointer-events-auto"
       >
         {/* Left brand/slogan */}
         <div className="flex items-center gap-3 shrink-0">
-          <span className="text-[10px] font-mono tracking-[0.25em] text-[#4A3225] uppercase font-bold">
+          <span className="text-[10px] font-mono tracking-[0.25em] text-brown-deep uppercase font-bold">
             ATELIER CRÈME BY MIN SOHEE
           </span>
-          <span className="h-[12px] w-[1px] bg-[#EFE8DC] hidden sm:inline-block" />
-          <span className="text-[9px] font-mono tracking-[0.15em] text-[#B0863C] uppercase font-semibold hidden sm:inline-block">
+          <span className="h-[12px] w-[1px] bg-brown-light hidden sm:inline-block" />
+          <span className="text-[9px] font-mono tracking-[0.15em] text-gold uppercase font-semibold hidden sm:inline-block">
             01 / THE ORIGINAL REAL TECHNIQUE
           </span>
         </div>
@@ -192,7 +192,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-end">
           {/* Search Input — 제출 시 /classes?q=로 이동한다 */}
           <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#4E3C30]/60">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-brown-deep/60">
               <Search size={13} />
             </span>
             <input
@@ -202,7 +202,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('hero.searchPlaceholder')}
               aria-label={t('hero.searchPlaceholder')}
-              className="w-full pl-8 pr-3 py-1.5 bg-white/80 border border-[#EFE8DC] rounded-lg text-xs text-[#2C1A12] placeholder-[#4E3C30]/50 focus:outline-none focus:ring-1 focus:ring-[#9E2D1B] focus:border-[#9E2D1B] transition-all"
+              className="w-full pl-8 pr-3 py-1.5 bg-white/80 border border-brown-light rounded-lg text-xs text-hero-ink placeholder-brown-deep/50 focus:outline-none focus:ring-1 focus:ring-hero-accent focus:border-hero-accent transition-all"
             />
           </form>
 
@@ -211,7 +211,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
             <button
               type="button"
               onClick={onExplore}
-              className="px-4 py-1.5 bg-[#2C1A12] hover:bg-[#9E2D1B] text-[#FAF4EA] text-xs font-bold rounded-lg transition-all duration-300 cursor-pointer shadow-sm whitespace-nowrap"
+              className="px-4 py-1.5 bg-hero-ink hover:bg-hero-accent text-cream text-xs font-bold rounded-lg transition-all duration-300 cursor-pointer shadow-sm whitespace-nowrap"
             >
               {t('hero.exploreBtn')}
             </button>
@@ -219,7 +219,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
             <button
               type="button"
               onClick={onQuiz}
-              className="px-3 py-1.5 bg-transparent border border-[#2C1A12]/20 hover:border-[#2C1A12] text-[#2C1A12] text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
+              className="px-3 py-1.5 bg-transparent border border-hero-ink/20 hover:border-hero-ink text-hero-ink text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
             >
               {t('hero.quizBtn')}
             </button>
@@ -252,7 +252,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
           </defs>
 
           {/* Cream overlay — solid fill required; gradient fill breaks mask animation in browsers */}
-          <rect x="0" y="0" width="100" height="100" fill="#FDFBF7" mask="url(#cake-zoom-mask)" />
+          <rect x="0" y="0" width="100" height="100" fill="var(--color-ivory)" mask="url(#cake-zoom-mask)" />
 
           {/* Luxury concentric rings framing the circular cake window */}
           <g ref={decorRef} className="opacity-80">
@@ -261,7 +261,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               cy="50"
               r="8.4"
               fill="none"
-              stroke="#B0863C"
+              stroke="var(--color-gold)"
               strokeWidth="0.28"
               opacity="0.9"
             />
@@ -270,7 +270,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               cy="50"
               r="9.6"
               fill="none"
-              stroke="#B0863C"
+              stroke="var(--color-gold)"
               strokeWidth="0.16"
               strokeDasharray="0.55,0.55"
               opacity="0.7"
@@ -280,7 +280,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               cy="50"
               r="11.2"
               fill="none"
-              stroke="#B0863C"
+              stroke="var(--color-gold)"
               strokeWidth="0.09"
               opacity="0.45"
             />
@@ -289,7 +289,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               cy="50"
               r="13.5"
               fill="none"
-              stroke="#9E2D1B"
+              stroke="var(--color-hero-accent)"
               strokeWidth="0.05"
               opacity="0.22"
             />
@@ -309,18 +309,18 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
             ref={leftTextRef}
             className="lg:col-span-7 space-y-5 sm:space-y-6 transition-all duration-300"
           >
-            <span className="text-[#B0863C] text-[10px] sm:text-[11px] font-mono tracking-[0.4em] block font-bold uppercase">
+            <span className="text-gold text-[10px] sm:text-[11px] font-mono tracking-[0.4em] block font-bold uppercase">
               {t('hero.subtitle')}
             </span>
 
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-[56px] font-light leading-[1.12] tracking-tight text-[#2C1A12] space-y-1 sm:space-y-2 keep-all break-keep">
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-[56px] font-light leading-[1.12] tracking-tight text-hero-ink space-y-1 sm:space-y-2 break-keep">
               <span className="block">{t('hero.title1')}</span>
-              <span className="block font-medium font-serif text-[#9E2D1B]">
+              <span className="block font-medium font-serif text-hero-accent">
                 {t('hero.title2')}
               </span>
             </h1>
 
-            <p className="text-xs sm:text-sm text-[#4E3C30] leading-relaxed max-w-md font-light keep-all break-keep">
+            <p className="text-xs sm:text-sm text-brown-deep leading-relaxed max-w-md font-light break-keep">
               {t('hero.desc')}
             </p>
           </div>
@@ -329,33 +329,33 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
           <div className="lg:col-span-5 hidden lg:flex flex-col items-end justify-center gap-6 pr-2">
             {/* 구분선 + 레이블 */}
             <div className="flex items-center gap-3 self-end">
-              <div className="h-[1px] w-8 bg-[#B0863C]/50" />
-              <span className="text-[9px] font-mono tracking-[0.4em] text-[#B0863C] uppercase font-bold">
+              <div className="h-[1px] w-8 bg-gold/50" />
+              <span className="text-[9px] font-mono tracking-[0.4em] text-gold uppercase font-bold">
                 SINCE 2019 · PARIS
               </span>
             </div>
 
             {/* 스탯 카드 그리드 */}
             <div className="grid grid-cols-2 gap-4 w-full max-w-[200px]">
-              <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">42</div>
-                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">
+              <div className="border border-brown-light p-3 rounded-sm bg-white/30 backdrop-blur-sm">
+                <div className="font-serif text-2xl font-light text-hero-ink leading-none">42</div>
+                <div className="text-[9px] font-mono tracking-[0.2em] text-brown-deep/70 uppercase mt-1">
                   Masterclasses
                 </div>
               </div>
-              <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">
+              <div className="border border-brown-light p-3 rounded-sm bg-white/30 backdrop-blur-sm">
+                <div className="font-serif text-2xl font-light text-hero-ink leading-none">
                   4.9
                 </div>
-                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">
+                <div className="text-[9px] font-mono tracking-[0.2em] text-brown-deep/70 uppercase mt-1">
                   Avg Rating
                 </div>
               </div>
-              <div className="border border-[#EFE8DC] p-3 rounded-sm bg-white/30 backdrop-blur-sm col-span-2">
-                <div className="font-serif text-2xl font-light text-[#2C1A12] leading-none">
+              <div className="border border-brown-light p-3 rounded-sm bg-white/30 backdrop-blur-sm col-span-2">
+                <div className="font-serif text-2xl font-light text-hero-ink leading-none">
                   4,800<span className="text-base">+</span>
                 </div>
-                <div className="text-[9px] font-mono tracking-[0.2em] text-[#4E3C30]/70 uppercase mt-1">
+                <div className="text-[9px] font-mono tracking-[0.2em] text-brown-deep/70 uppercase mt-1">
                   Students Worldwide
                 </div>
               </div>
@@ -363,9 +363,9 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
 
             {/* 수직 텍스트 장식 */}
             <div className="flex items-center gap-2 self-end opacity-40">
-              <div className="h-12 w-[1px] bg-[#2C1A12]" />
+              <div className="h-12 w-[1px] bg-hero-ink" />
               <span
-                className="text-[8px] font-mono tracking-[0.35em] text-[#2C1A12] uppercase font-medium"
+                className="text-[8px] font-mono tracking-[0.35em] text-hero-ink uppercase font-medium"
                 style={{ writingMode: 'vertical-rl' }}
               >
                 ATELIER CRÈME
@@ -377,7 +377,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
         {/* Bottom Indicator */}
         <div
           ref={bottomBarRef}
-          className="absolute bottom-6 left-6 right-6 sm:left-12 sm:right-12 flex items-center justify-between border-t border-[#EFE8DC] pt-4 text-[11px] text-[#4E3C30] font-light transition-all duration-300"
+          className="absolute bottom-6 left-6 right-6 sm:left-12 sm:right-12 flex items-center justify-between border-t border-brown-light pt-4 text-[11px] text-brown-deep font-light transition-all duration-300"
         >
           <span>Scroll Down to Zoom Into the Secret Dessert Scene</span>
           {/* 마우스 아이콘 스크롤 힌트 */}
@@ -387,7 +387,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               height="26"
               viewBox="0 0 18 26"
               fill="none"
-              className="text-[#4E3C30]/60"
+              className="text-brown-deep/60"
             >
               <rect
                 x="1"
@@ -404,11 +404,11 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
                 width="2"
                 height="5"
                 rx="1"
-                fill="#B0863C"
-                style={{ animation: 'mouseScroll 1.6s ease-in-out infinite' }}
+                fill="var(--color-gold)"
+                className="animate-mouse-scroll"
               />
             </svg>
-            <span className="font-mono text-[8px] tracking-[0.35em] text-[#4E3C30]/50 uppercase">
+            <span className="font-mono text-[10px] tracking-[0.35em] text-brown-deep/70 uppercase">
               SCROLL
             </span>
           </div>
@@ -421,35 +421,35 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
         className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6 pointer-events-none select-none opacity-0"
       >
         <div className="max-w-3xl space-y-5">
-          <span className="text-[#B0863C] text-[10px] sm:text-[11px] font-mono tracking-[0.5em] block font-extrabold uppercase">
+          <span className="text-gold text-[10px] sm:text-[11px] font-mono tracking-[0.5em] block font-extrabold uppercase">
             THE SENSE OF ARTISAN MASTERY
           </span>
-          <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light leading-tight text-white tracking-tight keep-all break-keep">
+          <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light leading-tight text-white tracking-tight break-keep">
             {language === 'ko' ? (
               <>
                 완벽한 텍스처를 향한 <br className="sm:hidden" />
-                <span className="font-serif italic font-medium text-[#FAF4EA]">
+                <span className="font-serif italic font-medium text-cream">
                   파티시에의 무한한 집념
                 </span>
               </>
             ) : (
               <>
                 An Infinite Obsession for <br className="sm:hidden" />
-                <span className="font-serif italic font-medium text-[#FAF4EA]">
+                <span className="font-serif italic font-medium text-cream">
                   the Absolute Perfect Texture
                 </span>
               </>
             )}
           </h2>
-          <div className="w-16 h-[1px] bg-[#B0863C] mx-auto my-4" />
-          <p className="text-xs sm:text-sm text-white/85 max-w-lg mx-auto font-light leading-relaxed tracking-wide keep-all break-keep">
+          <div className="w-16 h-[1px] bg-gold mx-auto my-4" />
+          <p className="text-xs sm:text-sm text-white/85 max-w-lg mx-auto font-light leading-relaxed tracking-wide break-keep">
             {language === 'ko'
               ? '아틀리에 크렘이 수년간 정교화한 오븐 기압 공식과 크림 마스킹 기술을 통해, 손가락 끝의 감각이 과학적 마스터피스가 되는 순간을 선사합니다.'
               : 'Discover the exact oven pressure formula and cream masking techniques perfected over years, transforming raw intuition into master-level French pastries.'}
           </p>
           <div className="pt-6 flex flex-col items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/20 rounded-full bg-white/5 backdrop-blur-sm text-[10px] font-semibold text-white uppercase tracking-[0.2em]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#B0863C] animate-ping" />
+              <span className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" />
               Live VOD Streaming Active
             </span>
             {/* CTA 버튼 — pointer-events-auto로 클릭 가능하게 */}
@@ -457,7 +457,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               <button
                 type="button"
                 onClick={onExplore}
-                className="px-7 py-3 min-h-[44px] bg-[#B0863C] hover:bg-[#9A7230] text-white text-[11px] font-bold tracking-[0.25em] uppercase rounded-full transition-all duration-300 shadow-lg shadow-[#B0863C]/30 cursor-pointer"
+                className="px-7 py-3 min-h-[44px] bg-gold hover:bg-gold-deep text-white text-[11px] font-bold tracking-[0.25em] uppercase rounded-full transition-all duration-300 shadow-lg shadow-gold/30 cursor-pointer"
               >
                 {language === 'ko' ? '마스터클래스 탐색' : 'Explore Masterclasses'}
               </button>

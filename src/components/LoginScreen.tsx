@@ -113,28 +113,28 @@ export default function LoginScreen() {
   return (
     <div
       id="login-screen"
-      className="flex items-center justify-center min-h-[80vh] px-4 py-12 bg-[#FAF4EA]"
+      className="flex items-center justify-center min-h-[80vh] px-4 py-12 bg-cream"
     >
       <div
         id="login-card"
-        className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#EFE8DC] overflow-hidden transform hover:scale-[1.01] transition-transform duration-300"
+        className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-brown-light overflow-hidden transform hover:scale-[1.01] transition-transform duration-300"
       >
         {/* Top styling strip */}
-        <div className="h-2 bg-gradient-to-r from-[#B65538] via-[#B0863C] to-[#B65538]" />
+        <div className="h-2 bg-gradient-to-r from-terracotta via-gold to-terracotta" />
 
         <div className="p-6 sm:p-10">
           {/* Logo & Subtext */}
           <div className="text-center mb-8">
-            <span className="font-serif text-3xl font-bold tracking-tight text-[#2A211B]">
+            <span className="font-serif text-3xl font-bold tracking-tight text-brown">
               Atelier Crème
             </span>
-            <p className="text-xs text-[#5F4E43] mt-2 font-sans tracking-wide">
+            <p className="text-xs text-brown-medium mt-2 font-sans tracking-wide">
               디저트 아티스트의 고감도 VOD 베이킹 아틀리에
             </p>
           </div>
 
           {/* Tab Selection */}
-          <div className="flex border-b border-[#EFE8DC] mb-6">
+          <div className="flex border-b border-brown-light mb-6">
             <button
               id="tab-login"
               type="button"
@@ -145,8 +145,8 @@ export default function LoginScreen() {
               }}
               className={`flex-1 pb-3 text-sm font-semibold transition-colors duration-200 cursor-pointer ${
                 isLoginTab
-                  ? 'text-[#B65538] border-b-2 border-[#B65538]'
-                  : 'text-[#5F4E43]/60 hover:text-[#5F4E43]'
+                  ? 'text-terracotta border-b-2 border-terracotta'
+                  : 'text-brown-medium/60 hover:text-brown-medium'
               }`}
             >
               로그인
@@ -161,8 +161,8 @@ export default function LoginScreen() {
               }}
               className={`flex-1 pb-3 text-sm font-semibold transition-colors duration-200 cursor-pointer ${
                 !isLoginTab
-                  ? 'text-[#B65538] border-b-2 border-[#B65538]'
-                  : 'text-[#5F4E43]/60 hover:text-[#5F4E43]'
+                  ? 'text-terracotta border-b-2 border-terracotta'
+                  : 'text-brown-medium/60 hover:text-brown-medium'
               }`}
             >
               회원가입
@@ -187,7 +187,7 @@ export default function LoginScreen() {
             {/* Name - Register only */}
             {!isLoginTab && (
               <div>
-                <label className="block text-xs font-semibold text-[#2A211B] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs font-semibold text-brown uppercase tracking-wide mb-1.5">
                   이름 (실명)
                 </label>
                 <div className="relative">
@@ -197,7 +197,7 @@ export default function LoginScreen() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="홍길동"
-                    className="w-full px-4 py-2.5 bg-[#FAF4EA]/40 border border-[#EFE8DC] rounded-lg text-sm text-[#2A211B] placeholder-[#5F4E43]/40 focus:outline-none focus:ring-2 focus:ring-[#B65538] focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder-brown-medium/40 focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -205,11 +205,11 @@ export default function LoginScreen() {
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-[#2A211B] uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-semibold text-brown uppercase tracking-wide mb-1.5">
                 이메일 주소
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#5F4E43]/50">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-brown-medium/50">
                   <Mail size={16} />
                 </span>
                 <input
@@ -218,7 +218,7 @@ export default function LoginScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="creme@ateliercreme.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#FAF4EA]/40 border border-[#EFE8DC] rounded-lg text-sm text-[#2A211B] placeholder-[#5F4E43]/40 focus:outline-none focus:ring-2 focus:ring-[#B65538] focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder-brown-medium/40 focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -227,7 +227,7 @@ export default function LoginScreen() {
             {/* Password */}
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-xs font-semibold text-[#2A211B] uppercase tracking-wide">
+                <label className="block text-xs font-semibold text-brown uppercase tracking-wide">
                   비밀번호
                 </label>
                 {isLoginTab && (
@@ -237,14 +237,14 @@ export default function LoginScreen() {
                       e.preventDefault();
                       setErrorMsg('이메일로 임시 비밀번호 전송 기능을 구현할 수 있습니다.');
                     }}
-                    className="text-[10px] text-[#B0863C] hover:underline font-medium"
+                    className="text-[10px] text-gold hover:underline font-medium"
                   >
                     비밀번호를 잊으셨나요?
                   </a>
                 )}
               </div>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#5F4E43]/50">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-brown-medium/50">
                   <Lock size={16} />
                 </span>
                 <input
@@ -253,13 +253,13 @@ export default function LoginScreen() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-[#FAF4EA]/40 border border-[#EFE8DC] rounded-lg text-sm text-[#2A211B] placeholder-[#5F4E43]/40 focus:outline-none focus:ring-2 focus:ring-[#B65538] focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder-brown-medium/40 focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#5F4E43]/50 hover:text-[#5F4E43] cursor-pointer"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-brown-medium/50 hover:text-brown-medium cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -274,9 +274,9 @@ export default function LoginScreen() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
-                    className="w-4 h-4 rounded text-[#B65538] border-[#EFE8DC] focus:ring-[#B65538] accent-[#B65538]"
+                    className="w-4 h-4 rounded text-terracotta border-brown-light focus:ring-terracotta accent-terracotta"
                   />
-                  <span className="text-xs text-[#5F4E43]">이메일 기억하기</span>
+                  <span className="text-xs text-brown-medium">이메일 기억하기</span>
                 </label>
               </div>
             )}
@@ -286,7 +286,7 @@ export default function LoginScreen() {
               id="btn-auth-submit"
               type="submit"
               disabled={submitting}
-              className="w-full py-3 px-4 bg-[#B65538] hover:bg-[#9E3E23] disabled:opacity-60 disabled:cursor-not-allowed text-[#FAF4EA] font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-3 px-4 bg-terracotta hover:bg-terracotta-deep disabled:opacity-60 disabled:cursor-not-allowed text-cream font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
             >
               {submitting
                 ? '처리 중...'
@@ -299,10 +299,10 @@ export default function LoginScreen() {
           {/* Social Logins */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#EFE8DC]" />
+              <div className="w-full border-t border-brown-light" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-[#5F4E43]/50 font-medium">또는 간편 로그인</span>
+              <span className="bg-white px-3 text-brown-medium/50 font-medium">또는 간편 로그인</span>
             </div>
           </div>
 
@@ -312,7 +312,7 @@ export default function LoginScreen() {
               id="google-login-btn"
               type="button"
               onClick={() => handleSocialLogin('google')}
-              className="flex items-center justify-center gap-2 py-2 px-3 border border-[#EFE8DC] rounded-lg bg-white hover:bg-[#FAF4EA]/40 transition-colors text-xs font-medium text-[#2A211B] cursor-pointer"
+              className="flex items-center justify-center gap-2 py-2 px-3 border border-brown-light rounded-lg bg-white hover:bg-cream/40 transition-colors text-xs font-medium text-brown cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -336,13 +336,13 @@ export default function LoginScreen() {
             </button>
           </div>
 
-          <p className="text-[10px] text-center text-[#5F4E43]/60 mt-8 leading-normal">
+          <p className="text-[10px] text-center text-brown-medium/60 mt-8 leading-normal">
             가입 시 Atelier Crème의{' '}
-            <a href="#terms" className="underline hover:text-[#B65538]">
+            <a href="#terms" className="underline hover:text-terracotta">
               서비스 이용약관
             </a>{' '}
             및{' '}
-            <a href="#privacy" className="underline hover:text-[#B65538]">
+            <a href="#privacy" className="underline hover:text-terracotta">
               개인정보 처리방침
             </a>
             에 동의하게 됩니다. 해외 수강생 서비스 및 중문 번역 기능은 로그인 후 프로필에서 설정

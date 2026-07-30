@@ -89,7 +89,7 @@ export default function SecureVideoPlayer({
   if (state.status === 'error') {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black px-6 text-center text-white/80">
-        <Lock size={24} className="text-[#B65538]" />
+        <Lock size={24} className="text-terracotta" />
         <p className="text-sm">{state.message}</p>
       </div>
     );

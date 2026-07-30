@@ -1,23 +1,171 @@
-@import "tailwindcss";
+/* 외부 폰트 @import는 tailwindcss 인라인 전개보다 앞에 와야 한다 (Turbopack CSS 파서: @import는 모든 룰보다 선행) */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import "tailwindcss";
 
+/*
+ * 디자인 토큰 — 이 블록이 팔레트의 유일한 소스다.
+ * 컴포넌트에서 `bg-[#FAF4EA]` 같은 임의값 hex를 다시 쓰지 말고 `bg-cream`을 쓸 것.
+ * 색을 새로 쓰고 싶으면 먼저 여기에 토큰을 추가한다.
+ */
 @theme {
   --font-serif: "Fraunces", Georgia, serif;
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
 
+  /* 코어 팔레트 */
   --color-cream: #faf4ea;
+  --color-ivory: #fdfbf7;
   --color-gold: #b0863c;
+  --color-gold-deep: #9a7432;
   --color-terracotta: #b65538;
+  --color-terracotta-deep: #a14328;
   --color-brown: #2a211b;
   --color-brown-light: #efe8dc;
   --color-brown-medium: #5f4e43;
+  --color-brown-deep: #4e3c30;
+
+  /* 포커스 링 (ring-ring / outline-ring) */
+  --color-ring: #b65538;
+
+  /* MeringueHero 전용 — 의도적으로 본문보다 어둡고 대비가 센 별개 팔레트 */
+  --color-hero-ink: #2c1a12;
+  --color-hero-accent: #9e2d1b;
+
+  /* 반경 */
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+
+  /* 표면 그림자 — 카드 계열은 이 두 개만 쓴다 */
+  --shadow-card: 0 1px 2px 0 rgb(42 33 27 / 0.05);
+  --shadow-card-hover: 0 18px 40px -12px rgb(42 33 27 / 0.22);
+  --shadow-panel: 0 8px 24px -12px rgb(42 33 27 / 0.18);
+
+  /* 이징 — 브랜드 모션의 기본 곡선 */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /*
+   * 모션 유틸리티. Tailwind v4는 --animate-* 토큰에서 animate-* 클래스를 생성한다.
+   * (이전에는 tailwindcss-animate가 없는데도 animate-fade-in / animate-in을 쓰고 있어
+   *  모달·모바일 메뉴가 애니메이션 없이 툭 나타났다.)
+   */
+  --animate-fade-in: fade-in 0.18s var(--ease-out-soft) both;
+  --animate-slide-in-from-top: slide-in-from-top 0.22s var(--ease-out-soft) both;
+  --animate-rise: rise 0.32s var(--ease-out-soft) both;
+  --animate-mouse-scroll: mouse-scroll 1.6s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-from-top {
+    from {
+      opacity: 0;
+      transform: translateY(-0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* MeringueHero 마우스 스크롤 힌트 아이콘 */
+  @keyframes mouse-scroll {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    60% {
+      transform: translateY(6px);
+      opacity: 0.2;
+    }
+    61% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+html {
+  /* 단일 웜 라이트 테마 — 다크 테마는 미도입이므로 브라우저 자동 반전을 막는다 */
+  color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: #faf4ea; /* Cream */
-  color: #2a211b; /* Dark Brown */
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-brown);
+  font-family: var(--font-sans);
+}
+
+/*
+ * 포커스 링. 이전에는 focus:outline-none이 22곳에 있고 focus-visible이 0곳이라
+ * 버튼·링크가 팔레트와 무관한 UA 기본 아웃라인에 의존했다.
+ * 마우스 클릭에는 링이 뜨지 않고 키보드 이동에만 뜬다.
+ */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 스킵 링크 — 포커스될 때만 보인다 */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-brown);
+  color: var(--color-cream);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  transform: translateY(-200%);
+  transition: transform 0.18s var(--ease-out-soft);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/*
+ * 스크롤 리빌. 마크업이 data-reveal="out"으로 렌더되고
+ * useRevealOnScroll(IntersectionObserver)이 뷰포트 진입 시 "in"으로 바꾼다.
+ * GSAP ScrollTrigger를 전역으로 쓰지 않는 이유: MeringueHero의 cleanup이
+ * ScrollTrigger.getAll()을 전역 kill하므로 다른 섹션의 트리거까지 날아간다.
+ */
+[data-reveal] {
+  transition:
+    opacity 0.55s var(--ease-out-soft),
+    transform 0.55s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal="out"] {
+  opacity: 0;
+  transform: translateY(1.25rem);
+}
+[data-reveal="in"] {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Custom scrollbars inside our warm patisserie editorial look */
@@ -26,14 +174,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #faf4ea;
+  background: var(--color-cream);
 }
 ::-webkit-scrollbar-thumb {
-  background: #b0863c;
+  background: var(--color-gold);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b65538;
+  background: var(--color-terracotta);
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -46,22 +194,27 @@ body {
   scrollbar-width: none; /* Firefox */
 }
 
-/* MeringueHero 마우스 스크롤 힌트 아이콘 */
-@keyframes mouseScroll {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
+/*
+ * 모션 감소 선호 전역 대응. 이전에는 MeringueHero의 JS 가드 1곳뿐이라
+ * animate-pulse / ping / bounce와 무한 스크롤 힌트가 계속 돌았다.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
-  60% {
-    transform: translateY(6px);
-    opacity: 0.2;
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  61% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
+
+  /* 리빌 대상은 감춘 채로 남지 않도록 즉시 표시 */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

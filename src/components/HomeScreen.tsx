@@ -40,7 +40,7 @@ export default function HomeScreen({ classes }: HomeScreenProps) {
   return (
     <div
       id="home-screen"
-      className="bg-[#FDFBF7] min-h-screen text-[#2A211B] font-sans selection:bg-[#B65538]/20 selection:text-[#B65538]"
+      className="bg-ivory min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       <AnnouncementBar />
 

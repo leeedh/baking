@@ -324,3 +324,73 @@
 **변경 이력**
 - **v2.0** — 실제 구현(as-built) 기준 전면 동기화: 브랜드(Atelier Crème/민소희), 컬러 토큰 6종·Light 전용, Tailwind 브레이크포인트, 9개 화면(도서·강사 추가), 네이티브 플레이어·목업 결제 반영, 접근성 현황/과제 명시.
 - v1.0 — 초기 기획(Next.js/Supabase/Mux 전제, SOWOO 브랜드). §7.3에 갭 보존.
+
+---
+
+## §8. as-built 감사 및 개선 로드맵 (2026-07-30)
+
+> 📌 **문서 정합성 주의**: §1~§7은 **Vite + React SPA 프로토타입 시절**의 as-built 기록이다(`src/index.css`, `LanguageContext`, 라우터 없는 state 전환 등). 현재 앱은 **Next.js 15 App Router + next-intl + Supabase**로 이관되었고 스타일 정의 위치는 **`src/app/globals.css`**다. 표현 계층의 현행 사실은 본 §8을 따를 것.
+
+### 8.1 감사 결과 — 표현 계층의 구조적 문제
+
+| # | 문제 | 근거 | 영향 |
+|---|------|------|------|
+| A1 | `@theme` 색 토큰 6종이 **단 한 번도 사용되지 않음** | 전 화면이 `bg-[#FAF4EA]`·`text-[#B65538]` 등 임의값 hex 직접 사용 | 토큰이 소스가 아니어서 색 변경 시 전 파일 수정 필요 |
+| A2 | 선언되지 않은 색이 실사용됨 | `#FDFBF7`(페이지 셸)·`#4E3C30`·`#A14328`·`#2C1A12`·`#9E2D1B` | 실제 팔레트가 선언보다 넓어 일관성 붕괴 |
+| A3 | 골드 오타 | `sections/ClassCard.tsx:71` `text-[#B1863C]` (정상값 `#B0863C`) | 미세한 색 불일치 |
+| A4 | 공용 프리미티브 계층 **전무** (`cn()`도 없음) | Primary 버튼 문자열 10회·텍스트 인풋 20회·카드 셸 8회 복붙 | 변형 드리프트(같은 버튼의 패딩이 `px-4 py-2`/`px-5 py-3`/`px-6 py-3`로 갈림) |
+| A5 | 상태 배지 로직 3중 구현 | `DashboardScreen.tsx:30` `ORDER_STATUS_LABEL` · 같은 파일 543~549 인라인 삼항 · `InquiriesScreen.tsx:8` `STATUS_STYLE` | 같은 의미에 다른 색(`text-[#A14328]` vs `text-[#B65538]`) |
+| A6 | 복붙 블록 | `RecommendationQuiz.tsx` 옵션 버튼 6회 · `Header.tsx` 내브 링크 10회 · 섹션 헤딩 3회 | DC-96의 내브 순서 불일치 사고 원인 |
+| A7 | `readError()` 3중 중복 | `DashboardScreen.tsx:55` · `ReviewForm.tsx:11` · `LessonManager.tsx` | — |
+
+### 8.2 감사 결과 — 실제로 동작하지 않는 코드
+
+| # | 문제 | 근거 |
+|---|------|------|
+| B1 | `animate-fade-in` **미정의** — 모달이 애니메이션 없이 툭 나타남 | `DashboardScreen.tsx:636·701`. `globals.css`에 해당 키프레임 없음 |
+| B2 | `animate-in fade-in slide-in-from-top-3` **미정의** — 모바일 메뉴 무애니메이션 | `Header.tsx:234`. `tailwindcss-animate` 미설치 |
+| B3 | `keep-all` **미정의 클래스** 24회 (정답은 `break-keep`) | 전역 |
+| B4 | `text-none` 무효 클래스 | `ClassCard.tsx:89` |
+| B5 | `hover:shadow-lg` + `transition-transform` 조합 — 그림자가 애니메이션되지 않음 | `AboutScreen.tsx` 가치 카드 |
+| B6 | `NewsletterCTA` 구독 버튼이 `alert()` 스텁 | `sections/NewsletterCTA.tsx:32` |
+
+### 8.3 감사 결과 — 접근성
+
+| # | 문제 | 근거 |
+|---|------|------|
+| C1 | `focus:outline-none` **22회**, `focus-visible:` **0회** | 버튼·링크 ~80개가 팔레트와 무관한 UA 기본 아웃라인에 의존하거나 아웃라인 상실 |
+| C2 | 스킵 링크 없음, `<section>` 라벨 없음 | `layout.tsx`, 전 섹션 컴포넌트 |
+| C3 | 헤딩 순서 역전 — eyebrow가 `<h2>`, 실제 제목이 `<h3>` | `sections/PhilosophyPillars.tsx:25-30` |
+| C4 | 클릭 가능하지만 **키보드로 도달 불가** | `ClassCard.tsx:79` `<h3 onClick>` · `DetailScreen.tsx:93` `<span onClick>` |
+| C5 | 모달에 `role="dialog"`·`aria-modal`·포커스 트랩·ESC·포커스 복원 **전부 없음** | `DashboardScreen.tsx:635·700` |
+| C6 | 모바일 내브에 `aria-expanded`/`aria-controls` 없음, ESC 미지원, 포커스 미이동 | `Header.tsx:223·231` |
+| C7 | 아코디언에 `aria-controls`·패널 `id`·`role="region"` 없음 | `sections/FaqAccordion.tsx:57` · `InquiriesScreen.tsx:199` |
+| C8 | 퀴즈 단계 전환 시 포커스가 `<body>`로 유실, `aria-live` 없음 | `sections/RecommendationQuiz.tsx` |
+| C9 | `<label>`에 `htmlFor` 없고 인풋에 `id` 없음 | `DashboardScreen.tsx:665·714·727·739`, `NewsletterCTA` 이메일 입력 |
+| C10 | `prefers-reduced-motion` 대응이 JS 1곳뿐, **CSS 전역 대응 없음** | `MeringueHero.tsx:41`. `animate-pulse`/`ping`/`bounce`·`mouseScroll` 무한 루프는 계속 동작 |
+| C11 | 초소형 폰트(9~10px)에 저투명도 텍스트 — 콘트라스트 미달 위험 | `Footer`, `ClassCard:127`, `DashboardScreen`, `MeringueHero` |
+| C12 | 터치 타깃 44px 미달 다수 | 대부분 버튼이 `py-0.5`~`py-2` + `text-[10px]` |
+| C13 | `next/image` 미사용 (원격 `<img>` 11개, `width`/`height` 없음) | 히어로 LCP 미최적화 + 레이아웃 시프트 |
+
+### 8.4 감사 결과 — 상태 화면 · 반응형
+
+| # | 문제 | 근거 |
+|---|------|------|
+| D1 | `error.tsx`·`not-found.tsx`·`global-error.tsx`가 **하나도 없음** | `notFound()`를 호출하는 4개 페이지가 Next 기본 화면 노출 |
+| D2 | `PageSkeleton` 단일 형태가 5개 라우트를 커버 — 관리자 테이블·체크아웃에서 모양 불일치 | `skeletons/PageSkeleton.tsx` |
+| D3 | `loading.tsx` 누락 | `/about`, `/classes`, `/books`, `/inquiries`, `/learn/[id]`, `/admin/courses/[id]` |
+| D4 | `router.push` 후 피드백 없음 | `ClassCard`, `StudentArchive` |
+| D5 | `ClassCard` 브레이크포인트가 사실상 1개 — 320px에서 오버레이 배지 충돌 | `ClassCard.tsx` (`text-[17px] sm:text-[18px]`가 유일) |
+| D6 | 관리자 테이블이 `min-w-[720px]` + 가로 스크롤뿐 — 폰에서 액션 버튼 화면 밖 | `DashboardScreen` |
+| D7 | `xl:`/`2xl:` **0개** — 대형 디스플레이에서 3열 고정 | 전역 |
+
+### 8.5 개선 로드맵
+
+- [ ] **Phase 1a** — `globals.css` 토큰 확장(색 승격·반경·섀도·이징·`--animate-*` 모션), 리터럴 hex→`var()`, `@media (prefers-reduced-motion)` 전역 대응, `:focus-visible` 링 → **A1·A2·B1·B2·C1·C10**
+- [ ] **Phase 1b** — `src/components/ui/` 프리미티브 신설(`cn`·`Button`·`Card`·`Input`/`Textarea`·`Badge`·`Modal`·`SectionHeading`), `src/lib/status-badges.ts` 통합 → **A4·A5·C5·C9·C12**
+- [ ] **Phase 1c** — 호출부 마이그레이션 + 잡버그(`#B1863C`·`text-none`·`keep-all`) 수정 → **A3·A6·A7·B3·B4**
+- [ ] **Phase 2** — 스크롤 리빌(`IntersectionObserver`), 호버 정교화, 내비 pending 피드백, `PageSkeleton` variant, `error`/`not-found` 경계 → **B5·B6·D1·D2·D3·D4**
+- [ ] **Phase 3** — 스킵 링크·랜드마크 라벨·헤딩 순서·클릭 요소 버튼화·ARIA·라이브 리전·콘트라스트·이미지 → **C2·C3·C4·C6·C7·C8·C11·C13**
+- [ ] **Phase 4** — `ClassCard` 320px 재배치, 관리자 테이블 모바일 카드뷰, 랩 처리, 히어로 `100svh`, `xl:` 그리드 → **D5·D6·D7**
+
+> 다크 테마는 이번 범위 **밖**이다 — 현재 단일 웜 라이트 테마를 유지하고 `color-scheme: light`를 명시한다.

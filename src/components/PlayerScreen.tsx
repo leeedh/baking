@@ -116,18 +116,18 @@ export default function PlayerScreen({
   const currentMaterials = currentLesson ? (materials[currentLesson.id] ?? []) : [];
 
   return (
-    <div id="player-screen" className="bg-[#FAF4EA] py-6 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div id="player-screen" className="bg-cream py-6 px-4 sm:px-8 max-w-7xl mx-auto">
       {/* Upper header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-[#EFE8DC]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-brown-light">
         <div>
           <button
             onClick={onNavigateBack}
-            className="flex items-center gap-1 text-xs text-[#5F4E43] hover:text-[#B65538] hover:underline mb-1 cursor-pointer"
+            className="flex items-center gap-1 text-xs text-brown-medium hover:text-terracotta hover:underline mb-1 cursor-pointer"
           >
             <ChevronLeft size={14} /> 클래스 상세 페이지로 돌아가기
           </button>
-          <h1 className="font-serif text-lg sm:text-xl font-bold text-[#2A211B]">{courseTitle}</h1>
-          <p className="text-xs text-[#5F4E43]">
+          <h1 className="font-serif text-lg sm:text-xl font-bold text-brown">{courseTitle}</h1>
+          <p className="text-xs text-brown-medium">
             강사: {instructorName} •{' '}
             {purchased
               ? '✨ 평생 소장 라이선스 보관함 시청 중'
@@ -136,18 +136,18 @@ export default function PlayerScreen({
         </div>
 
         {/* Global Progress Rate Bar */}
-        <div className="bg-white p-3 rounded-xl border border-[#EFE8DC] w-full sm:w-64 space-y-1.5 self-stretch sm:self-auto shadow-sm">
+        <div className="bg-white p-3 rounded-xl border border-brown-light w-full sm:w-64 space-y-1.5 self-stretch sm:self-auto shadow-sm">
           <div className="flex justify-between items-center text-xs font-semibold">
-            <span className="text-[#5F4E43]">전체 진도율</span>
-            <span className="text-[#B65538] font-mono">{progressPercent}% 완료</span>
+            <span className="text-brown-medium">전체 진도율</span>
+            <span className="text-terracotta font-mono">{progressPercent}% 완료</span>
           </div>
-          <div className="w-full bg-[#FAF4EA] h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-cream h-2 rounded-full overflow-hidden">
             <div
-              className="bg-[#B65538] h-full rounded-full transition-all duration-500"
+              className="bg-terracotta h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-[#5F4E43]/60">
+          <div className="flex justify-between text-[10px] text-brown-medium/60">
             <span>완료 차시: {completedLessonIds.length}개</span>
             <span>총 수강 차시: {totalLessonsCount}개</span>
           </div>
@@ -164,7 +164,7 @@ export default function PlayerScreen({
               </div>
             ) : currentLocked ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center text-white/80">
-                <Lock size={24} className="text-[#B65538]" />
+                <Lock size={24} className="text-terracotta" />
                 <p className="text-sm">평생소장 라이선스 구매 후 시청할 수 있는 차시입니다.</p>
               </div>
             ) : (
@@ -180,13 +180,13 @@ export default function PlayerScreen({
 
           {/* Quick interactive task controls */}
           {currentLesson && (
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-[#EFE8DC] gap-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-brown-light gap-4 shadow-sm">
               <div>
-                <span className="text-[10px] font-bold text-[#B0863C] tracking-wide uppercase">
+                <span className="text-[10px] font-bold text-gold tracking-wide uppercase">
                   Lecture Playing
                 </span>
-                <h3 className="text-sm font-bold text-[#2A211B] mt-0.5">{currentLesson.title}</h3>
-                <p className="text-xs text-[#5F4E43] mt-1">
+                <h3 className="text-sm font-bold text-brown mt-0.5">{currentLesson.title}</h3>
+                <p className="text-xs text-brown-medium mt-1">
                   {currentLesson.isPreview
                     ? '모든 수강생 무료 상시 공개 차시'
                     : '평생 소장 회원 전용 고난이도 빌딩 세션'}
@@ -201,7 +201,7 @@ export default function PlayerScreen({
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     completedLessonIds.includes(currentLesson.id)
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-[#FAF4EA] text-[#B65538] border border-[#EFE8DC] hover:bg-[#B65538] hover:text-white'
+                      : 'bg-cream text-terracotta border border-brown-light hover:bg-terracotta hover:text-white'
                   }`}
                 >
                   <CheckCircle size={14} />
@@ -213,14 +213,14 @@ export default function PlayerScreen({
 
           {/* 차시 레시피 자료 — 수강권 보유자에게만 목록이 내려오고, 클릭 시 60초 서명 URL 발급 */}
           {currentLesson && (
-            <div className="p-4 bg-white rounded-xl border border-[#EFE8DC] space-y-2 shadow-sm">
-              <h4 className="text-xs font-bold text-[#2A211B] flex items-center gap-1">
-                <FileDown size={14} className="text-[#B0863C]" />
+            <div className="p-4 bg-white rounded-xl border border-brown-light space-y-2 shadow-sm">
+              <h4 className="text-xs font-bold text-brown flex items-center gap-1">
+                <FileDown size={14} className="text-gold" />
                 레시피 배합표
               </h4>
 
               {currentMaterials.length === 0 ? (
-                <p className="text-xs text-[#5F4E43]/70">
+                <p className="text-xs text-brown-medium/70">
                   {purchased
                     ? '이 차시에 등록된 자료가 없습니다.'
                     : '자료는 평생소장 라이선스 구매 후 받으실 수 있습니다.'}
@@ -233,10 +233,10 @@ export default function PlayerScreen({
                         type="button"
                         disabled={downloadingId === material.id}
                         onClick={() => handleDownloadMaterial(material)}
-                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#FAF4EA] hover:bg-[#EFE8DC] disabled:opacity-50 text-xs text-[#2A211B] transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-cream hover:bg-brown-light disabled:opacity-50 text-xs text-brown transition-colors cursor-pointer"
                       >
                         <span className="text-left">{material.title}</span>
-                        <span className="text-[10px] text-[#5F4E43]/70 font-mono shrink-0">
+                        <span className="text-[10px] text-brown-medium/70 font-mono shrink-0">
                           {downloadingId === material.id
                             ? '발급 중…'
                             : formatBytes(material.sizeBytes)}
@@ -248,7 +248,7 @@ export default function PlayerScreen({
               )}
 
               {materialError && (
-                <p role="alert" className="text-[11px] text-[#B65538]">
+                <p role="alert" className="text-[11px] text-terracotta">
                   {materialError}
                 </p>
               )}
@@ -256,18 +256,18 @@ export default function PlayerScreen({
           )}
 
           {/* Notes summary for student */}
-          <div className="bg-white p-6 rounded-2xl border border-[#EFE8DC] space-y-4">
-            <h4 className="font-serif text-sm font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-2">
+          <div className="bg-white p-6 rounded-2xl border border-brown-light space-y-4">
+            <h4 className="font-serif text-sm font-bold text-brown border-b border-cream pb-2">
               실습 핵심 요약 참고서
             </h4>
-            <div className="text-xs text-[#5F4E43] space-y-3 leading-relaxed">
+            <div className="text-xs text-brown-medium space-y-3 leading-relaxed">
               <p>
-                <strong className="text-[#B65538]">1. 오븐 습도 컨트롤:</strong> 머랭 건조 시 오븐
+                <strong className="text-terracotta">1. 오븐 습도 컨트롤:</strong> 머랭 건조 시 오븐
                 내부 스팀 압축 벨브를 닫아서 강제 환풍해주는 단계가 필요합니다. 내부 대류 팬 속도는
                 상도 60% 로 세팅하여 공기 순환이 안정적으로 유지되도록 보증하세요.
               </p>
               <p>
-                <strong className="text-[#B0863C]">2. 계량 오차 범위의 축소:</strong> 설탕 당분을
+                <strong className="text-gold">2. 계량 오차 범위의 축소:</strong> 설탕 당분을
                 꼬끄 배합 시 무설탕 대체 당(알룰로스 등)으로 대량 대체할 경우 구조가 녹아 내리므로,
                 프랑스식 비율에 맞춰 황금 백설탕을 권고 값 이하로 억제하지 않습니다.
               </p>
@@ -276,12 +276,12 @@ export default function PlayerScreen({
         </div>
 
         {/* SIDEBAR LESSON CHANGER */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-[#EFE8DC] p-5 space-y-4">
-          <div className="border-b border-[#FAF4EA] pb-3">
-            <h3 className="font-serif text-sm font-bold text-[#2A211B] flex items-center gap-1.5">
-              <BookOpen size={16} className="text-[#B65538]" /> 온라인 스마트 비디오 목록
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-brown-light p-5 space-y-4">
+          <div className="border-b border-cream pb-3">
+            <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
+              <BookOpen size={16} className="text-terracotta" /> 온라인 스마트 비디오 목록
             </h3>
-            <p className="text-[10px] text-[#5F4E43] mt-0.5">
+            <p className="text-[10px] text-brown-medium mt-0.5">
               클릭하면 즉시 비디오 스트리밍이 변환됩니다.
             </p>
           </div>
@@ -289,7 +289,7 @@ export default function PlayerScreen({
           <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">
             {chapters.map((chapter) => (
               <div key={chapter.index} className="space-y-2">
-                <span className="text-[10.5px] font-bold text-[#B0863C] block uppercase tracking-wider bg-[#FAF4EA] p-1.5 rounded">
+                <span className="text-[10.5px] font-bold text-gold block uppercase tracking-wider bg-cream p-1.5 rounded">
                   {chapter.title}
                 </span>
 
@@ -306,10 +306,10 @@ export default function PlayerScreen({
                         disabled={locked}
                         className={`w-full p-2.5 min-h-[44px] rounded-lg flex items-center justify-between text-left text-xs transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#B65538]/10 text-[#B65538] font-bold'
+                            ? 'bg-terracotta/10 text-terracotta font-bold'
                             : locked
-                              ? 'opacity-50 bg-[#FAF4EA]/30 text-[#5F4E43]/60 cursor-not-allowed'
-                              : 'hover:bg-[#FAF4EA] text-[#2A211B]'
+                              ? 'opacity-50 bg-cream/30 text-brown-medium/60 cursor-not-allowed'
+                              : 'hover:bg-cream text-brown'
                         }`}
                       >
                         <div className="flex items-center gap-2 max-w-[85%]">
@@ -318,18 +318,18 @@ export default function PlayerScreen({
                               <CheckCircle size={14} className="fill-emerald-100" />
                             </span>
                           ) : isSelected ? (
-                            <span className="text-[#B65538] shrink-0 animate-bounce">
+                            <span className="text-terracotta shrink-0 animate-bounce">
                               <PlayCircle size={14} />
                             </span>
                           ) : (
-                            <span className="text-[#5F4E43]/40 shrink-0">•</span>
+                            <span className="text-brown-medium/40 shrink-0">•</span>
                           )}
                           <span className="truncate">{lesson.title}</span>
                         </div>
 
-                        <div className="flex items-center gap-1 text-[9px] text-[#5F4E43]/60 font-mono">
+                        <div className="flex items-center gap-1 text-[9px] text-brown-medium/60 font-mono">
                           {locked ? (
-                            <span className="text-[8px] bg-[#B0863C]/10 text-[#B0863C] px-1 rounded">
+                            <span className="text-[8px] bg-gold/10 text-gold px-1 rounded">
                               잠김
                             </span>
                           ) : (
@@ -345,11 +345,11 @@ export default function PlayerScreen({
           </div>
 
           {!purchased && (
-            <div className="bg-[#B65538]/5 border border-[#B65538]/20 rounded-xl p-3 text-center space-y-2">
-              <span className="text-[10.5px] font-bold text-[#B65538] block">
+            <div className="bg-terracotta/5 border border-terracotta/20 rounded-xl p-3 text-center space-y-2">
+              <span className="text-[10.5px] font-bold text-terracotta block">
                 🔒 나머지 고급 챕터가 미수금 상태입니다.
               </span>
-              <p className="text-[9px] text-[#5F4E43] leading-normal font-light">
+              <p className="text-[9px] text-brown-medium leading-normal font-light">
                 평생무제한으로 셰프 전 오리지널 차시를 잠금해제하려면 수강 소장 프리패스를
                 취득하십시오!
               </p>

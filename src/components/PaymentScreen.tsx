@@ -198,10 +198,10 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
   };
 
   return (
-    <div id="payment-screen" className="bg-[#FAF4EA] py-12 px-4 sm:px-8 max-w-5xl mx-auto">
+    <div id="payment-screen" className="bg-cream py-12 px-4 sm:px-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold text-[#2A211B]">안심 안전 주문 결제</h1>
-        <p className="text-xs text-[#5F4E43] mt-1">
+        <h1 className="font-serif text-3xl font-bold text-brown">안심 안전 주문 결제</h1>
+        <p className="text-xs text-brown-medium mt-1">
           대만 및 국내 전용 신용카드, 간편결제 무중단 호환 · TossPayments 안전 결제
         </p>
       </div>
@@ -210,26 +210,26 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
         {/* Left Column: Form & Payment widget */}
         <div className="lg:col-span-7 space-y-6">
           {/* Orderer details card */}
-          <div className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-4">
-            <h3 className="font-serif text-base font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-3">
+          <div className="bg-white rounded-xl border border-brown-light p-6 space-y-4">
+            <h3 className="font-serif text-base font-bold text-brown border-b border-cream pb-3">
               1. 주문 수강생 정보
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">
+                <label className="block text-xs font-semibold text-brown-medium mb-1.5">
                   수강 아이디(이메일)
                 </label>
                 <input
                   type="text"
                   value={userEmail}
                   disabled
-                  className="w-full px-3 py-2 bg-[#FAF4EA]/50 border border-[#EFE8DC] rounded-lg text-xs text-[#2A211B]/60 cursor-not-allowed font-mono"
+                  className="w-full px-3 py-2 bg-cream/50 border border-brown-light rounded-lg text-xs text-brown/60 cursor-not-allowed font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">
+                <label className="block text-xs font-semibold text-brown-medium mb-1.5">
                   이름 (실명)
                 </label>
                 <input
@@ -237,22 +237,22 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
                   placeholder="홍길동"
-                  className="w-full px-3 py-2 bg-white border border-[#EFE8DC] rounded-lg text-xs text-[#2A211B] focus:outline-none focus:ring-1 focus:ring-[#B65538]"
+                  className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus:outline-none focus:ring-1 focus:ring-terracotta"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-[#5F4E43] mb-1.5">
+                <label className="block text-xs font-semibold text-brown-medium mb-1.5">
                   연락처 (선택)
                 </label>
                 <input
                   type="text"
                   value={buyerPhone}
                   onChange={(e) => setBuyerPhone(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#EFE8DC] rounded-lg text-xs text-[#2A211B] focus:outline-none focus:ring-1 focus:ring-[#B65538] font-mono"
+                  className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus:outline-none focus:ring-1 focus:ring-terracotta font-mono"
                   placeholder="010-XXXX-XXXX"
                 />
-                <span className="text-[10px] text-[#5F4E43]/60 mt-1 block">
+                <span className="text-[10px] text-brown-medium/60 mt-1 block">
                   결제 영수증 알림 수신에 사용됩니다.
                 </span>
               </div>
@@ -260,22 +260,22 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
           </div>
 
           {/* TossPayments 결제수단 위젯 */}
-          <div className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-4">
-            <h3 className="font-serif text-base font-bold text-[#2A211B] border-b border-[#FAF4EA] pb-3">
+          <div className="bg-white rounded-xl border border-brown-light p-6 space-y-4">
+            <h3 className="font-serif text-base font-bold text-brown border-b border-cream pb-3">
               2. 결제 수단 선택
             </h3>
 
             {!widgetReady && !payError && (
-              <div className="flex items-center gap-2 text-xs text-[#5F4E43] py-8 justify-center">
-                <span className="w-4 h-4 border-2 border-t-transparent border-[#B65538] rounded-full animate-spin" />
+              <div className="flex items-center gap-2 text-xs text-brown-medium py-8 justify-center">
+                <span className="w-4 h-4 border-2 border-t-transparent border-terracotta rounded-full animate-spin" />
                 결제 수단을 불러오는 중입니다...
               </div>
             )}
             <div id="toss-payment-methods" />
             <div id="toss-agreement" />
 
-            <div className="bg-[#FAF4EA] p-3 rounded-lg border border-[#EFE8DC] space-y-1.5 text-xs text-[#5F4E43]">
-              <span className="font-bold text-[#B0863C] block flex items-center gap-1">
+            <div className="bg-cream p-3 rounded-lg border border-brown-light space-y-1.5 text-xs text-brown-medium">
+              <span className="font-bold text-gold block flex items-center gap-1">
                 <AlertCircle size={14} /> 안전인증결제 가이드
               </span>
               <p>
@@ -288,10 +288,10 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
           {/* Coupon Entry */}
           <form
             onSubmit={handleApplyCoupon}
-            className="bg-white rounded-xl border border-[#EFE8DC] p-6 space-y-3"
+            className="bg-white rounded-xl border border-brown-light p-6 space-y-3"
           >
-            <h3 className="font-serif text-sm font-bold text-[#2A211B] flex items-center gap-1.5">
-              <BadgePercent size={16} className="text-[#B0863C]" /> 할인가 혜택 입력
+            <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
+              <BadgePercent size={16} className="text-gold" /> 할인가 혜택 입력
             </h3>
 
             <div className="flex gap-2">
@@ -300,11 +300,11 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder="할인 쿠폰코드 (예시: BAKING10)"
-                className="flex-1 px-3 py-2 bg-white border border-[#EFE8DC] rounded-lg text-xs text-[#2A211B] uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#B65538]"
+                className="flex-1 px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-terracotta"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#2A211B] text-white text-xs font-semibold rounded-lg hover:bg-[#B65538] transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 bg-brown text-white text-xs font-semibold rounded-lg hover:bg-terracotta transition-colors cursor-pointer disabled:opacity-50"
               >
                 할인 적용
               </button>
@@ -321,13 +321,13 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
 
         {/* Right Column: Order breakdown & summary */}
         <div className="lg:col-span-5 sticky top-24">
-          <div className="bg-white rounded-2xl border border-[#EFE8DC] p-6 shadow-md space-y-4">
-            <h3 className="font-serif text-base font-bold text-[#2A211B] flex items-center gap-1.5 pb-2 border-b border-[#FAF4EA]">
-              <ShoppingBag size={18} className="text-[#B65538]" /> 3. 최종 주문정보 요약
+          <div className="bg-white rounded-2xl border border-brown-light p-6 shadow-md space-y-4">
+            <h3 className="font-serif text-base font-bold text-brown flex items-center gap-1.5 pb-2 border-b border-cream">
+              <ShoppingBag size={18} className="text-terracotta" /> 3. 최종 주문정보 요약
             </h3>
 
             {/* Miniature class summary info */}
-            <div className="flex gap-3 bg-[#FAF4EA]/40 p-3 rounded-xl border border-[#EFE8DC]/80">
+            <div className="flex gap-3 bg-cream/40 p-3 rounded-xl border border-brown-light/80">
               <img
                 referrerPolicy="no-referrer"
                 src={course.thumbnail}
@@ -335,51 +335,51 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 className="w-16 h-12 object-cover rounded-md"
               />
               <div>
-                <span className="text-[9px] font-bold text-[#B0863C]">{course.category}</span>
-                <h4 className="text-xs font-bold text-[#2A211B] line-clamp-1">{course.title}</h4>
-                <div className="flex items-center gap-1.5 text-[10px] text-[#5F4E43] mt-1">
+                <span className="text-[9px] font-bold text-gold">{course.category}</span>
+                <h4 className="text-xs font-bold text-brown line-clamp-1">{course.title}</h4>
+                <div className="flex items-center gap-1.5 text-[10px] text-brown-medium mt-1">
                   <span>강사: {course.instructor}</span>
                   <span>•</span>
-                  <span className="text-[#B65538] font-bold">평생 소장 VOD</span>
+                  <span className="text-terracotta font-bold">평생 소장 VOD</span>
                 </div>
               </div>
             </div>
 
             {/* Calculations pricing breakdown */}
-            <div className="space-y-2.5 text-xs text-[#2A211B] py-2">
-              <div className="flex justify-between items-center text-[#5F4E43]">
+            <div className="space-y-2.5 text-xs text-brown py-2">
+              <div className="flex justify-between items-center text-brown-medium">
                 <span>정상가 VOD 라이선스 수강권</span>
                 <span>₩{listPrice.toLocaleString()}</span>
               </div>
               {eventDiscount > 0 && (
-                <div className="flex justify-between items-center text-[#5F3E43]">
+                <div className="flex justify-between items-center text-brown-medium">
                   <span>얼리버드 이벤트 자체 할인</span>
-                  <span className="text-[#B65538]">- ₩{eventDiscount.toLocaleString()}</span>
+                  <span className="text-terracotta">- ₩{eventDiscount.toLocaleString()}</span>
                 </div>
               )}
 
               {coupon && (
-                <div className="flex justify-between items-center text-[#B0863C] font-semibold">
+                <div className="flex justify-between items-center text-gold font-semibold">
                   <span>추가 적용 쿠폰 ({coupon.code})</span>
                   <span>- ₩{coupon.discount_krw.toLocaleString()}</span>
                 </div>
               )}
 
-              <div className="flex justify-between items-center text-[#5F4E43]">
+              <div className="flex justify-between items-center text-brown-medium">
                 <span>자료 파일 수령 및 데이터 가입</span>
                 <span className="text-emerald-700 font-bold">₩0 (무상제공)</span>
               </div>
 
-              <div className="h-px bg-[#EFE8DC]" />
+              <div className="h-px bg-brown-light" />
 
               <div className="flex justify-between items-baseline pt-2">
-                <span className="font-bold text-[#2A211B]">최종 결제 금액 (원화)</span>
-                <span className="text-xl font-serif font-extrabold text-[#B65538]">
+                <span className="font-bold text-brown">최종 결제 금액 (원화)</span>
+                <span className="text-xl font-serif font-extrabold text-terracotta">
                   ₩{finalPrice.toLocaleString()}
                 </span>
               </div>
               {locale === 'en' && (
-                <p className="text-right text-[10px] text-[#5F4E43]/70">
+                <p className="text-right text-[10px] text-brown-medium/70">
                   ≈ NT$ {Math.round(finalPrice / KRW_PER_TWD).toLocaleString()} (reference only —
                   billed in KRW)
                 </p>
@@ -392,9 +392,9 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 type="checkbox"
                 checked={agreedTerms}
                 onChange={() => setAgreedTerms(!agreedTerms)}
-                className="w-4 h-4 rounded text-[#B65538] border-[#EFE8DC] focus:ring-[#B65538] accent-[#B65538] mt-0.5"
+                className="w-4 h-4 rounded text-terracotta border-brown-light focus:ring-terracotta accent-terracotta mt-0.5"
               />
-              <span className="text-[11px] text-[#5F4E43] leading-relaxed">
+              <span className="text-[11px] text-brown-medium leading-relaxed">
                 [필수] 본 상품은 영구 소장 디지털 VOD이며, 시청 개시 후 디지털 복제 방지법에
                 의거하여 단순 변심 환불이 제한됨을 동의합니다.
               </span>
@@ -412,15 +412,15 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
               type="button"
               onClick={handlePay}
               disabled={isProcessing || !widgetReady}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-sm text-[#FAF4EA] text-center shadow transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full py-3 px-4 rounded-xl font-bold text-sm text-cream text-center shadow transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 isProcessing || !widgetReady
-                  ? 'bg-[#B65538]/60 cursor-not-allowed'
-                  : 'bg-[#B65538] hover:bg-[#A14328] hover:shadow-md'
+                  ? 'bg-terracotta/60 cursor-not-allowed'
+                  : 'bg-terracotta hover:bg-terracotta-deep hover:shadow-md'
               }`}
             >
               {isProcessing ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-t-transparent border-[#FAF4EA] rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-t-transparent border-cream rounded-full animate-spin" />
                   결제창 호출 중...
                 </>
               ) : (
@@ -432,7 +432,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
               type="button"
               onClick={() => router.push(`/classes/${classId}`)}
               disabled={isProcessing}
-              className="w-full text-center text-xs text-[#5F4E43]/80 hover:underline pt-2 font-medium cursor-pointer"
+              className="w-full text-center text-xs text-brown-medium/80 hover:underline pt-2 font-medium cursor-pointer"
             >
               이전으로 돌아가기
             </button>

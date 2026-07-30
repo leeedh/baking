@@ -31,7 +31,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
 
   if (!canReview) {
     return (
-      <p className="text-xs text-[#5F4E43]/70 bg-[#FAF4EA] border border-[#EFE8DC] rounded-xl p-4">
+      <p className="text-xs text-brown-medium/70 bg-cream border border-brown-light rounded-xl p-4">
         후기는 이 클래스를 수강 중인 분만 남길 수 있습니다.
       </p>
     );
@@ -63,8 +63,8 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
   };
 
   return (
-    <div className="bg-white border border-[#EFE8DC] rounded-xl p-4 space-y-3">
-      <h3 className="text-xs font-bold text-[#2A211B]">
+    <div className="bg-white border border-brown-light rounded-xl p-4 space-y-3">
+      <h3 className="text-xs font-bold text-brown">
         {myReview ? '내 후기 수정' : '수강 후기 남기기'}
       </h3>
 
@@ -77,12 +77,12 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
             aria-label={`별점 ${star}점`}
             aria-pressed={star === rating}
             onClick={() => setRating(star)}
-            className="p-0.5 cursor-pointer text-[#B0863C]"
+            className="p-0.5 cursor-pointer text-gold"
           >
-            <Star size={18} className={star <= rating ? 'fill-[#B0863C]' : 'opacity-25'} />
+            <Star size={18} className={star <= rating ? 'fill-gold' : 'opacity-25'} />
           </button>
         ))}
-        <span className="ml-2 text-[11px] text-[#5F4E43]">{rating}점</span>
+        <span className="ml-2 text-[11px] text-brown-medium">{rating}점</span>
       </fieldset>
 
       <textarea
@@ -91,11 +91,11 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
         maxLength={2000}
         rows={3}
         placeholder="수강하며 느낀 점을 남겨주세요."
-        className="w-full text-xs p-3 rounded-lg border border-[#EFE8DC] bg-[#FDFBF7] text-[#2A211B] resize-y"
+        className="w-full text-xs p-3 rounded-lg border border-brown-light bg-ivory text-brown resize-y"
       />
 
       {error && (
-        <p role="alert" className="text-[11px] text-[#B65538]">
+        <p role="alert" className="text-[11px] text-terracotta">
           {error}
         </p>
       )}
@@ -105,7 +105,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
           type="button"
           disabled={busy}
           onClick={() => submit(myReview ? 'PATCH' : 'POST')}
-          className="px-4 py-2 bg-[#2A211B] hover:bg-[#B0863C] disabled:opacity-50 text-[#FAF4EA] text-xs font-bold rounded-lg transition-colors cursor-pointer"
+          className="px-4 py-2 bg-brown hover:bg-gold disabled:opacity-50 text-cream text-xs font-bold rounded-lg transition-colors cursor-pointer"
         >
           {myReview ? '수정하기' : '후기 등록'}
         </button>
@@ -114,7 +114,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
             type="button"
             disabled={busy}
             onClick={() => submit('DELETE')}
-            className="px-4 py-2 border border-[#EFE8DC] hover:border-[#B65538] disabled:opacity-50 text-[#5F4E43] text-xs rounded-lg transition-colors cursor-pointer"
+            className="px-4 py-2 border border-brown-light hover:border-terracotta disabled:opacity-50 text-brown-medium text-xs rounded-lg transition-colors cursor-pointer"
           >
             삭제
           </button>

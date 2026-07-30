@@ -14,28 +14,28 @@ export default function CheckoutFailPage() {
   const message = getTossFailureMessage(code, searchParams.get('message'));
 
   return (
-    <div className="flex items-center justify-center min-h-[70vh] px-4 bg-[#FAF4EA]">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#EFE8DC] p-10 text-center space-y-5">
+    <div className="flex items-center justify-center min-h-[70vh] px-4 bg-cream">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-brown-light p-10 text-center space-y-5">
         <CircleAlert size={44} className="mx-auto text-red-500" />
-        <h1 className="font-serif text-xl font-bold text-[#2A211B]">결제에 실패했습니다</h1>
+        <h1 className="font-serif text-xl font-bold text-brown">결제에 실패했습니다</h1>
         <p className="text-xs text-red-600">
           {message}
           {code && (
-            <span className="block mt-1 text-[10px] text-[#5F4E43]/60 font-mono">({code})</span>
+            <span className="block mt-1 text-[10px] text-brown-medium/60 font-mono">({code})</span>
           )}
         </p>
         <div className="flex gap-2 justify-center">
           <button
             type="button"
             onClick={() => router.push(`/checkout/${params.id}`)}
-            className="px-6 py-2.5 bg-[#B65538] hover:bg-[#A14328] text-white text-xs font-bold rounded-xl cursor-pointer"
+            className="px-6 py-2.5 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-xl cursor-pointer"
           >
             결제 다시 시도
           </button>
           <button
             type="button"
             onClick={() => router.push(`/classes/${params.id}`)}
-            className="px-6 py-2.5 bg-white border border-[#EFE8DC] text-[#5F4E43] text-xs font-semibold rounded-xl cursor-pointer"
+            className="px-6 py-2.5 bg-white border border-brown-light text-brown-medium text-xs font-semibold rounded-xl cursor-pointer"
           >
             클래스로 돌아가기
           </button>

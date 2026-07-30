@@ -17,15 +17,15 @@ export default function BestClasses({ classes }: BestClassesProps) {
 
   return (
     <section className="py-20 px-6 sm:px-12 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 border-b border-[#EFE8DC]/70 pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 border-b border-brown-light/70 pb-6">
         <div className="space-y-2">
-          <span className="text-xs font-bold text-[#B0863C] tracking-widest uppercase">
+          <span className="text-xs font-bold text-gold tracking-widest uppercase">
             Best Selection
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#2A211B]">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brown">
             지금 가장 사랑받는 클래스
           </h2>
-          <p className="text-xs sm:text-sm text-[#5F4E43] font-light">
+          <p className="text-xs sm:text-sm text-brown-medium font-light">
             수강생 평점이 가장 높은 세 개의 마스터 코스입니다. 전체 라인업은 온라인 클래스에서
             확인하세요.
           </p>
@@ -33,7 +33,7 @@ export default function BestClasses({ classes }: BestClassesProps) {
 
         <Link
           href="/classes"
-          className="inline-flex items-center gap-1 px-5 py-3 bg-[#2A211B] hover:bg-[#B65538] text-[#FAF4EA] text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap"
+          className="inline-flex items-center gap-1 px-5 py-3 bg-brown hover:bg-terracotta text-cream text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap"
         >
           <span>전체 클래스 보기</span>
           <ChevronRight size={13} />

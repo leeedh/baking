@@ -68,17 +68,17 @@ export default function StudentArchive() {
   );
 
   return (
-    <section className="py-20 px-6 sm:px-12 bg-white/70 border-t border-b border-[#EFE8DC]/60">
+    <section className="py-20 px-6 sm:px-12 bg-white/70 border-t border-b border-brown-light/60">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
           <div className="space-y-2">
-            <span className="text-xs font-bold text-[#B1863C] tracking-widest uppercase">
+            <span className="text-xs font-bold text-gold tracking-widest uppercase">
               Student Achievements
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#2A211B] tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brown tracking-tight">
               수강생 실습 아카이브
             </h2>
-            <p className="text-xs sm:text-sm text-[#5F4E43] font-light">
+            <p className="text-xs sm:text-sm text-brown-medium font-light">
               Atelier Crème 오리지널 교육과정을 수강하고 가내 스튜디오 및 상업 오븐에서 직접 구워낸
               리얼 포토 후기입니다.
             </p>
@@ -93,8 +93,8 @@ export default function StudentArchive() {
                 onClick={() => setActiveArchiveCategory(fTag)}
                 className={`px-3 py-2 min-h-[36px] rounded-lg transition-all font-medium cursor-pointer ${
                   activeArchiveCategory === fTag
-                    ? 'bg-[#B0863C] text-white'
-                    : 'bg-[#FAF4EA] text-[#5F4E43] hover:bg-gray-100'
+                    ? 'bg-gold text-white'
+                    : 'bg-cream text-brown-medium hover:bg-gray-100'
                 }`}
               >
                 {fTag === 'All' ? '전체 실습작' : fTag}
@@ -108,17 +108,17 @@ export default function StudentArchive() {
           {filteredStudentWorks.map((work) => (
             <div
               key={work.id}
-              className="bg-white rounded-2xl overflow-hidden border border-[#EFE8DC] shadow-sm hover:shadow-md transition-shadow group flex flex-col"
+              className="bg-white rounded-2xl overflow-hidden border border-brown-light shadow-sm hover:shadow-md transition-shadow group flex flex-col"
             >
               {/* Photo frame with zoom */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-[#FAF4EA]">
+              <div className="relative aspect-[4/3] overflow-hidden bg-cream">
                 <img
                   referrerPolicy="no-referrer"
                   src={work.imageUrl}
                   alt={work.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <span className="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-sm text-[#FAF4EA] text-[9px] font-medium px-2 py-0.5 rounded">
+                <span className="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-sm text-cream text-[9px] font-medium px-2 py-0.5 rounded">
                   {work.tag}
                 </span>
               </div>
@@ -127,10 +127,10 @@ export default function StudentArchive() {
               <div className="p-5 flex-grow flex flex-col justify-between space-y-3">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-bold text-[#2A211B]">
+                    <span className="text-[10.5px] font-bold text-brown">
                       {work.studentName}
                     </span>
-                    <div className="flex text-[#B0863C]">
+                    <div className="flex text-gold">
                       <Star size={10} className="fill-current" />
                       <Star size={10} className="fill-current" />
                       <Star size={10} className="fill-current" />
@@ -138,23 +138,23 @@ export default function StudentArchive() {
                       <Star size={10} className="fill-current" />
                     </div>
                   </div>
-                  <span className="block text-[10px] text-[#B0863C] font-semibold">
+                  <span className="block text-[10px] text-gold font-semibold">
                     {work.classTitle}
                   </span>
-                  <h4 className="font-serif text-sm font-semibold text-[#2A211B] line-clamp-1 pt-1">
+                  <h4 className="font-serif text-sm font-semibold text-brown line-clamp-1 pt-1">
                     {work.title}
                   </h4>
-                  <p className="text-[11.5px] text-[#5F4E43] leading-relaxed font-light line-clamp-4 pt-1">
+                  <p className="text-[11.5px] text-brown-medium leading-relaxed font-light line-clamp-4 pt-1">
                     “{work.comment}”
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-[#FAF4EA] flex items-center justify-between text-[10px] text-[#5F4E43]/50">
+                <div className="pt-2 border-t border-cream flex items-center justify-between text-[10px] text-brown-medium/50">
                   <span>Atelier Verified student</span>
                   <button
                     type="button"
                     onClick={() => router.push(`/classes/${work.classNameId}`)}
-                    className="text-[#B65538] hover:underline font-bold"
+                    className="text-terracotta hover:underline font-bold"
                   >
                     강의 구경
                   </button>
