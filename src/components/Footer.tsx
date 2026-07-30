@@ -1,5 +1,4 @@
-import { Award, Globe, Mail, MapPin } from 'lucide-react';
-import React from 'react';
+import { Globe, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -25,7 +24,7 @@ export default function Footer() {
             구매로 서울, 타이베이, 글로벌 마스터 파티시에의 오리지널 레시피와 핵심 노하우를 기간
             제한 없이 반복 학습할 수 있습니다.
           </p>
-          <div className="flex items-center gap-3 text-xs text-cream/50 py-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-cream/70 py-2">
             <span className="flex items-center gap-1">
               <Globe size={12} /> 한국어 & 繁體中文 지원
             </span>
@@ -54,7 +53,7 @@ export default function Footer() {
             </li>
             <li>• 평일 10:00 - 18:00 (공휴일 제외)</li>
             <li>• 파트너십/제휴 문의</li>
-            <li className="text-[10px] text-cream/40 mt-4 leading-normal">
+            <li className="text-[11px] text-cream/60 mt-4 leading-normal">
               © 2026 Atelier Crème Inc. All rights reserved. <br />
               Atelier Crème is a premium educational brand powered by Antigravity.
             </li>

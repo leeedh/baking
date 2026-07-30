@@ -1,6 +1,8 @@
 'use client';
 
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Link } from '@/i18n/navigation';
+import { readError } from '@/lib/api/read-error';
 import { formatBytes } from '@/lib/format';
 import type { AdminLesson } from '@/types';
 import {
@@ -31,15 +33,6 @@ type Props = {
   initialLessons: AdminLesson[];
 };
 
-async function readError(res: Response): Promise<string> {
-  try {
-    const body = (await res.json()) as { detail?: string; title?: string };
-    return body.detail ?? body.title ?? '요청을 처리하지 못했습니다.';
-  } catch {
-    return '요청을 처리하지 못했습니다.';
-  }
-}
-
 /** 초 → mm:ss (미상이면 '--:--'). */
 function clock(sec: number | null): string {
   if (!sec || sec <= 0) return '--:--';
@@ -53,6 +46,9 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   const lessons = initialLessons;
 
   const [busy, setBusy] = useState(false);
+  /** 삭제 확인 대상 — 네이티브 confirm() 대신 ConfirmDialog를 띄운다. */
+  const [pendingLessonDelete, setPendingLessonDelete] = useState<string | null>(null);
+  const [pendingMaterialDelete, setPendingMaterialDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [showAdd, setShowAdd] = useState(false);
@@ -218,7 +214,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   };
 
   const removeMaterial = async (materialId: string) => {
-    if (!confirm('이 자료를 삭제할까요? 되돌릴 수 없습니다.')) return;
+    setPendingMaterialDelete(null);
     setBusy(true);
     setError(null);
     const res = await fetch(`/api/admin/materials/${materialId}`, { method: 'DELETE' });
@@ -280,7 +276,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   };
 
   const remove = async (id: string) => {
-    if (!confirm('이 차시를 삭제할까요? 되돌릴 수 없습니다.')) return;
+    setPendingLessonDelete(null);
     setBusy(true);
     setError(null);
     const res = await fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' });
@@ -513,7 +509,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                     <button
                       type="button"
                       disabled={busy || !!up}
-                      onClick={() => remove(l.id)}
+                      onClick={() => setPendingLessonDelete(l.id)}
                       aria-label="차시 삭제"
                       className="text-brown-medium/60 hover:text-terracotta disabled:opacity-50"
                     >
@@ -578,7 +574,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         <button
                           type="button"
                           disabled={busy}
-                          onClick={() => removeMaterial(m.id)}
+                          onClick={() => setPendingMaterialDelete(m.id)}
                           aria-label={`자료 ${m.title} 삭제`}
                           className="text-brown-medium/60 hover:text-terracotta disabled:opacity-50 shrink-0"
                         >
@@ -644,6 +640,28 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
         accept="application/pdf"
         className="hidden"
         onChange={onMaterialSelected}
+      />
+
+      <ConfirmDialog
+        open={pendingLessonDelete !== null}
+        title="차시를 삭제할까요?"
+        description="되돌릴 수 없습니다. 업로드된 영상과 자료 연결도 함께 사라집니다."
+        confirmLabel="삭제"
+        destructive
+        busy={busy}
+        onConfirm={() => pendingLessonDelete && remove(pendingLessonDelete)}
+        onCancel={() => setPendingLessonDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingMaterialDelete !== null}
+        title="자료를 삭제할까요?"
+        description="되돌릴 수 없습니다. 수강생은 더 이상 이 파일을 다운로드할 수 없습니다."
+        confirmLabel="삭제"
+        destructive
+        busy={busy}
+        onConfirm={() => pendingMaterialDelete && removeMaterial(pendingMaterialDelete)}
+        onCancel={() => setPendingMaterialDelete(null)}
       />
     </div>
   );

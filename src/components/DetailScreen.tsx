@@ -84,15 +84,16 @@ export default function DetailScreen({
     cls.originalPrice > cls.price ? Math.round((1 - cls.price / cls.originalPrice) * 100) : 0;
 
   return (
-    <div
-      id="detail-screen"
-      className="bg-cream py-8 px-4 sm:px-8 max-w-7xl mx-auto pb-28 lg:pb-8"
-    >
+    <div id="detail-screen" className="bg-cream py-8 px-4 sm:px-8 max-w-7xl mx-auto pb-28 lg:pb-8">
       {/* Navigation Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-brown-medium mb-6">
-        <span className="hover:underline cursor-pointer" onClick={onNavigateToCatalog}>
+        <button
+          type="button"
+          onClick={onNavigateToCatalog}
+          className="hover:underline cursor-pointer rounded px-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
           클래스 홈
-        </span>
+        </button>
         <ChevronRight size={12} />
         <span className="font-semibold text-terracotta">{cls.category}</span>
       </div>
@@ -266,9 +267,7 @@ export default function DetailScreen({
                       className="border border-brown-light rounded-xl overflow-hidden shadow-sm"
                     >
                       <div className="bg-cream/50 p-4 border-b border-brown-light flex justify-between items-center">
-                        <h4 className="font-serif text-sm font-bold text-brown">
-                          {chapter.title}
-                        </h4>
+                        <h4 className="font-serif text-sm font-bold text-brown">{chapter.title}</h4>
                         <span className="text-[11px] text-gold font-semibold">
                           {chapter.lessons.length}차시 구성
                         </span>
@@ -374,9 +373,7 @@ export default function DetailScreen({
                               className="w-8 h-8 rounded-full border border-brown-light"
                             />
                             <div>
-                              <span className="text-xs font-bold text-brown">
-                                {rev.userName}
-                              </span>
+                              <span className="text-xs font-bold text-brown">{rev.userName}</span>
                               <div className="flex items-center text-gold transform scale-90 -translate-x-1.5">
                                 {[1, 2, 3, 4, 5].map((starPosition) => (
                                   <Star

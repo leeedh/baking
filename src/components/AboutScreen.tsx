@@ -1,5 +1,6 @@
 'use client';
 
+import Button from '@/components/ui/Button';
 import { useRouter } from '@/i18n/navigation';
 import { Award, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -77,7 +78,8 @@ export default function AboutScreen() {
             </div>
 
             <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep">
-              {t('heroTitle')} <span className="font-serif italic text-terracotta">{t('heroTitleEm')}</span>
+              {t('heroTitle')}{' '}
+              <span className="font-serif italic text-terracotta">{t('heroTitleEm')}</span>
             </h1>
 
             <div className="text-sm sm:text-base text-brown-medium font-light leading-relaxed break-keep">
@@ -90,33 +92,23 @@ export default function AboutScreen() {
             <div className="grid grid-cols-3 gap-4 py-4 border-t border-b border-brown-light max-w-lg">
               <div>
                 <p className="text-2xl font-serif font-extrabold text-terracotta">10,500+</p>
-                <p className="text-[10.5px] text-brown-medium font-light mt-0.5">{t('stat1')}</p>
+                <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat1')}</p>
               </div>
               <div>
                 <p className="text-2xl font-serif font-extrabold text-gold">100%</p>
-                <p className="text-[10.5px] text-brown-medium font-light mt-0.5">{t('stat2')}</p>
+                <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat2')}</p>
               </div>
               <div>
                 <p className="text-2xl font-serif font-extrabold text-brown">1:1</p>
-                <p className="text-[10.5px] text-brown-medium font-light mt-0.5">{t('stat3')}</p>
+                <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat3')}</p>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onNavigateToCatalog}
-                className="px-6 py-3 bg-brown hover:bg-terracotta text-white text-xs font-bold rounded-xl shadow-md transition-all duration-300"
-              >
-                {t('ctaClasses')}
-              </button>
-              <button
-                type="button"
-                onClick={onNavigateToBooks}
-                className="px-6 py-3 bg-white border border-brown-light hover:bg-cream text-brown-medium text-xs font-semibold rounded-xl transition-all"
-              >
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button onClick={onNavigateToCatalog}>{t('ctaClasses')}</Button>
+              <Button variant="outline" onClick={onNavigateToBooks}>
                 {t('ctaBooks')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -128,10 +120,12 @@ export default function AboutScreen() {
       {/* Philosophy Details Section */}
       <section className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/70">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-          <span className="text-xs font-serif font-bold text-gold tracking-[0.2em] uppercase">
+          <p className="text-xs font-serif font-bold text-gold tracking-[0.2em] uppercase">
             THE Core Values
-          </span>
-          <h2 className="font-serif text-3xl font-bold text-brown">{t('philosophyTitle')}</h2>
+          </p>
+          <h2 className="font-serif text-3xl font-bold text-brown break-keep">
+            {t('philosophyTitle')}
+          </h2>
           <p className="text-xs sm:text-sm text-brown-medium font-light">{t('philosophyDesc')}</p>
         </div>
 
@@ -139,7 +133,7 @@ export default function AboutScreen() {
           {philosophies.map((phil, i) => (
             <div
               key={phil.title}
-              className="bg-white rounded-2xl p-8 border border-brown-light space-y-4 hover:shadow-lg transition-transform duration-300"
+              className="bg-white rounded-card p-8 border border-brown-light space-y-4 hover:shadow-card-hover hover:-translate-y-0.5 transition-[box-shadow,transform] duration-300 ease-out-soft"
             >
               <div className="w-10 h-10 rounded-full bg-terracotta/10 text-terracotta flex items-center justify-center font-bold font-serif">
                 0{i + 1}
@@ -171,9 +165,7 @@ export default function AboutScreen() {
                 <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-gold border-4 border-white shadow-md group-hover:bg-terracotta transition-colors" />
 
                 <div className="space-y-1">
-                  <span className="font-mono text-sm font-bold text-gold block">
-                    {ms.year}
-                  </span>
+                  <span className="font-mono text-sm font-bold text-gold block">{ms.year}</span>
                   <p className="text-sm font-serif font-medium text-brown sm:text-base leading-relaxed">
                     {ms.event}
                   </p>
@@ -191,9 +183,7 @@ export default function AboutScreen() {
             <span className="text-[10px] bg-brown text-white px-3 py-1 rounded font-bold tracking-widest uppercase">
               Deep Interview
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-brown">
-              {t('qaTitle')}
-            </h2>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-brown">{t('qaTitle')}</h2>
             <p className="text-xs text-brown-medium font-light">{t('qaDesc')}</p>
           </div>
 

@@ -165,7 +165,8 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
     <div
       ref={containerRef}
       id="meringue-scroll-wrapper"
-      className="relative w-full h-screen bg-ivory overflow-hidden"
+      // 100svh — 모바일 브라우저 UI 바가 접히며 h-screen이 튀는 문제를 피한다
+      className="relative w-full h-screen min-h-[100svh] bg-ivory overflow-hidden"
     >
       {/* 
         ========================================================================
@@ -175,10 +176,10 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
       */}
       <div
         id="hero-fixed-action-bar"
-        className="absolute top-0 inset-x-0 z-30 bg-ivory/90 backdrop-blur-md border-b border-brown-light/70 py-3.5 px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm pointer-events-auto"
+        className="absolute top-0 inset-x-0 z-30 bg-ivory/90 backdrop-blur-md border-b border-brown-light/70 py-3 px-4 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-2.5 md:gap-4 shadow-sm pointer-events-auto"
       >
         {/* Left brand/slogan */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="hidden sm:flex items-center gap-3 shrink-0">
           <span className="text-[10px] font-mono tracking-[0.25em] text-brown-deep uppercase font-bold">
             ATELIER CRÈME BY MIN SOHEE
           </span>
@@ -192,7 +193,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-end">
           {/* Search Input — 제출 시 /classes?q=로 이동한다 */}
           <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-brown-deep/60">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-brown-deep/70">
               <Search size={13} />
             </span>
             <input
@@ -202,7 +203,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('hero.searchPlaceholder')}
               aria-label={t('hero.searchPlaceholder')}
-              className="w-full pl-8 pr-3 py-1.5 bg-white/80 border border-brown-light rounded-lg text-xs text-hero-ink placeholder-brown-deep/50 focus:outline-none focus:ring-1 focus:ring-hero-accent focus:border-hero-accent transition-all"
+              className="w-full pl-8 pr-3 py-2 min-h-[40px] bg-white/80 border border-brown-light rounded-lg text-xs text-hero-ink placeholder:text-brown-deep/60 transition-[border-color] hover:border-hero-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </form>
 
@@ -252,7 +253,14 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
           </defs>
 
           {/* Cream overlay — solid fill required; gradient fill breaks mask animation in browsers */}
-          <rect x="0" y="0" width="100" height="100" fill="var(--color-ivory)" mask="url(#cake-zoom-mask)" />
+          <rect
+            x="0"
+            y="0"
+            width="100"
+            height="100"
+            fill="var(--color-ivory)"
+            mask="url(#cake-zoom-mask)"
+          />
 
           {/* Luxury concentric rings framing the circular cake window */}
           <g ref={decorRef} className="opacity-80">
@@ -344,9 +352,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
                 </div>
               </div>
               <div className="border border-brown-light p-3 rounded-sm bg-white/30 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-light text-hero-ink leading-none">
-                  4.9
-                </div>
+                <div className="font-serif text-2xl font-light text-hero-ink leading-none">4.9</div>
                 <div className="text-[9px] font-mono tracking-[0.2em] text-brown-deep/70 uppercase mt-1">
                   Avg Rating
                 </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { readError } from '@/lib/api/read-error';
 import type { MyReview } from '@/types';
 import { Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -12,15 +13,6 @@ type Props = {
   canReview: boolean;
   myReview: MyReview | null;
 };
-
-async function readError(res: Response): Promise<string> {
-  try {
-    const body = (await res.json()) as { detail?: string; title?: string };
-    return body.detail ?? body.title ?? '요청을 처리하지 못했습니다.';
-  } catch {
-    return '요청을 처리하지 못했습니다.';
-  }
-}
 
 export default function ReviewForm({ courseId, canReview, myReview }: Props) {
   const router = useRouter();
