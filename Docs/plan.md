@@ -62,8 +62,8 @@
 | 접근성 | PRD-NF-08 | 초기 수준 | WCAG AA(포커스/키보드/SR/대비/reduced-motion) |
 | 성능 | PRD-NF-01/02 | 클라 렌더 | SSG/ISR, TanStack Query, DB 인덱스 |
 | 관측성 | TS §6.4 | 없음 | Sentry, Supabase Logs, 분석 이벤트(M-01~05) |
-| 정보구조·내비 | PRD-F-20 | 단일 랜딩(`CatalogScreen`)에 전 섹션 뭉침, 내비 3항목 | **홈(게이트웨이)·소개·온라인 클래스 분리**(EPIC-M), 강사 소개 흡수, 검색 `/classes?q=` 이관 |
-| 문의사항 | PRD-F-21 | 없음 | **1:1 비공개 문의**(inquiries 테이블·RLS·라우트·UI) + FAQ 사전 안내(EPIC-N) |
+| 정보구조·내비 | PRD-F-20 | ✅ 홈(게이트웨이)·`/about`·`/classes` 3면 분리, `sections/` 9개 컴포넌트, 검색 `/classes?q=` 이관, `/instructor`→`/about` 리다이렉트 | (완료 — 잔여: 분리 섹션 카피 메시지화는 EPIC-K) |
+| 문의사항 | PRD-F-21 | ✅ `inquiries`·RLS(owner-or-admin)·TS-API-14/15·`/inquiries`·운영 대시보드 답변 큐 | (완료 — 잔여: 2계정 수동 e2e 확인) |
 
 ---
 
@@ -171,7 +171,7 @@
 ### EPIC-M · 정보구조 개편(홈/소개/온라인 클래스) (P1) — ✅ 완료(2026-07-29, = Jira DC-96)
 - **목표**: 단일 랜딩(`CatalogScreen.tsx`, 966줄)에 뭉친 브랜드/클래스 콘텐츠를 **홈(게이트웨이)·소개(`/about`)·온라인 클래스(`/classes`)** 3면으로 분리해 운영자가 소개와 판매를 독립 관리.
 - **섹션 배분**: 홈=히어로→요약 3카드→베스트 클래스 3개→수강생 아카이브→셰프 배너→뉴스레터. 소개=브랜드 철학 전문(3 pillars)→셰프 프로필·연혁·인터뷰→도서 CTA. 온라인 클래스=추천 퀴즈→검색·카테고리 필터→전체 그리드→FAQ.
-- **작업**: 라우트 신설(`/`, `/about`, `/classes`), `CatalogScreen` → `sections/` 분해, **검색 state를 `/classes?q=`로 이관**(히어로 push / 페이지 `searchParams` 수신), **`/instructor` → `/about` 리다이렉트**(`nav.instructor` 키 정리), `Header` 내비에 소개·온라인 클래스·문의사항 추가, `<NewsletterCTA>` 공통 추출, **prefetch 목록 갱신**(홈=`/classes`·`/about`).
+- **작업**: 라우트 신설(`/`, `/about`, `/classes`), `CatalogScreen` → `sections/` 분해, **검색 state를 `/classes?q=`로 이관**(히어로 push / 페이지 `searchParams` 수신), **`/instructor` → `/about` 리다이렉트**(`nav.instructor` 키 정리), `Header` 내비 순서 확정(소개 → 온라인 클래스 → 도서 상점 → 문의사항 → 내 클래스), `<NewsletterCTA>` 공통 추출, **prefetch 목록 갱신**(홈=`/classes`·`/about`).
 - **i18n**: 분리 대상 섹션은 KO 하드코딩 다수 → **분리를 먼저**, 전면 메시지화는 EPIC-K와 연계한 별도 작업으로.
 - **참조**: PRD-F-20, TS-COMP-13/14/S7, TS-ADR-01/07. Jira **DC-96**.
 

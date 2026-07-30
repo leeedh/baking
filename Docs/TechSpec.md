@@ -404,6 +404,8 @@ paths:
 | TS-COMP-S6 | `<ScrollRevealHero />` | GSAP ScrollTrigger 히어로(줌 리빌·크로스페이드). `ssr:false` + reduced-motion 대응 | Organism |
 | TS-COMP-S7 | `<NewsletterCTA />` | 홈·소개·온라인 클래스 3면 공통 뉴스레터 구독 CTA(기존 랜딩 하단 섹션 추출) | Molecule |
 
+> ℹ️ **as-built 경로 주의**: TS-COMP-13/14는 `features/*` 모듈로 표기했지만, 실제 구현은 기존 컨벤션을 따라 `src/components/{HomeScreen,ClassesScreen,AboutScreen,InquiriesScreen}.tsx` + 공용 섹션 `src/components/sections/*`에 있다. `src/features/`는 아직 존재하지 않는다(코드가 정본).
+>
 > **정보구조 개편(PRD-F-20) 구현 유의점** (EPIC-M):
 > 1. **검색 state 분리** — `MeringueHero`가 홈에서 받던 `searchQuery`는 그리드가 `/classes`로 빠지면 끊긴다. 히어로 검색은 `router.push('/classes?q=...')`로 넘기고, 온라인 클래스 페이지가 `searchParams`로 초기값을 수신한다.
 > 2. **`CatalogScreen`(966줄 단일 클라 컴포넌트) 분해** — `sections/`로 퀴즈·아카이브·FAQ·Pillars·셰프·뉴스레터를 추출(각자 state를 가져 분리 용이). 홈/소개/클래스가 필요한 섹션만 조립.

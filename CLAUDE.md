@@ -57,6 +57,14 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 ### i18n
 `next-intl` with `/[locale]` routing (`src/i18n/routing.ts`, locales `ko`/`en`). Translations in `messages/{ko,en}.json`. All pages live under `src/app/[locale]/`. Use the navigation helpers in `src/i18n/navigation.ts`, not raw `next/link`, to keep locale prefixes.
 
+### 정보구조 — 홈·소개·온라인 클래스 3면 (DC-96)
+홈(`/`)은 **브랜드 게이트웨이**이고 클래스 목록 본체는 **`/classes`**, 브랜드/셰프 소개는 **`/about`**이다(구 `/instructor`는 `/about` 리다이렉트). 화면 골격은 `src/components/{HomeScreen,ClassesScreen,AboutScreen}.tsx`가 조립하고, 재사용 섹션은 **`src/components/sections/`**(`PhilosophyPillars`·`RecommendationQuiz`·`ClassCard`·`ClassCatalogGrid`·`StudentArchive`·`ChefBanner`·`FaqAccordion`·`NewsletterCTA`·`BestClasses`)에 있다. **`src/features/`는 없다** — TechSpec의 `features/*` 표기는 to-be다.
+
+**검색은 URL이 소스**: `MeringueHero`(홈)는 검색어를 자체 state로 두고 제출 시 `/classes?q=`로 `push`하며, `/classes` 페이지가 `searchParams`로 초기값을 받아 `ClassCatalogGrid`에 넘긴다. 홈에 그리드가 없으므로 히어로에 검색 state를 되돌리지 말 것.
+
+### 문의사항(Inquiries, DC-97)
+**1:1 비공개**: `inquiries` RLS는 `owner-or-admin`(작성자 본인 OR `is_admin()`)이라 목록·상세는 **라우트 없이 RSC에서 쿠키 클라이언트로 직접 조회**한다(`src/lib/inquiries.ts` — 같은 쿼리가 작성자에겐 본인 것만, 운영자에겐 전체를 돌려주므로 앱에서 소유자 필터를 중복하지 말 것). 쓰기는 `POST /api/inquiries`(세션에서 `user_id` 주입)·`PATCH /api/admin/inquiries/[id]`(`requireAdmin`, `answered_by/at` 서버 주입)만 경유한다. 운영자 답변 UI는 별도 라우트가 아니라 `DashboardScreen`의 "문의 · 답변 관리" 섹션이며, 초기 데이터는 `getAdminDashboard()`가 함께 실어 준다.
+
 ### 도서(Books)
 도서는 **추천 큐레이션**(외부 쿠팡 판매, 파트너스 제휴)으로, 자체 결제·배송이 없다. 데이터는 `books` 테이블이 아니라 **정적 상수 `src/lib/books-data.ts`**에서 오며(`getBooks()` in `src/lib/books.ts`), 표지는 로컬 자산(`public/books/`). `books` 테이블·seed는 이력용으로 존치되지만 앱은 읽지 않는다.
 

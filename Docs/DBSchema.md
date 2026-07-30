@@ -765,9 +765,9 @@ with (security_invoker = on) as
 | DB-MIG-01 | `20260608000000_initial_schema.sql` | enum CHECK·8개 테이블·인덱스 생성 |
 | DB-MIG-02 | `20260608000100_functions_triggers.sql` | DB-F-01~03, DB-TRG-AU/01, DB-V-01 |
 | DB-MIG-03 | `20260608000200_rls_policies.sql` | 전체 테이블 RLS 활성화·정책 |
-| DB-MIG-10 | `<ts>_inquiries.sql` | `inquiry_status` enum·`inquiries`(DB-T-11)·인덱스·RLS(owner-or-admin)·`set_updated_at` 트리거 |
+| DB-MIG-10 | `20260729060000_inquiries.sql` | `inquiry_status` enum·`inquiries`(DB-T-11)·인덱스·RLS(owner-or-admin)·`set_updated_at` 트리거 |
 
-> ℹ️ 인벤토리는 초기 3건만 등재됨. 실제 원격(`sowoo`)엔 DB-MIG-04~09가 추가 적용돼 있다(하드닝·`course_catalog`·admin stats·Storage·쿠폰 추적 등, `plan.md` EPIC-B/D/F/G 참조). DB-MIG-10은 다음 순번.
+> ℹ️ 인벤토리는 초기 3건만 등재됨. 실제 원격(`sowoo`)엔 DB-MIG-04~09가 추가 적용돼 있다(하드닝·`course_catalog`·admin stats·Storage·쿠폰 추적 등, `plan.md` EPIC-B/D/F/G 참조). DB-MIG-10은 2026-07-29 원격 적용 완료(`apply_migration` → `generate_typescript_types`).
 
 ### 5.2 Migration Standards
 - 도구: **Supabase CLI** (`supabase migration new <name>`)
