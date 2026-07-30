@@ -62,6 +62,8 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 
 **검색은 URL이 소스**: `MeringueHero`(홈)는 검색어를 자체 state로 두고 제출 시 `/classes?q=`로 `push`하며, `/classes` 페이지가 `searchParams`로 초기값을 받아 `ClassCatalogGrid`에 넘긴다. 홈에 그리드가 없으므로 히어로에 검색 state를 되돌리지 말 것.
 
+**`loading.tsx`는 라우트 그룹으로 범위를 좁혀 둔다 — 함부로 옮기지 말 것.** `loading.tsx`는 Suspense 셸을 즉시 flush하고, 헤더가 나간 뒤에는 상태 코드를 바꿀 수 없어 그 하위에서 `notFound()`를 호출하면 **HTTP 200**(soft-404)이 된다. 그래서 홈은 `[locale]/(home)/`, 클래스 목록은 `classes/(list)/`에 페이지와 `loading.tsx`를 함께 두어 `classes/[id]`를 감싸지 않게 했다(라우트 그룹이라 URL은 그대로). **`classes/[id]`에는 `loading.tsx`를 만들지 말 것.** 상위 세그먼트의 `loading.tsx`도 하위 전체를 감싼다는 점을 함께 볼 것. `checkout/[id]`·`learn/[id]`·`admin/courses/[id]`는 인증 뒤라 색인 대상이 아니어서 스켈레톤을 유지했고 `notFound()` 시 200이다(의도). 실측 근거는 `Docs/UXGuide.md` §8.6.
+
 ### 문의사항(Inquiries, DC-97)
 **1:1 비공개**: `inquiries` RLS는 `owner-or-admin`(작성자 본인 OR `is_admin()`)이라 목록·상세는 **라우트 없이 RSC에서 쿠키 클라이언트로 직접 조회**한다(`src/lib/inquiries.ts` — 같은 쿼리가 작성자에겐 본인 것만, 운영자에겐 전체를 돌려주므로 앱에서 소유자 필터를 중복하지 말 것). 쓰기는 `POST /api/inquiries`(세션에서 `user_id` 주입)·`PATCH /api/admin/inquiries/[id]`(`requireAdmin`, `answered_by/at` 서버 주입)만 경유한다. 운영자 답변 UI는 별도 라우트가 아니라 `DashboardScreen`의 "문의 · 답변 관리" 섹션이며, 초기 데이터는 `getAdminDashboard()`가 함께 실어 준다.
 

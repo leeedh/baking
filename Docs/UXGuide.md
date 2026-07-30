@@ -397,34 +397,37 @@
 
 ### 8.6 적용 후 남은 항목 (다음 작업 후보)
 
-- **`notFound()`가 항상 HTTP 200을 반환한다 (기존 이슈 · 이번 작업과 무관)** — `/ko/classes/<없는-slug>`,
-  `/ko/checkout/<없는-id>` 등은 브랜드 404 화면을 렌더하지만 상태 코드가 200이다.
-  라우트에 아예 없는 경로(`/ko/zzz`)만 정상적으로 404가 나간다.
+- **`notFound()`의 HTTP 200 문제 — 해결됨 (원인: `loading.tsx`의 Suspense 조기 flush)**
 
-  **원인**: 이 앱은 **루트 레이아웃이 `src/app/[locale]/layout.tsx`에만 있고 `src/app/layout.tsx`가 없다**
-  (`<html>`을 로케일 레이아웃이 그린다). Next는 루트 레이아웃 밖의 not-found 처리를 할 수 없어
-  동적 세그먼트 안의 `notFound()`가 404 상태를 세팅하지 못한다.
+  증상: `/ko/classes/<없는-slug>`가 브랜드 404 화면을 렌더하면서 상태 코드는 200.
 
-  **검증 방법(실측)**:
+  **최초 가설(루트 레이아웃)은 틀렸다.** 실측으로 하나씩 제거하며 좁힌 결과:
+
   | 실험 | `/ko/classes/does-not-exist` |
   |------|------|
-  | 커스텀 `not-found.tsx` 제거(변경 전 상태) | 200 |
+  | 커스텀 `not-found.tsx` 제거(= 변경 전 상태) | 200 |
   | `export const dynamic = 'force-dynamic'` 제거 | 200 |
   | 미들웨어 matcher에서 `ko/classes` 제외 | 200 |
-  | `notFound()`만 호출하는 최소 라우트(`/ko/statusprobe`) | 200 |
-  | 루트 레이아웃 밖(`src/app/statusprobe2`)에 페이지 생성 | **빌드 실패** — "doesn't have a root layout" |
+  | `src/app/layout.tsx`(패스스루 루트 레이아웃) 추가 | 200 |
+  | **`[locale]/loading.tsx` + `classes/loading.tsx` 제거** | **404** |
 
-  즉 `force-dynamic`도, next-intl 미들웨어 rewrite도, 커스텀 404 페이지도 원인이 아니다.
-  커스텀 `not-found.tsx` 도입은 **렌더 결과만** 바꿨고(기본 Next 화면 → 브랜드 화면) 상태 코드는
-  이전과 동일하게 200이다.
+  **원인**: `loading.tsx`는 Suspense 경계를 만들고 Next는 그 셸을 **즉시 flush**한다.
+  응답 헤더가 이미 나간 뒤에는 상태 코드를 바꿀 수 없어, 이후 `notFound()`가 200으로 나간다.
+  응답 헤더에서도 확인된다 — 200 케이스는 `Transfer-Encoding: chunked`(스트리밍)이고,
+  정상 404 케이스(`/ko/zzz`)는 `x-nextjs-prerender: 1` + `Content-Length`(프리렌더)다.
+  `[locale]/loading.tsx`는 **모든 하위 경로**를 감싸고 있었다.
 
-  **영향**: 검색엔진에 soft-404로 노출된다(존재하지 않는 클래스 URL이 200으로 색인될 수 있음).
-  기능·사용자 경험상의 문제는 없다.
+  **해결**: 라우트 그룹으로 스켈레톤의 범위를 좁혔다(URL은 그대로).
+  - `[locale]/page.tsx` → `[locale]/(home)/page.tsx`, `loading.tsx`도 `(home)/`로 이동
+  - `classes/page.tsx` → `classes/(list)/page.tsx`, `loading.tsx`도 `(list)/`로 이동
+  - `classes/[id]/loading.tsx`는 **두지 않는다**(그 세그먼트를 직접 감싸므로). 페이지 상단에 경고 주석.
 
-  **해결 후보**(라우팅 구조 변경이라 별도 작업으로 분리):
-  1. `src/app/layout.tsx`(최소 루트 레이아웃) + `src/app/not-found.tsx`를 추가하고
-     `[locale]/layout.tsx`에서 `<html>`을 걷어내는 구조로 이전 — next-intl 공식 권장 구성.
-  2. 상태 코드가 중요한 경로만 페이지 대신 라우트 핸들러/미들웨어에서 404를 명시적으로 반환.
+  **의도적으로 남긴 200**: `checkout/[id]`·`learn/[id]`·`admin/courses/[id]`는 인증 뒤에 있고
+  색인 대상이 아니므로 스켈레톤을 유지했다. 이 경로들은 `notFound()` 시 여전히 200이다.
+  soft-404의 유일한 실질 피해는 SEO이므로 공개 경로에만 적용했다.
+
+  ⚠️ **앞으로 주의**: `notFound()`를 호출하는 공개 경로에 `loading.tsx`를 추가하면
+  상태 코드가 조용히 200으로 돌아간다. 상위 세그먼트의 `loading.tsx`도 하위를 감싼다는 점을 함께 볼 것.
 - 관리자 테이블의 **모바일 카드 뷰**(D6)는 미적용. `min-w-[720px]` + 가로 스크롤 유지.
   운영자 전용 화면이라 우선도를 가장 낮게 두었다.
 - `next/image` 전환은 **히어로(LCP)와 ClassCard 썸네일까지만**. 나머지 원격 `<img>`
