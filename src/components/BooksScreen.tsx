@@ -29,13 +29,19 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
       className="bg-cream min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       {/* Editorial Title Banner */}
-      <section className="pt-12 pb-16 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/80">
+      <section
+        aria-labelledby="books-hero-heading"
+        className="pt-12 pb-16 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/80"
+      >
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 text-gold text-[11px] font-bold tracking-widest uppercase border border-gold/20 shadow-sm">
             <BookOpen size={12} />
             {t('badge')}
           </span>
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold text-brown leading-tight break-keep">
+          <h1
+            id="books-hero-heading"
+            className="font-serif text-3xl sm:text-5xl font-bold text-brown leading-tight break-keep"
+          >
             {t('title1')} <span className="font-serif italic text-terracotta">{t('titleEm')}</span>
           </h1>
           <p className="text-sm text-brown-medium font-light leading-relaxed max-w-2xl mx-auto break-keep">
@@ -45,7 +51,10 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
       </section>
 
       {/* Main Dual Columns Layout */}
-      <section className="py-12 px-6 sm:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section
+        aria-label="추천 도서 목록"
+        className="py-12 px-6 sm:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12"
+      >
         {/* Left Side: Books Selector & Thumbnails */}
         <div className="lg:col-span-4 space-y-6">
           <h3 className="font-serif text-xs font-bold text-gold tracking-wider uppercase mb-2">

@@ -386,11 +386,27 @@
 
 ### 8.5 개선 로드맵
 
-- [ ] **Phase 1a** — `globals.css` 토큰 확장(색 승격·반경·섀도·이징·`--animate-*` 모션), 리터럴 hex→`var()`, `@media (prefers-reduced-motion)` 전역 대응, `:focus-visible` 링 → **A1·A2·B1·B2·C1·C10**
-- [ ] **Phase 1b** — `src/components/ui/` 프리미티브 신설(`cn`·`Button`·`Card`·`Input`/`Textarea`·`Badge`·`Modal`·`SectionHeading`), `src/lib/status-badges.ts` 통합 → **A4·A5·C5·C9·C12**
-- [ ] **Phase 1c** — 호출부 마이그레이션 + 잡버그(`#B1863C`·`text-none`·`keep-all`) 수정 → **A3·A6·A7·B3·B4**
-- [ ] **Phase 2** — 스크롤 리빌(`IntersectionObserver`), 호버 정교화, 내비 pending 피드백, `PageSkeleton` variant, `error`/`not-found` 경계 → **B5·B6·D1·D2·D3·D4**
-- [ ] **Phase 3** — 스킵 링크·랜드마크 라벨·헤딩 순서·클릭 요소 버튼화·ARIA·라이브 리전·콘트라스트·이미지 → **C2·C3·C4·C6·C7·C8·C11·C13**
-- [ ] **Phase 4** — `ClassCard` 320px 재배치, 관리자 테이블 모바일 카드뷰, 랩 처리, 히어로 `100svh`, `xl:` 그리드 → **D5·D6·D7**
+- [x] **Phase 1a** — `globals.css` 토큰 확장(색 승격·반경·섀도·이징·`--animate-*` 모션), 리터럴 hex→`var()`, `@media (prefers-reduced-motion)` 전역 대응, `:focus-visible` 링 → **A1·A2·B1·B2·C1·C10**
+- [x] **Phase 1b** — `src/components/ui/` 프리미티브 신설(`cn`·`Button`·`Card`·`Input`/`Textarea`·`Badge`·`Modal`·`SectionHeading`), `src/lib/status-badges.ts` 통합 → **A4·A5·C5·C9·C12**
+- [x] **Phase 1c** — 호출부 마이그레이션 + 잡버그(`#B1863C`·`text-none`·`keep-all`) 수정 → **A3·A6·A7·B3·B4**
+- [x] **Phase 2** — 스크롤 리빌(`IntersectionObserver`), 호버 정교화, 내비 pending 피드백, `PageSkeleton` variant, `error`/`not-found` 경계 → **B5·B6·D1·D2·D3·D4**
+- [x] **Phase 3** — 스킵 링크·랜드마크 라벨·헤딩 순서·클릭 요소 버튼화·ARIA·라이브 리전·콘트라스트·이미지 → **C2·C3·C4·C6·C7·C8·C11·C13**
+- [x] **Phase 4** — `ClassCard` 320px 재배치, 관리자 테이블 모바일 카드뷰, 랩 처리, 히어로 `100svh`, `xl:` 그리드 → **D5·D6·D7**
 
 > 다크 테마는 이번 범위 **밖**이다 — 현재 단일 웜 라이트 테마를 유지하고 `color-scheme: light`를 명시한다.
+
+### 8.6 적용 후 남은 항목 (다음 작업 후보)
+
+- **`/ko/classes/<없는-slug>`가 브랜드 404를 렌더하지만 HTTP 상태는 200**이다
+  (라우트에 없는 경로 `/ko/zzz`는 정상적으로 404). `dynamic = 'force-dynamic'` +
+  next-intl 미들웨어 rewrite 조합에서 스트리밍 시작 후 상태 코드가 고정되는 것으로 보인다.
+  변경 이전 상태 코드는 확인하지 않았다 — SEO 관점에서 별도 확인이 필요하다.
+- 관리자 테이블의 **모바일 카드 뷰**(D6)는 미적용. `min-w-[720px]` + 가로 스크롤 유지.
+  운영자 전용 화면이라 우선도를 가장 낮게 두었다.
+- `next/image` 전환은 **히어로(LCP)와 ClassCard 썸네일까지만**. 나머지 원격 `<img>`
+  (About 초상, StudentArchive, 퀴즈 결과 등)는 `width`/`height`/`lazy`만 부여해
+  레이아웃 시프트를 없앤 상태다.
+- 다국어: 이번 작업에서 추가한 문구(에러·404·리빌 안내 등)는 한국어 하드코딩이다.
+  메시지 카탈로그 이전은 기존 TODO(DC-10)에 함께 남아 있다.
+- 뉴스레터 구독은 백엔드가 없어 **"준비 중" 비활성 + 문의사항 유도**로 바꿨다.
+  실제 구독 채널이 준비되면 이 CTA를 되살려야 한다.

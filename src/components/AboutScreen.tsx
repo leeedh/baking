@@ -38,7 +38,10 @@ export default function AboutScreen() {
       className="bg-cream min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       {/* Editorial Mini Hero */}
-      <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 sm:pb-20 px-4 sm:px-12 max-w-7xl mx-auto border-b border-brown-light">
+      <section
+        aria-labelledby="about-hero-heading"
+        className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 sm:pb-20 px-4 sm:px-12 max-w-7xl mx-auto border-b border-brown-light"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Side: Chef Elegant Portrait Frame */}
           <div className="lg:col-span-5 relative">
@@ -77,7 +80,10 @@ export default function AboutScreen() {
               {t('heroBadge')}
             </div>
 
-            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep">
+            <h1
+              id="about-hero-heading"
+              className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep"
+            >
               {t('heroTitle')}{' '}
               <span className="font-serif italic text-terracotta">{t('heroTitleEm')}</span>
             </h1>
@@ -118,12 +124,18 @@ export default function AboutScreen() {
       <PhilosophyPillars variant="full" />
 
       {/* Philosophy Details Section */}
-      <section className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/70">
+      <section
+        aria-labelledby="about-values-heading"
+        className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/70"
+      >
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
           <p className="text-xs font-serif font-bold text-gold tracking-[0.2em] uppercase">
             THE Core Values
           </p>
-          <h2 className="font-serif text-3xl font-bold text-brown break-keep">
+          <h2
+            id="about-values-heading"
+            className="font-serif text-3xl font-bold text-brown break-keep"
+          >
             {t('philosophyTitle')}
           </h2>
           <p className="text-xs sm:text-sm text-brown-medium font-light">{t('philosophyDesc')}</p>
@@ -148,11 +160,14 @@ export default function AboutScreen() {
       </section>
 
       {/* Chef Milestones & Careers Timeline */}
-      <section className="py-20 px-6 sm:px-12 bg-white/60">
+      <section aria-labelledby="about-timeline-heading" className="py-20 px-6 sm:px-12 bg-white/60">
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-3 mb-16">
             <Award className="mx-auto text-gold animate-pulse" size={28} />
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-brown">
+            <h2
+              id="about-timeline-heading"
+              className="font-serif text-2xl sm:text-3xl font-bold text-brown"
+            >
               {t('timelineTitle')}
             </h2>
             <p className="text-xs text-brown-medium font-light">{t('timelineDesc')}</p>
@@ -177,13 +192,21 @@ export default function AboutScreen() {
       </section>
 
       {/* Interview / Deep QA Dialogue Section */}
-      <section className="py-20 px-6 sm:px-12 bg-white/80 border-t border-brown-light">
+      <section
+        aria-labelledby="about-qa-heading"
+        className="py-20 px-6 sm:px-12 bg-white/80 border-t border-brown-light"
+      >
         <div className="max-w-3xl mx-auto space-y-12">
           <div className="text-center space-y-2 mb-12">
             <span className="text-[10px] bg-brown text-white px-3 py-1 rounded font-bold tracking-widest uppercase">
               Deep Interview
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-brown">{t('qaTitle')}</h2>
+            <h2
+              id="about-qa-heading"
+              className="font-serif text-2xl sm:text-3xl font-bold text-brown"
+            >
+              {t('qaTitle')}
+            </h2>
             <p className="text-xs text-brown-medium font-light">{t('qaDesc')}</p>
           </div>
 
@@ -207,12 +230,18 @@ export default function AboutScreen() {
       </section>
 
       {/* Bottom CTA board for Sohee Min */}
-      <section className="py-16 bg-brown text-cream text-center px-6">
+      <section
+        aria-labelledby="about-cta-heading"
+        className="py-16 bg-brown text-cream text-center px-6"
+      >
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="w-16 h-16 rounded-full bg-cream/10 mx-auto flex items-center justify-center text-gold border border-gold/30 text-xl font-serif font-bold">
             MC
           </div>
-          <h3 className="font-serif text-2xl sm:text-3xl font-bold break-keep">
+          <h3
+            id="about-cta-heading"
+            className="font-serif text-2xl sm:text-3xl font-bold break-keep"
+          >
             {t('bottomTitle')}
           </h3>
           <p className="text-xs sm:text-sm text-white/70 font-light leading-relaxed break-keep">

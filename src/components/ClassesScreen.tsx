@@ -33,11 +33,15 @@ export default function ClassesScreen({ classes, initialSearchQuery }: ClassesSc
       id="classes-screen"
       className="bg-ivory min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
-      <section className="pt-12 pb-4 px-6 sm:px-12 max-w-7xl mx-auto text-center space-y-3">
-        <span className="text-xs font-bold text-gold tracking-[0.25em] uppercase">
-          Online Classes
-        </span>
-        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep">
+      <section
+        aria-labelledby="classes-hero-heading"
+        className="pt-12 pb-4 px-6 sm:px-12 max-w-7xl mx-auto text-center space-y-3"
+      >
+        <p className="text-xs font-bold text-gold tracking-[0.25em] uppercase">Online Classes</p>
+        <h1
+          id="classes-hero-heading"
+          className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep"
+        >
           온라인 클래스
         </h1>
         <p className="text-sm text-brown-medium font-light max-w-2xl mx-auto break-keep">
