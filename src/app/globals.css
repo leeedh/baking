@@ -148,8 +148,9 @@ body {
 }
 
 /*
- * 스크롤 리빌. 마크업이 data-reveal="out"으로 렌더되고
- * useRevealOnScroll(IntersectionObserver)이 뷰포트 진입 시 "in"으로 바꾼다.
+ * 스크롤 리빌. 마크업은 data-reveal-init만 달고 **보이는 상태로** 렌더된다 —
+ * JS가 실패해도 콘텐츠가 사라지지 않아야 하므로 감춤은 훅이 붙인다.
+ * useRevealOnScroll이 마운트 시 data-reveal="out"을 넣고, 뷰포트 진입 시 "in"으로 바꾼다.
  * GSAP ScrollTrigger를 전역으로 쓰지 않는 이유: MeringueHero의 cleanup이
  * ScrollTrigger.getAll()을 전역 kill하므로 다른 섹션의 트리거까지 날아간다.
  */

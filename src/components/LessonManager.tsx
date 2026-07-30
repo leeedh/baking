@@ -360,7 +360,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
             </label>
             <label className="block">
@@ -372,7 +372,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 min={1}
                 value={chapterIndex}
                 onChange={(e) => setChapterIndex(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
             </label>
             <label className="block">
@@ -383,7 +383,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 type="text"
                 value={chapterTitle}
                 onChange={(e) => setChapterTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
             </label>
             <label className="block">
@@ -395,7 +395,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                 min={0}
                 value={durationMin}
                 onChange={(e) => setDurationMin(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus:ring-1 focus:ring-terracotta focus:outline-none"
+                className="w-full px-3 py-2 border border-brown-light rounded-lg text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
             </label>
             <label className="flex items-center gap-2 mt-6">
@@ -590,7 +590,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                           onChange={(e) => setMaterialTitle(e.target.value)}
                           placeholder="자료 제목 (비우면 파일명)"
                           aria-label="자료 제목"
-                          className="flex-1 min-w-0 px-2 py-1 border border-brown-light rounded text-[11px] focus:ring-1 focus:ring-terracotta focus:outline-none"
+                          className="flex-1 min-w-0 px-2 py-1 border border-brown-light rounded text-[11px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                         />
                         <button
                           type="button"

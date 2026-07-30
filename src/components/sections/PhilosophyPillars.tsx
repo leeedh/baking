@@ -1,8 +1,8 @@
 'use client';
 
-import { buttonClasses } from '@/components/ui/Button';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { Link } from '@/i18n/navigation';
+import { buttonClasses } from '@/lib/button-classes';
 import { cn } from '@/lib/cn';
 import { ChevronRight, FileText, type LucideIcon, MessageSquare, Utensils } from 'lucide-react';
 import type { CSSProperties } from 'react';
@@ -99,7 +99,7 @@ export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillar
           {PILLARS.map((pillar, i) => (
             <div
               key={pillar.no}
-              data-reveal="out"
+              data-reveal-init
               style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
               className={cn(
                 'p-8 bg-cream/40 rounded-2xl border border-brown-light/65 space-y-4 group',

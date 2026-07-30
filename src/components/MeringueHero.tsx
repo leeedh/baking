@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import Image from 'next/image';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -230,12 +231,19 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
 
       {/* Underneath Visual: Gorgeous Full-Screen Cake/Meringue (revealed by masking) */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <img
+        {/*
+          LCP 이미지 — priority로 프리로드한다. GSAP이 이 요소에 scale 트랜스폼을 걸므로
+          ref는 실제 <img>를 가리켜야 해서 fill(단일 img 렌더) 형태를 쓴다.
+        */}
+        <Image
           ref={bgImageRef}
           referrerPolicy="no-referrer"
           src="https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&q=80&w=2000"
           alt="Artisan Gourmet Raspberry Cake Top-View"
-          className="w-full h-full object-cover object-center brightness-[0.82]"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center brightness-[0.82]"
         />
         {/* Soft dark gradient overlay to ensure revealed white text is fully legible */}
         <div className="absolute inset-0 bg-black/25 z-10" />

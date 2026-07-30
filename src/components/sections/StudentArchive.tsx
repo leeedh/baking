@@ -118,7 +118,7 @@ export default function StudentArchive() {
           {filteredStudentWorks.map((work, i) => (
             <div
               key={work.id}
-              data-reveal="out"
+              data-reveal-init
               style={{ '--reveal-delay': `${(i % 4) * 70}ms` } as CSSProperties}
               className="bg-white rounded-card overflow-hidden border border-brown-light shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-[box-shadow,transform] duration-300 ease-out-soft group flex flex-col"
             >

@@ -237,7 +237,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
                   placeholder="홍길동"
-                  className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus:outline-none focus:ring-1 focus:ring-terracotta"
+                  className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 />
               </div>
 
@@ -249,7 +249,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                   type="text"
                   value={buyerPhone}
                   onChange={(e) => setBuyerPhone(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus:outline-none focus:ring-1 focus:ring-terracotta font-mono"
+                  className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring font-mono"
                   placeholder="010-XXXX-XXXX"
                 />
                 <span className="text-[10px] text-brown-medium/60 mt-1 block">
@@ -300,7 +300,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder="할인 쿠폰코드 (예시: BAKING10)"
-                className="flex-1 px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-terracotta"
+                className="flex-1 px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown uppercase tracking-wider focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
               <button
                 type="submit"

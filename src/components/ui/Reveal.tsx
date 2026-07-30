@@ -13,14 +13,14 @@ interface RevealProps {
 
 /**
  * 단일 요소 리빌. 여러 자식을 스태거로 띄울 때는 부모에서 useRevealOnScroll()을 직접 쓰고
- * 자식에 data-reveal="out"을 붙이는 편이 옵저버 하나로 끝난다.
+ * 자식에 data-reveal-init을 붙이는 편이 옵저버 하나로 끝난다.
  */
 export default function Reveal({ children, delay = 0, className }: RevealProps) {
   const ref = useRevealOnScroll<HTMLDivElement>(true);
   return (
     <div
       ref={ref}
-      data-reveal="out"
+      data-reveal-init
       style={{ '--reveal-delay': `${delay}ms` } as CSSProperties}
       className={cn(className)}
     >

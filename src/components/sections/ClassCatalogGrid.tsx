@@ -128,12 +128,12 @@ export default function ClassCatalogGrid({
         ) : (
           <div
             ref={revealRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8"
           >
             {filteredClasses.map((cls, i) => (
               <div
                 key={cls.id}
-                data-reveal="out"
+                data-reveal-init
                 // 스태거 — 한 행이 순차로 떠오르게 한다(4열이므로 4개 주기).
                 style={{ '--reveal-delay': `${(i % 4) * 70}ms` } as CSSProperties}
               >

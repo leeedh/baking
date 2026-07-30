@@ -1,5 +1,5 @@
-import { buttonClasses } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
+import { buttonClasses } from '@/lib/button-classes';
 import { Croissant } from 'lucide-react';
 
 /**

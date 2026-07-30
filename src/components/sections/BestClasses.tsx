@@ -1,9 +1,9 @@
 'use client';
 
-import { buttonClasses } from '@/components/ui/Button';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { Link } from '@/i18n/navigation';
+import { buttonClasses } from '@/lib/button-classes';
 import { ChevronRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import type { ClassItem } from '../../types';
@@ -39,7 +39,7 @@ export default function BestClasses({ classes }: BestClassesProps) {
         {best.map((cls, i) => (
           <div
             key={cls.id}
-            data-reveal="out"
+            data-reveal-init
             style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
           >
             <ClassCard cls={cls} />

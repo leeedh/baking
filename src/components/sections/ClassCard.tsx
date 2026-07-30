@@ -3,6 +3,7 @@
 import Button from '@/components/ui/Button';
 import { useRouter } from '@/i18n/navigation';
 import { ChevronRight, Clock, PlayCircle, Star } from 'lucide-react';
+import Image from 'next/image';
 import { useTransition } from 'react';
 import type { ClassItem } from '../../types';
 
@@ -28,19 +29,18 @@ export default function ClassCard({ cls }: ClassCardProps) {
   return (
     <div
       id={`class-card-${cls.id}`}
-      className="bg-white rounded-card border border-brown-light overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-[box-shadow,transform] duration-300 ease-out-soft flex flex-col group"
+      className="@container bg-white rounded-card border border-brown-light overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-[box-shadow,transform] duration-300 ease-out-soft flex flex-col group"
     >
       {/* Image wrapper with high detail animation */}
       <div className="relative aspect-[16/10] overflow-hidden bg-cream">
-        <img
+        <Image
           referrerPolicy="no-referrer"
           src={cls.thumbnail}
           alt={cls.title}
-          width={640}
-          height={400}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out-soft filter brightness-[0.97]"
+          fill
+          // 1열(모바일) → 4열(xl)까지의 실제 렌더 폭. 과도한 원본 다운로드를 막는다.
+          sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 25vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out-soft filter brightness-[0.97]"
         />
 
         {/* Dark gradient vignette edge */}
@@ -80,7 +80,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
       </div>
 
       {/* Card Main Editorial Content */}
-      <div className="p-4 sm:p-6 flex-grow flex flex-col justify-between space-y-6">
+      <div className="p-4 @[20rem]:p-6 flex-grow flex flex-col justify-between space-y-6">
         <div className="space-y-3">
           {/* Instructor detailed profile header */}
           <div className="flex items-center gap-2 min-w-0">
@@ -141,7 +141,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
         </div>
 
         {/* Price with monthly split indicator — 좁은 폭에서는 CTA를 아래로 내린다. */}
-        <div className="pt-4 border-t border-brown-light/70 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div className="pt-4 border-t border-brown-light/70 flex flex-col @[20rem]:flex-row @[20rem]:items-end @[20rem]:justify-between gap-3">
           <div className="space-y-0.5">
             {discountPercent > 0 && (
               <span className="block text-[11px] text-brown-medium/70 line-through">
@@ -163,7 +163,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
           <Button
             onClick={onNavigateToDetail}
             loading={isPending}
-            className="w-full sm:w-auto shrink-0"
+            className="w-full @[20rem]:w-auto shrink-0"
           >
             <span>마스터 코스 탐색</span>
             {!isPending && <ChevronRight size={12} />}

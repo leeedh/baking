@@ -1,8 +1,8 @@
 'use client';
 
 import Button from '@/components/ui/Button';
-import { buttonClasses } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
+import { buttonClasses } from '@/lib/button-classes';
 import { RefreshCcw, TriangleAlert } from 'lucide-react';
 import { useEffect } from 'react';
 

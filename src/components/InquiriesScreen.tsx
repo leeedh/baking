@@ -1,9 +1,10 @@
 'use client';
 
 import Badge from '@/components/ui/Badge';
-import Button, { buttonClasses } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Field';
 import { Link } from '@/i18n/navigation';
+import { buttonClasses } from '@/lib/button-classes';
 import { cn } from '@/lib/cn';
 import { INQUIRY_STATUS } from '@/lib/status-badges';
 import type { InquiryRow } from '@/types';

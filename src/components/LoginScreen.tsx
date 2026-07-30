@@ -197,7 +197,7 @@ export default function LoginScreen() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="홍길동"
-                    className="w-full px-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder-brown-medium/40 focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
                   />
                 </div>
               </div>
@@ -218,7 +218,7 @@ export default function LoginScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="creme@ateliercreme.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder-brown-medium/40 focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
                   required
                 />
               </div>
@@ -253,7 +253,7 @@ export default function LoginScreen() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder-brown-medium/40 focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
                   required
                 />
                 <button
@@ -302,7 +302,9 @@ export default function LoginScreen() {
               <div className="w-full border-t border-brown-light" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-brown-medium/50 font-medium">또는 간편 로그인</span>
+              <span className="bg-white px-3 text-brown-medium/50 font-medium">
+                또는 간편 로그인
+              </span>
             </div>
           </div>
 
