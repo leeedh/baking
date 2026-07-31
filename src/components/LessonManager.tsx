@@ -202,28 +202,50 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
     form.append('lessonId', lessonId);
     form.append('titleKo', title);
     form.append('file', file);
-    const res = await fetch('/api/admin/materials', { method: 'POST', body: form });
-    setMaterialUploading(null);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
+    try {
+      const res = await fetch('/api/admin/materials', { method: 'POST', body: form });
+      if (!res.ok) {
+        setError(await readError(res));
+        return;
+      }
+      setMaterialFormLessonId(null);
+      setMaterialTitle('');
+      router.refresh();
+    } catch {
+      // 예외를 놓치면 해당 차시 버튼이 "업로드 중…"으로 영구 고착된다(코드리뷰 X-3).
+      setError('자료를 업로드하지 못했습니다. 네트워크 상태를 확인해 주세요.');
+    } finally {
+      setMaterialUploading(null);
     }
-    setMaterialFormLessonId(null);
-    setMaterialTitle('');
-    router.refresh();
+  };
+
+  /**
+   * 운영 액션 공통 실행기 — fetch가 throw해도 finally에서 busy를 반드시 푼다.
+   * 예전에는 액션마다 setBusy(false)를 수동으로 불러서, 네트워크 예외가 나면
+   * 화면이 "처리 중"으로 고착돼 다음 작업을 못 했다(코드리뷰 X-3).
+   */
+  const runMutation = async (request: () => Promise<Response>): Promise<boolean> => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await request();
+      if (!res.ok) {
+        setError(await readError(res));
+        return false;
+      }
+      router.refresh();
+      return true;
+    } catch {
+      setError('요청을 처리하지 못했습니다. 네트워크 상태를 확인해 주세요.');
+      return false;
+    } finally {
+      setBusy(false);
+    }
   };
 
   const removeMaterial = async (materialId: string) => {
     setPendingMaterialDelete(null);
-    setBusy(true);
-    setError(null);
-    const res = await fetch(`/api/admin/materials/${materialId}`, { method: 'DELETE' });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
-    router.refresh();
+    await runMutation(() => fetch(`/api/admin/materials/${materialId}`, { method: 'DELETE' }));
   };
 
   const create = async (e: React.FormEvent) => {
@@ -232,60 +254,41 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
       setError('차시 명칭을 입력해 주세요.');
       return;
     }
-    setBusy(true);
-    setError(null);
-    const res = await fetch('/api/admin/lessons', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        courseId,
-        titleKo: title,
-        chapterIndex,
-        chapterTitleKo: chapterTitle,
-        durationSec: durationMin > 0 ? durationMin * 60 : null,
-        isPreview,
+    const ok = await runMutation(() =>
+      fetch('/api/admin/lessons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId,
+          titleKo: title,
+          chapterIndex,
+          chapterTitleKo: chapterTitle,
+          durationSec: durationMin > 0 ? durationMin * 60 : null,
+          isPreview,
+        }),
       }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
+    );
+    if (!ok) return;
     setShowAdd(false);
     setTitle('');
     setChapterTitle('');
     setDurationMin(0);
     setIsPreview(false);
-    router.refresh();
   };
 
   const patch = async (id: string, body: Record<string, unknown>) => {
-    setBusy(true);
-    setError(null);
-    const res = await fetch(`/api/admin/lessons/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
-    router.refresh();
+    await runMutation(() =>
+      fetch(`/api/admin/lessons/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    );
   };
 
   const remove = async (id: string) => {
     setPendingLessonDelete(null);
-    setBusy(true);
-    setError(null);
-    const res = await fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
-    router.refresh();
+    await runMutation(() => fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' }));
   };
 
   const move = async (index: number, dir: -1 | 1) => {
@@ -293,19 +296,13 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
     if (target < 0 || target >= lessons.length) return;
     const ids = lessons.map((l) => l.id);
     [ids[index], ids[target]] = [ids[target], ids[index]];
-    setBusy(true);
-    setError(null);
-    const res = await fetch('/api/admin/lessons/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ courseId, orderedIds: ids }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
-    router.refresh();
+    await runMutation(() =>
+      fetch('/api/admin/lessons/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId, orderedIds: ids }),
+      }),
+    );
   };
 
   return (

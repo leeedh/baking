@@ -74,16 +74,16 @@ export default function DashboardScreen({
   const [newInstructor, setNewInstructor] = useState('');
   const [newPrice, setNewPrice] = useState<number>(0);
 
-  /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
-  const patchInquiry = async (id: string, patch: { answerBody?: string; status?: string }) => {
+  /**
+   * 운영 액션 공통 실행기 — fetch가 throw해도 finally에서 busy를 반드시 푼다.
+   * 예전에는 액션마다 setBusy(false)를 수동으로 불러서, 네트워크 예외가 나면
+   * 화면이 "처리 중"으로 고착돼 다음 작업을 못 했다(코드리뷰 X-3).
+   */
+  const runMutation = async (request: () => Promise<Response>): Promise<boolean> => {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/inquiries/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      });
+      const res = await request();
       if (!res.ok) {
         setError(await readError(res));
         return false;
@@ -91,12 +91,22 @@ export default function DashboardScreen({
       router.refresh();
       return true;
     } catch {
-      setError('요청을 처리하지 못했습니다.');
+      setError('요청을 처리하지 못했습니다. 네트워크 상태를 확인해 주세요.');
       return false;
     } finally {
       setBusy(false);
     }
   };
+
+  /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
+  const patchInquiry = (id: string, patch: { answerBody?: string; status?: string }) =>
+    runMutation(() =>
+      fetch(`/api/admin/inquiries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      }),
+    );
 
   const submitAnswer = async (id: string) => {
     const ok = await patchInquiry(id, { answerBody: answerDraft.trim() });
@@ -113,37 +123,25 @@ export default function DashboardScreen({
   };
 
   const savePriceEdit = async (id: string) => {
-    setBusy(true);
-    setError(null);
-    const res = await fetch(`/api/admin/courses/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceKrw: editingPrice }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
-    setEditingClassId(null);
-    router.refresh();
+    const ok = await runMutation(() =>
+      fetch(`/api/admin/courses/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceKrw: editingPrice }),
+      }),
+    );
+    if (ok) setEditingClassId(null);
   };
 
   const toggleStatus = async (cls: AdminClassRow) => {
-    setBusy(true);
-    setError(null);
     const next = cls.status === 'published' ? 'draft' : 'published';
-    const res = await fetch(`/api/admin/courses/${cls.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: next }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
-    router.refresh();
+    await runMutation(() =>
+      fetch(`/api/admin/courses/${cls.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      }),
+    );
   };
 
   const handleCreateClass = async (e: React.FormEvent) => {
@@ -152,27 +150,22 @@ export default function DashboardScreen({
       setError('강의 명칭과 가격을 입력해 주세요.');
       return;
     }
-    setBusy(true);
-    setError(null);
-    const res = await fetch('/api/admin/courses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        titleKo: newTitle,
-        instructorTitleKo: newInstructor,
-        priceKrw: Number(newPrice),
+    const ok = await runMutation(() =>
+      fetch('/api/admin/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titleKo: newTitle,
+          instructorTitleKo: newInstructor,
+          priceKrw: Number(newPrice),
+        }),
       }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
+    );
+    if (!ok) return;
     setShowAddModal(false);
     setNewTitle('');
     setNewInstructor('');
     setNewPrice(0);
-    router.refresh();
   };
 
   const openRefund = (order: AdminOrderRow) => {
@@ -183,20 +176,15 @@ export default function DashboardScreen({
 
   const handleRefund = async () => {
     if (!refundTarget) return;
-    setBusy(true);
-    setError(null);
-    const res = await fetch(`/api/admin/orders/${refundTarget.id}/refund`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason: refundReason.trim() || undefined }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError(await readError(res));
-      return;
-    }
+    const ok = await runMutation(() =>
+      fetch(`/api/admin/orders/${refundTarget.id}/refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: refundReason.trim() || undefined }),
+      }),
+    );
+    if (!ok) return;
     setRefundTarget(null);
-    router.refresh();
   };
 
   return (
