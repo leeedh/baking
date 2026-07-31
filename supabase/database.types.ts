@@ -771,6 +771,10 @@ export type Database = {
       }
     }
     Functions: {
+      claim_order_for_confirm: {
+        Args: { p_amount_krw: number; p_order_id: string; p_user_id: string }
+        Returns: Json
+      }
       close_unpaid_order: {
         Args: { p_order_id: string; p_reason?: string; p_status: string }
         Returns: boolean
@@ -789,6 +793,15 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
+      mark_order_paid: {
+        Args: {
+          p_order_id: string
+          p_paid_at?: string
+          p_payment_key: string
+          p_payment_method?: string
+        }
+        Returns: boolean
+      }
       open_pending_order: {
         Args: { p_coupon_code?: string; p_course_id: string; p_user_id: string }
         Returns: Json

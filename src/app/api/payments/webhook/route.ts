@@ -54,10 +54,14 @@ export async function POST(request: Request) {
     if (payment.totalAmount !== order.amount_krw) {
       return problem(400, 'amount-mismatch', 'Amount mismatch');
     }
-    // 'failed'도 완결 대상: confirm이 일시 장애로 failed 마킹했지만
-    // Toss는 승인(DONE)이었던 경우의 복구 경로(승인됐는데 미발급 방지).
-    if (order.status === 'pending' || order.status === 'failed') {
-      await completePaidOrder(admin, order, payment);
+    // 'confirming'(confirm이 선점한 뒤 5xx/타임아웃으로 끊긴 경우)과 'failed'(confirm이
+    // 일시 장애로 마킹했지만 Toss는 승인이었던 경우)도 완결 대상 — 승인됐는데 미발급을 막는다.
+    if (
+      order.status === 'pending' ||
+      order.status === 'confirming' ||
+      order.status === 'failed'
+    ) {
+      await completePaidOrder(admin, order.id, payment);
     }
   } else if (payment.status === 'CANCELED' || payment.status === 'PARTIAL_CANCELED') {
     // 환불 흐름(DC-34/35): 운영자 취소 액션과 동일한 공유 헬퍼로 처리(멱등).

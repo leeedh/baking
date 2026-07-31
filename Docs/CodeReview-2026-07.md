@@ -263,3 +263,29 @@ Toss 샌드박스 결제창은 본인인증 때문에 자동화로 완결할 수
 
 마이그레이션: `20260731013703_pending_order_reuse_and_coupon_release.sql`
 앱: `api/payments/confirm`(2곳)·`api/payments/webhook`(ABORTED/EXPIRED)이 상태를 직접 쓰지 않고 RPC 경유.
+
+### 8-2. 3차 리뷰 후속 (2026-07-31)
+
+8-1의 수정이 남긴 구멍 2건을 다시 잡았다. 둘 다 CONFIRMED.
+
+| ID | 심각도 | 문제 | 처리 |
+|---|---|---|---|
+| P1 | High | pending 주문 재사용이 **금액 변경**을 허용해, confirm이 금액을 검증한 뒤 capture하기 전에 다른 탭이 금액·쿠폰을 바꿀 수 있었다. Toss는 옛 금액을 capture하는데 DB는 새 금액으로 paid가 된다 | capture 직전 **원자적 선점**(`claim_order_for_confirm`) 도입. 행을 잠그고 금액·소유자·수강권을 재확인한 뒤 `confirming`으로 전이 — 선점 성공한 요청만 Toss를 호출한다 |
+| P2 | High | confirm 4xx로 `failed`가 된 주문의 쿠폰 예약이 스윕까지 남았다. `failed`는 열린-주문 유니크 인덱스 대상이 아니라 **잘못된 paymentKey로 반복 시도해 한정 쿠폰 재고를 묶을 수 있었다** | `close_unpaid_order`가 `failed`에서도 예약을 즉시 반환. webhook 복구(failed→paid)에서는 `mark_order_paid`가 재예약 |
+
+**부수 효과**: `confirming` 상태가 생기면서 이중 capture 방어가 앱 조건문이 아니라
+"동시에 하나만 존재하는 상태"로 표현된다(H-1의 최종 방어선). 또 5xx·타임아웃은 주문을
+`confirming`으로 남겨 webhook 완결 경로를 유지하되, 같은 사용자의 재시도는 막는다
+(불확실한 상태에서 두 번째 capture를 시도하지 않는 편이 안전).
+
+**스윕 기간을 24시간 → 7일로 넓혔다**: 가상계좌는 입금까지 며칠이 걸려
+24시간 스윕이 정상 대기 주문을 취소해 버린다. P2 수정으로 failed·canceled가 즉시
+예약을 반환하므로 스윕은 방치분 백스톱으로만 남는다.
+
+마이그레이션: `20260731040045_confirm_claim_and_coupon_release.sql`,
+`20260731040154_expire_sweep_window_7d.sql`
+앱: `api/payments/confirm`(claim 경유), `lib/payments/orders.ts`(`mark_order_paid`),
+`api/payments/webhook`(`confirming`도 완결 대상)
+
+**주문 상태 기계**(이 시점 기준):
+`pending → confirming → paid` / `confirming|pending → failed|canceled` / `paid → refunded`

@@ -16,33 +16,37 @@ export type OrderRow = Tables<'orders'>;
  */
 export async function completePaidOrder(
   admin: AdminClient,
-  order: OrderRow,
+  orderId: string,
   payment: TossPayment,
 ): Promise<{ enrollmentId: string }> {
-  // 1) 주문 → paid 전이. 'failed'도 허용: confirm이 일시 장애로 failed 마킹한 뒤
-  //    Toss가 실제 승인(DONE)이었음이 webhook으로 밝혀지는 복구 경로.
-  //    .select()로 "이 호출이 실제로 전이시켰는지"를 원자적으로 판별한다 —
-  //    confirm/webhook 동시 도착 시 한쪽만 전이자가 된다.
-  const { error: orderError } = await admin
+  // 1) 주문 → paid 전이(mark_order_paid). 주문 행을 잠그고 현재 상태를 기준으로 판정하므로
+  //    호출자가 든 stale 상태로 잘못 전이하지 않는다. 'confirming'(confirm이 선점한 상태)과
+  //    'failed'(confirm이 일시 장애로 마킹했지만 Toss는 승인했던 복구 경로)에서도 전이한다.
+  //    failed에서 되살아나면 반환했던 쿠폰 예약을 RPC가 다시 잡는다.
+  const { data: order, error: fetchError } = await admin
     .from('orders')
-    .update({
-      status: 'paid',
-      payment_key: payment.paymentKey,
-      payment_method: payment.method ?? null,
-      paid_at: payment.approvedAt ?? new Date().toISOString(),
-    })
-    .eq('id', order.id)
-    .in('status', ['pending', 'failed'])
-    .select('id');
-  if (orderError) {
-    throw new Error(`주문 상태 갱신 실패: ${orderError.message}`);
+    .select('id, user_id, course_id')
+    .eq('id', orderId)
+    .single();
+  if (fetchError || !order) {
+    throw new Error(`주문 조회 실패: ${fetchError?.message ?? 'not found'}`);
+  }
+
+  const { error: markError } = await admin.rpc('mark_order_paid', {
+    p_order_id: orderId,
+    p_payment_key: payment.paymentKey,
+    p_payment_method: payment.method ?? undefined,
+    p_paid_at: payment.approvedAt ?? undefined,
+  });
+  if (markError) {
+    throw new Error(`주문 상태 갱신 실패: ${markError.message}`);
   }
 
   // 2) 영구 수강권 멱등 발급 (DB-F-01).
   //    grant_enrollment가 주문을 다시 잠그고 status='paid' + 인자 일치를 강제하므로,
   //    취소·환불된 주문을 든 stale 호출은 여기서 예외로 막힌다(코드리뷰 C-2).
   const { data: enrollmentId, error: grantError } = await admin.rpc('grant_enrollment', {
-    p_order_id: order.id,
+    p_order_id: orderId,
     p_user_id: order.user_id,
     p_course_id: order.course_id,
   });
