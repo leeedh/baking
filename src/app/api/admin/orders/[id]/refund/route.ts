@@ -1,7 +1,7 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
-import { refundOrder } from '@/lib/payments/orders';
+import { refundOrder, totalCanceledAmount } from '@/lib/payments/orders';
 import { cancelTossPayment } from '@/lib/payments/toss';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -87,7 +87,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     const latest = p.cancels?.[p.cancels.length - 1];
     cancelKey = latest?.transactionKey ?? null;
-    cancelAmount = latest?.cancelAmount ?? null;
+    // 마지막 취소 건이 아니라 누적 취소금액을 넘긴다 — refundOrder가 이 값으로
+    // 부분/전액을 판정한다(코드리뷰 H-3).
+    cancelAmount = totalCanceledAmount(p);
   }
 
   await refundOrder(admin, order, { reason, cancelKey, amountKrw: cancelAmount });

@@ -781,10 +781,26 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
+      open_pending_order: {
+        Args: { p_coupon_code?: string; p_course_id: string; p_user_id: string }
+        Returns: Json
+      }
+      refund_order: {
+        Args: {
+          p_cancel_key?: string
+          p_canceled_at?: string
+          p_order_id: string
+          p_reason: string
+          p_total_canceled_krw?: number
+        }
+        Returns: Json
+      }
+      release_coupon: { Args: { p_code: string }; Returns: undefined }
       reorder_lessons: {
         Args: { p_course_id: string; p_ids: string[] }
         Returns: undefined
       }
+      reserve_coupon: { Args: { p_code: string }; Returns: boolean }
       validate_coupon: {
         Args: { p_code: string; p_course_id: string }
         Returns: Json

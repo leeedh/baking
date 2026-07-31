@@ -34,72 +34,51 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
 
-  // 판매 중인 코스의 서버 가격
-  const { data: course } = await admin
-    .from('courses')
-    .select('id, title, price_krw')
-    .eq('id', courseId)
-    .eq('status', 'published')
-    .single();
-  if (!course) {
-    return problem(404, 'course-not-found', 'Course not found', '판매 중인 클래스가 아닙니다.');
+  // 가격 산출·수강권 확인·쿠폰 예약·주문 생성을 하나의 DB 트랜잭션에서 처리한다.
+  // 앱에서 나눠 하던 시절엔 두 탭 동시 결제로 pending 주문이 공존해 이중 청구가 가능했고
+  // (코드리뷰 H-1) 쿠폰 한도도 결제 시점에 보장되지 않았다(H-2).
+  // orders(user_id, course_id) partial unique index가 최종 방어선이다.
+  const { data, error } = await admin.rpc('open_pending_order', {
+    p_user_id: user.id,
+    p_course_id: courseId,
+    p_coupon_code: couponCode,
+  });
+  if (error) {
+    return problem(500, 'order-failed', 'Order creation failed', error.message);
   }
 
-  // 이미 활성 수강권 보유 시 결제 차단 (단건 구매, PRD-F-05)
-  const { data: existing } = await admin
-    .from('enrollments')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('course_id', courseId)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (existing) {
-    return problem(409, 'already-enrolled', 'Already enrolled', '이미 보유 중인 클래스입니다.');
-  }
+  const result = data as {
+    ok: boolean;
+    reason?: string;
+    order_id?: string;
+    amount_krw?: number;
+    course_title?: Record<string, string> | null;
+  } | null;
 
-  // 쿠폰 서버 산출 (표시용 검증과 동일 함수 → 단일 소스)
-  let amount = course.price_krw;
-  let discount = 0;
-  let appliedCoupon: string | null = null;
-  if (couponCode) {
-    const { data: result, error } = await admin.rpc('validate_coupon', {
-      p_code: couponCode,
-      p_course_id: courseId,
-    });
-    const coupon = result as {
-      valid: boolean;
-      code?: string;
-      discount_krw?: number;
-      final_krw?: number;
-    } | null;
-    if (error || !coupon?.valid) {
-      return problem(400, 'invalid-coupon', 'Invalid coupon', '유효하지 않은 쿠폰입니다.');
+  if (!result?.ok) {
+    switch (result?.reason) {
+      case 'course_not_found':
+        return problem(404, 'course-not-found', 'Course not found', '판매 중인 클래스가 아닙니다.');
+      case 'already_enrolled':
+        return problem(409, 'already-enrolled', 'Already enrolled', '이미 보유 중인 클래스입니다.');
+      case 'already_paid':
+        return problem(
+          409,
+          'already-paid',
+          'Order already paid',
+          '이미 결제가 완료된 클래스입니다. 잠시 후 보관함에서 확인해 주세요.',
+        );
+      case 'invalid_coupon':
+        return problem(400, 'invalid-coupon', 'Invalid coupon', '유효하지 않은 쿠폰입니다.');
+      default:
+        return problem(500, 'order-failed', 'Order creation failed', '주문을 생성하지 못했습니다.');
     }
-    amount = coupon.final_krw ?? amount;
-    discount = coupon.discount_krw ?? 0;
-    appliedCoupon = coupon.code ?? null;
   }
 
-  const { data: order, error: orderError } = await admin
-    .from('orders')
-    .insert({
-      user_id: user.id,
-      course_id: courseId,
-      amount_krw: amount,
-      coupon_code: appliedCoupon,
-      discount_krw: discount,
-      status: 'pending',
-    })
-    .select('id, amount_krw')
-    .single();
-  if (orderError || !order) {
-    return problem(500, 'order-failed', 'Order creation failed', orderError?.message);
-  }
-
-  const title = (course.title as Record<string, string>)?.ko ?? 'Atelier Crème 클래스';
+  const title = result.course_title?.ko ?? 'Atelier Crème 클래스';
   return NextResponse.json({
-    orderId: order.id,
-    amount: order.amount_krw,
+    orderId: result.order_id,
+    amount: result.amount_krw,
     orderName: title.slice(0, 100),
     customerEmail: user.email,
   });

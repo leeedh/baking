@@ -1,5 +1,5 @@
 import { problem } from '@/lib/api/problem';
-import { completePaidOrder, refundOrder } from '@/lib/payments/orders';
+import { completePaidOrder, refundOrder, totalCanceledAmount } from '@/lib/payments/orders';
 import { getTossPayment } from '@/lib/payments/toss';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -60,12 +60,13 @@ export async function POST(request: Request) {
     }
   } else if (payment.status === 'CANCELED' || payment.status === 'PARTIAL_CANCELED') {
     // 환불 흐름(DC-34/35): 운영자 취소 액션과 동일한 공유 헬퍼로 처리(멱등).
-    // 결제 후 취소만 'refunded', 미결제 취소는 'canceled'로 전이하고 수강권을 회수한다.
+    // 누적 취소금액을 넘겨 부분 취소와 전액 취소를 구분한다 — 부분 취소는 수강권을
+    // 회수하지 않는다(코드리뷰 H-3). 전액이어야 'refunded'/'canceled'로 전이한다.
     const latestCancel = payment.cancels?.[payment.cancels.length - 1];
     await refundOrder(admin, order, {
       reason: 'PG webhook 취소 통보',
       cancelKey: latestCancel?.transactionKey ?? null,
-      amountKrw: latestCancel?.cancelAmount ?? null,
+      amountKrw: totalCanceledAmount(payment),
     });
   } else if (payment.status === 'ABORTED' || payment.status === 'EXPIRED') {
     await admin
