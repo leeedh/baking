@@ -1,5 +1,9 @@
 # 전체 코드 리뷰 보고서 (2026-07-30)
 
+> **2026-07-31 수정 반영 완료** — Critical 2건, High 6건, 횡단 X-1·X-2·X-3·X-5를 처리했다.
+> 처리 내역은 문서 맨 아래 [§8 수정 반영](#8-수정-반영-2026-07-31) 참조.
+> 남은 항목(M-2~M-13, L-2~L-7, X-4)은 Jira DC 티켓으로 적재한다.
+
 Codex(`gpt-5.3-codex`, 읽기 전용)로 코드베이스 전체를 8개 배치로 나눠 리뷰하고,
 각 findings를 코드로 직접 대조해 **CONFIRMED / PLAUSIBLE / REJECTED**로 판정한 결과다.
 
@@ -206,3 +210,40 @@ fetch가 throw하면 `setBusy(false)`에 도달하지 못해 운영자 화면이
 5. **X-1 · X-2 · X-3** — 횡단 일괄 수정
 6. **X-5** — 위 수정의 회귀 방지 테스트. 이상적으로는 2번보다 **먼저** 최소 테스트 하네스를 세우는 것이 낫다
 7. 나머지 Medium/Low는 Jira DC 티켓으로 적재
+
+---
+
+## 8. 수정 반영 (2026-07-31)
+
+브랜치 `fix/code-review-2026-07`, 커밋 8건. 원격 DB(`sowoo`)에 마이그레이션 3건 적용 완료.
+
+| 항목 | 처리 | 위치 |
+|---|---|---|
+| C-1 | 테이블 UPDATE 권한 회수 + 사용 가능 컬럼만 재부여, `protect_profile_role()` 트리거 | `20260731010206_protect_profile_role.sql` |
+| C-2 | `grant_enrollment`가 주문을 잠그고 `status='paid'` + 인자 일치를 강제 | `20260731010430_payment_invariants_in_db.sql` |
+| H-1 | `orders(user_id, course_id)` partial unique index + `open_pending_order()` 원자화 | 〃 / `api/payments/create-order` |
+| H-2 | 쿠폰 예약을 주문 생성 시점으로 이동(`reserve_coupon`/`release_coupon`), 사후 increment 제거 | 〃 / `lib/payments/orders.ts` |
+| H-3 | `refund_order()`가 누적 취소금액으로 부분/전액 판정 — 부분 취소는 수강권 유지 | 〃 / `lib/payments/policy.ts` |
+| M-1 | `refund_order()`가 `select ... for update` 후 **현재** 상태로 전이 | 〃 |
+| H-4 | `lessons_select_guarded`의 preview 분기에 `courses.status='published'` 조건 추가 | `20260731010256_...sql` |
+| H-5 | `LoginScreen` 초기값을 빈 문자열로 | `components/LoginScreen.tsx` |
+| H-6 | 계정·후기 시드를 `supabase/seed.local.sql`로 분리 | `supabase/seed*.sql` |
+| X-1 · L-1 | admin 라우트 7개에 `assertSameOrigin` 추가, origin 비교에 scheme 포함 | `api/admin/**`, `lib/api/origin.ts` |
+| X-2 · L-8 | `unwrap()` 도입해 조회 실패를 throw로 표면화 | `lib/supabase/query.ts` 외 5개 모듈 |
+| X-3 | `runMutation()` 공통 실행기로 try/catch/finally 통일 | `DashboardScreen`·`LessonManager` |
+| X-5 | Vitest 하네스 + 순수 판정 테스트 19개 | `vitest.config.ts`, `*.test.ts` |
+
+### 검증 결과
+- `pnpm typecheck` · `pnpm test`(19 passed) · `pnpm build` 통과
+- 원격 DB 확인: 유니크 인덱스 1, role 트리거 1, **anon/authenticated의 `profiles.role` UPDATE 권한 0**,
+  신규 함수 4개, preview 정책에 course status 조건 반영
+- 프로덕션 서버 스모크: `/ko`·`/ko/classes`·`/ko/about`·`/ko/books`·`/en/classes`·`/ko/inquiries`·`/ko/login` 200,
+  없는 클래스 slug는 **HTTP 404 유지**(loading.tsx 라우트 그룹 규약 정상)
+- admin 라우트 5종에 잘못된 `Origin`으로 POST → 전부 **403**, 로그인 없이 same-origin POST → **401**
+- 로그인 페이지 HTML에 시드 자격증명 문자열 없음
+
+### 남은 검증(사람 필요)
+Toss 샌드박스 결제창은 본인인증 때문에 자동화로 완결할 수 없다. 아래는 수동 확인이 필요하다.
+1. 실제 결제 1건 완주 → 수강권 발급, 같은 강좌 재결제 시도 시 `already_paid`/`already_enrolled` 응답
+2. 쿠폰 결제 후 주문 취소 → `coupons.redeemed_count` 원복
+3. 운영자 전액 환불 → 주문 `refunded`, 수강권 회수, 재생·자료 접근 차단
