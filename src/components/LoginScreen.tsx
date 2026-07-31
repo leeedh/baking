@@ -29,9 +29,11 @@ export default function LoginScreen() {
     return createClient();
   }, []);
   const [isLoginTab, setIsLoginTab] = useState(true);
-  const [email, setEmail] = useState('admin@ateliercreme.com');
-  const [password, setPassword] = useState('password123');
-  const [name, setName] = useState('김베이커');
+  // 개발 편의용 프리필은 두지 않는다 — 시드 관리자 계정이 배포 화면에 그대로
+  // 노출돼 누구나 엔터만 치면 로그인이 시도되는 상태였다(코드리뷰 H-5).
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
