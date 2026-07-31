@@ -70,11 +70,12 @@ export async function POST(request: Request) {
       amountKrw: totalCanceledAmount(payment),
     });
   } else if (payment.status === 'ABORTED' || payment.status === 'EXPIRED') {
-    await admin
-      .from('orders')
-      .update({ status: 'failed' })
-      .eq('id', order.id)
-      .eq('status', 'pending');
+    // 결제창 이탈·만료 — 다시 살아날 여지가 없으므로 취소로 확정하고 쿠폰 재고를 반환한다.
+    await admin.rpc('close_unpaid_order', {
+      p_order_id: order.id,
+      p_status: 'canceled',
+      p_reason: `PG ${payment.status}`,
+    });
   } else {
     // READY/IN_PROGRESS/WAITING_FOR_DEPOSIT 등 중간 상태는 조치 없음.
     // 다만 조용히 넘기지 않고 기록한다 — 여기서 침묵하면 Toss가 성공으로 간주해

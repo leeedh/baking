@@ -247,3 +247,19 @@ Toss 샌드박스 결제창은 본인인증 때문에 자동화로 완결할 수
 1. 실제 결제 1건 완주 → 수강권 발급, 같은 강좌 재결제 시도 시 `already_paid`/`already_enrolled` 응답
 2. 쿠폰 결제 후 주문 취소 → `coupons.redeemed_count` 원복
 3. 운영자 전액 환불 → 주문 `refunded`, 수강권 회수, 재생·자료 접근 차단
+
+### 8-1. 2차 리뷰 후속 (Codex `/codex:review`, 2026-07-31)
+
+수정분을 다시 리뷰해 **내 수정이 만든 회귀 2건**을 잡았다. 둘 다 코드로 확인해 CONFIRMED.
+
+| ID | 심각도 | 문제 | 처리 |
+|---|---|---|---|
+| P1 | Critical | `open_pending_order`가 기존 pending 주문을 **취소**해, 결제창이 이미 열린 주문이 무효화될 수 있었다. Toss는 capture하는데 DB는 `canceled` → 전이 가드와 강화된 `grant_enrollment`에 모두 막혀 **청구됐는데 수강권이 없는 상태**가 된다 | 취소 대신 **같은 행을 재사용**(금액·쿠폰만 갱신). 진행 중 confirm의 orderId가 유효하게 남고, 금액이 바뀐 경우 confirm이 **capture 전에** 금액 불일치(400)로 거절 |
+| P2 | High | 쿠폰 예약을 주문 생성 시점으로 옮기면서, 결제까지 가지 않은 주문의 예약이 영구히 남았다(해제 경로가 '대체'·'전액 환불'뿐). 한정 쿠폰이면 결제창만 열고 이탈해도 재고가 고갈된다 | `close_unpaid_order()`가 확정적 미결제 종료에서 예약을 반환하고, `expire_stale_pending_orders()`(24h)가 방치분을 회수. 주문 생성 시 기회적으로 호출 |
+
+`failed`는 webhook 복구 경로가 있어 예약을 즉시 반환하지 않고 만료 스윕(24시간)에 맡긴다 —
+복구는 수분 내에 일어나므로 안전하고, 누수는 영구가 아니라 최대 24시간으로 한정된다.
+스윕 기준을 24시간으로 크게 잡은 것도 P1과 같은 사고(진행 중 결제를 잘못 만료)를 막기 위해서다.
+
+마이그레이션: `20260731013703_pending_order_reuse_and_coupon_release.sql`
+앱: `api/payments/confirm`(2곳)·`api/payments/webhook`(ABORTED/EXPIRED)이 상태를 직접 쓰지 않고 RPC 경유.

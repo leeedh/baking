@@ -70,11 +70,12 @@ export async function POST(request: Request) {
     .eq('status', 'active')
     .maybeSingle();
   if (existingEnrollment) {
-    await admin
-      .from('orders')
-      .update({ status: 'canceled' })
-      .eq('id', orderId)
-      .eq('status', 'pending');
+    // 확정적 미결제 종료 — 예약해 둔 쿠폰 재고를 함께 반환한다.
+    await admin.rpc('close_unpaid_order', {
+      p_order_id: orderId,
+      p_status: 'canceled',
+      p_reason: '이미 보유 중인 클래스',
+    });
     return problem(
       409,
       'already-enrolled',
@@ -88,11 +89,13 @@ export async function POST(request: Request) {
     // 확정적 거절(4xx)만 failed 마킹. 5xx/타임아웃은 Toss가 실제로 승인했을 수도 있으므로
     // pending을 유지해 webhook(DONE) 완결·재시도 경로를 열어 둔다(승인됐는데 미발급 방지).
     if (shouldMarkOrderFailed(result.status)) {
-      await admin
-        .from('orders')
-        .update({ status: 'failed' })
-        .eq('id', orderId)
-        .eq('status', 'pending');
+      // failed는 webhook 복구 여지가 있어 쿠폰 예약을 즉시 반환하지 않는다
+      // (미결제로 확정되면 expire_stale_pending_orders가 회수).
+      await admin.rpc('close_unpaid_order', {
+        p_order_id: orderId,
+        p_status: 'failed',
+        p_reason: result.error.code,
+      });
     }
     console.error(`[toss-confirm-failed] ${result.error.code}: ${result.error.message}`);
     return problem(

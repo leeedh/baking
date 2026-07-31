@@ -771,6 +771,14 @@ export type Database = {
       }
     }
     Functions: {
+      close_unpaid_order: {
+        Args: { p_order_id: string; p_reason?: string; p_status: string }
+        Returns: boolean
+      }
+      expire_stale_pending_orders: {
+        Args: { p_max_age?: string }
+        Returns: number
+      }
       grant_enrollment: {
         Args: { p_course_id: string; p_order_id: string; p_user_id: string }
         Returns: string
