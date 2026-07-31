@@ -1,11 +1,14 @@
 import 'server-only';
 
+import { unwrap } from '@/lib/supabase/query';
 import { createClient } from '@/lib/supabase/server';
 import type { InquiryRow } from '@/types';
 
 // DC-97 (PRD-F-21) · 문의 조회는 라우트 없이 RSC에서 쿠키 클라이언트로 직접 읽는다(TS-API-07).
-// RLS `inquiries_select_own`이 "작성자 본인 OR 운영자"로 행을 가르므로 여기서 필터를 중복하지
-// 않는다 — 같은 쿼리가 작성자에겐 본인 문의만, 운영자에겐 전체를 돌려준다.
+// RLS `inquiries_select_own`이 "작성자 본인 OR 운영자"로 행을 가른다 — 운영자 큐
+// (getAdminInquiries)는 그 위임에 그대로 기대고 앱에서 필터를 중복하지 않는다.
+// 본인 목록(getMyInquiries)만 명시적으로 user_id를 건다: 운영자가 이 함수를 호출해도
+// "내 문의"를 뜻해야 하기 때문이다(용도가 다른 두 함수로 분리해 둔 이유).
 
 const COLUMNS = 'id, category, subject, body, status, answer_body, answered_at, created_at';
 
@@ -37,11 +40,14 @@ function toInquiry(row: Row, authorLabel: string | null = null): InquiryRow {
 /** 로그인 사용자 본인의 문의 목록(최신순). RLS가 소유 행만 돌려준다. */
 export async function getMyInquiries(userId: string): Promise<InquiryRow[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('inquiries')
-    .select(COLUMNS)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  const data = unwrap(
+    await supabase
+      .from('inquiries')
+      .select(COLUMNS)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }),
+    '내 문의',
+  );
   return ((data ?? []) as Row[]).map((row) => toInquiry(row));
 }
 
@@ -51,10 +57,13 @@ export async function getMyInquiries(userId: string): Promise<InquiryRow[]> {
  */
 export async function getAdminInquiries(): Promise<InquiryRow[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('inquiries')
-    .select(`${COLUMNS}, profiles!inquiries_user_id_fkey(display_name)`)
-    .order('created_at', { ascending: false });
+  const data = unwrap(
+    await supabase
+      .from('inquiries')
+      .select(`${COLUMNS}, profiles!inquiries_user_id_fkey(display_name)`)
+      .order('created_at', { ascending: false }),
+    '문의 목록',
+  );
 
   const rows = (data ?? []) as (Row & { profiles: { display_name: string | null } | null })[];
   const statusRank = { open: 0, answered: 1, closed: 2 } as const;

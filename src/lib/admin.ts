@@ -3,6 +3,7 @@ import 'server-only';
 import { pickLocale } from '@/lib/i18n-json';
 import { getAdminInquiries } from '@/lib/inquiries';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { unwrap } from '@/lib/supabase/query';
 import { createClient } from '@/lib/supabase/server';
 import type {
   AdminClassRow,
@@ -60,10 +61,13 @@ function toClassRow(row: StatsRow, locale: string): AdminClassRow {
  */
 export async function getAdminDashboard(locale: string): Promise<AdminDashboard> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('admin_course_stats')
-    .select(STATS_COLUMNS)
-    .order('gross_krw', { ascending: false });
+  const data = unwrap(
+    await supabase
+      .from('admin_course_stats')
+      .select(STATS_COLUMNS)
+      .order('gross_krw', { ascending: false }),
+    '운영 통계',
+  );
 
   const classes = ((data ?? []) as StatsRow[]).map((row) => toClassRow(row, locale));
 
@@ -92,7 +96,7 @@ export async function getAdminDashboard(locale: string): Promise<AdminDashboard>
  */
 export async function getRecentOrders(locale: string, limit = 50): Promise<AdminOrderRow[]> {
   const admin = createAdminClient();
-  const { data } = await admin
+  const ordersResult = await admin
     .from('orders')
     .select(
       'id, user_id, amount_krw, status, paid_at, canceled_at, created_at, profiles(display_name), courses(title)',
@@ -101,7 +105,7 @@ export async function getRecentOrders(locale: string, limit = 50): Promise<Admin
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  return ((data ?? []) as unknown as OrderJoinRow[]).map((row) => ({
+  return ((unwrap(ordersResult, '주문 목록') ?? []) as unknown as OrderJoinRow[]).map((row) => ({
     id: row.id,
     // profiles에 이메일이 없어(auth.users 소재) display_name 우선, 없으면 user_id 앞자리로 식별.
     buyer: row.profiles?.display_name ?? `${row.user_id.slice(0, 8)}…`,
@@ -141,11 +145,10 @@ function pickRaw(value: unknown, key: 'ko' | 'en'): string {
 export async function getCourseLessons(courseId: string): Promise<AdminCourseLessons | null> {
   const admin = createAdminClient();
 
-  const { data: course } = await admin
-    .from('courses')
-    .select('id, title')
-    .eq('id', courseId)
-    .maybeSingle();
+  const course = unwrap(
+    await admin.from('courses').select('id, title').eq('id', courseId).maybeSingle(),
+    '클래스',
+  );
   if (!course) return null;
 
   const [{ data }, { data: materialRows }] = await Promise.all([

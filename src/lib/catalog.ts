@@ -2,6 +2,7 @@ import 'server-only';
 
 import { pickLocale } from '@/lib/i18n-json';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { unwrap } from '@/lib/supabase/query';
 import { createClient, getUser } from '@/lib/supabase/server';
 import type { ClassItem, CourseDetail, DetailChapter, ReviewItem } from '@/types';
 
@@ -88,10 +89,12 @@ function toClassItem(row: CatalogRow, locale: string): ClassItem {
  */
 export async function getCatalog(locale: string): Promise<ClassItem[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('course_catalog')
-    .select(CATALOG_COLUMNS)
-    .order('created_at', { ascending: true });
+  const data = unwrap(
+    await supabase.from('course_catalog').select(CATALOG_COLUMNS).order('created_at', {
+      ascending: true,
+    }),
+    '클래스 카탈로그',
+  );
   return ((data ?? []) as CatalogRow[]).map((row) => toClassItem(row, locale));
 }
 
@@ -105,11 +108,10 @@ export async function getCourseSummary(
   locale: string,
 ): Promise<{ course: ClassItem; courseId: string } | null> {
   const supabase = await createClient();
-  const { data: row } = await supabase
-    .from('course_catalog')
-    .select(CATALOG_COLUMNS)
-    .eq('slug', slug)
-    .maybeSingle();
+  const row = unwrap(
+    await supabase.from('course_catalog').select(CATALOG_COLUMNS).eq('slug', slug).maybeSingle(),
+    '클래스 상세',
+  );
   if (!row) return null;
 
   const courseId = (row as CatalogRow).id;
@@ -135,11 +137,14 @@ export async function getEnrolledCourses(locale: string): Promise<EnrolledCourse
   if (!user) return [];
 
   // RLS(enrollments): 본인 행만 조회된다.
-  const { data: enrollments } = await supabase
-    .from('enrollments')
-    .select('course_id')
-    .eq('user_id', user.id)
-    .eq('status', 'active');
+  const enrollments = unwrap(
+    await supabase
+      .from('enrollments')
+      .select('course_id')
+      .eq('user_id', user.id)
+      .eq('status', 'active'),
+    '수강권',
+  );
   const courseIds = (enrollments ?? [])
     .map((e) => e.course_id)
     .filter((id): id is string => !!id);
@@ -256,10 +261,13 @@ export async function getCourseDetail(slug: string, locale: string): Promise<Cou
       : Promise.resolve({ data: null }),
   ]);
 
-  const chapters = buildDetailChapters((lessonsRes.data ?? []) as DetailLessonRow[], locale);
+  const chapters = buildDetailChapters(
+    (unwrap(lessonsRes, '차시 목록') ?? []) as DetailLessonRow[],
+    locale,
+  );
 
   const reviews: ReviewItem[] = (
-    (reviewsRes.data ?? []) as unknown as Array<{
+    (unwrap(reviewsRes, '후기') ?? []) as unknown as Array<{
       id: string;
       rating: number;
       content: string | null;

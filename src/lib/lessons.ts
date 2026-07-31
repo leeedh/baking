@@ -4,6 +4,7 @@ import { pickLocale } from '@/lib/i18n-json';
 import { maskEmail } from '@/lib/mask';
 import { type MaterialItem, getMaterialsByLesson } from '@/lib/materials';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { unwrap } from '@/lib/supabase/query';
 import { createClient } from '@/lib/supabase/server';
 
 /** lessons 행(민감 필드 포함)을 챕터별 PlayerLesson으로 매핑(mux_playback_id는 boolean으로만 노출). */
@@ -98,7 +99,10 @@ export async function getLearnPageData(slug: string, locale: string): Promise<Le
   } = await supabase.auth.getUser();
   const watermarkLabel = user?.email ? maskEmail(user.email) : '';
 
-  const { data: course } = await admin.from('courses').select('id').eq('slug', slug).maybeSingle();
+  const course = unwrap(
+    await admin.from('courses').select('id').eq('slug', slug).maybeSingle(),
+    '클래스',
+  );
   if (!course) {
     return { purchased: false, chapters: [], progress: {}, watermarkLabel, materials: {} };
   }
@@ -132,10 +136,10 @@ export async function getLearnPageData(slug: string, locale: string): Promise<Le
     user ? supabase.rpc('is_admin') : Promise.resolve({ data: false }),
   ]);
 
-  const chapters = buildChapters((lessonsRes.data ?? []) as LessonRow[], locale);
+  const chapters = buildChapters((unwrap(lessonsRes, '차시 목록') ?? []) as LessonRow[], locale);
 
   const progress: Record<string, LessonProgress> = {};
-  for (const row of (progressRes.data ?? []) as unknown as Array<{
+  for (const row of (unwrap(progressRes, '진도') ?? []) as unknown as Array<{
     lesson_id?: string;
     watched_sec: number;
     completed: boolean;
@@ -146,7 +150,8 @@ export async function getLearnPageData(slug: string, locale: string): Promise<Le
   }
 
   // 자료 목록은 수강권 보유자(+운영자)에게만 내려보낸다(다운로드 API가 다시 검증하는 이중 방어).
-  const purchased = !!enrollmentRes.data;
+  // 수강권 조회 실패를 삼키면 구매자에게 미구매 화면이 나가므로 여기서 터뜨린다(X-2).
+  const purchased = !!unwrap(enrollmentRes, '수강권');
   const canSeeMaterials = purchased || !!isAdminRes.data;
   const materials = canSeeMaterials ? await getMaterialsByLesson(courseId, locale) : {};
 

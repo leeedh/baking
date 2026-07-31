@@ -2,6 +2,7 @@ import 'server-only';
 
 import { pickLocale } from '@/lib/i18n-json';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { unwrap } from '@/lib/supabase/query';
 
 /** 학습 페이지에 내려보내는 자료 메타 — storage_path는 절대 노출하지 않는다. */
 export interface MaterialItem {
@@ -24,11 +25,14 @@ export async function getMaterialsByLesson(
   locale: string,
 ): Promise<Record<string, MaterialItem[]>> {
   const admin = createAdminClient();
-  const { data } = await admin
-    .from('materials')
-    .select('id, lesson_id, title, size_bytes, lessons!inner(course_id)')
-    .eq('lessons.course_id', courseId)
-    .order('created_at', { ascending: true });
+  const data = unwrap(
+    await admin
+      .from('materials')
+      .select('id, lesson_id, title, size_bytes, lessons!inner(course_id)')
+      .eq('lessons.course_id', courseId)
+      .order('created_at', { ascending: true }),
+    '수업 자료',
+  );
 
   const byLesson: Record<string, MaterialItem[]> = {};
   for (const row of (data ?? []) as unknown as Array<{
