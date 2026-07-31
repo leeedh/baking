@@ -19,15 +19,24 @@ export function assertSameOrigin(request: Request): Response | null {
 
   // 프록시(Vercel) 뒤에서는 request.url의 호스트가 내부 주소일 수 있어 헤더를 우선한다.
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+  if (!host) {
+    return problem(403, 'cross-origin', 'Cross-origin request', '허용되지 않은 요청 출처입니다.');
+  }
 
-  let originHost: string;
+  // scheme까지 비교한다 — host만 보면 https 서비스에 대한 http Origin이 통과한다.
+  // 프록시 뒤에서는 x-forwarded-proto가 실제 스킴이고, 없으면 request.url에서 얻는다.
+  const proto =
+    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ??
+    new URL(request.url).protocol.replace(':', '');
+
+  let requestOrigin: URL;
   try {
-    originHost = new URL(origin).host;
+    requestOrigin = new URL(origin);
   } catch {
     return problem(403, 'cross-origin', 'Cross-origin request', '잘못된 요청 출처입니다.');
   }
 
-  if (!host || originHost !== host) {
+  if (requestOrigin.host !== host || requestOrigin.protocol.replace(':', '') !== proto) {
     return problem(403, 'cross-origin', 'Cross-origin request', '허용되지 않은 요청 출처입니다.');
   }
   return null;

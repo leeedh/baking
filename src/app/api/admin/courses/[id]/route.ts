@@ -1,3 +1,4 @@
+import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -15,6 +16,10 @@ const BodySchema = z
   .refine((v) => Object.keys(v).length > 0, { message: '수정할 필드가 없습니다.' });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  // /api는 미들웨어 밖이라 Route Handler가 스스로 막아야 한다(TS-SEC CSRF).
+  const crossOrigin = assertSameOrigin(request);
+  if (crossOrigin) return crossOrigin;
+
   const denied = await requireAdmin();
   if (denied) return denied;
 

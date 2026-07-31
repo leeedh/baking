@@ -1,3 +1,4 @@
+import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createDirectUpload } from '@/lib/mux/client';
@@ -9,6 +10,10 @@ import { z } from 'zod';
 const BodySchema = z.object({ lessonId: z.guid() });
 
 export async function POST(request: Request) {
+  // /api는 미들웨어 밖이라 Route Handler가 스스로 막아야 한다(TS-SEC CSRF).
+  const crossOrigin = assertSameOrigin(request);
+  if (crossOrigin) return crossOrigin;
+
   const denied = await requireAdmin();
   if (denied) return denied;
 
