@@ -1,5 +1,6 @@
 import { problem } from '@/lib/api/problem';
-import { completePaidOrder, refundOrder, totalCanceledAmount } from '@/lib/payments/orders';
+import { completePaidOrder, refundOrder } from '@/lib/payments/orders';
+import { totalCanceledAmount } from '@/lib/payments/policy';
 import { getTossPayment } from '@/lib/payments/toss';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';

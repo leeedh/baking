@@ -1,6 +1,7 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { completePaidOrder } from '@/lib/payments/orders';
+import { shouldMarkOrderFailed } from '@/lib/payments/policy';
 import { confirmTossPayment } from '@/lib/payments/toss';
 import { getTossFailureMessage } from '@/lib/payments/toss-error-messages';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
   if (!result.ok) {
     // 확정적 거절(4xx)만 failed 마킹. 5xx/타임아웃은 Toss가 실제로 승인했을 수도 있으므로
     // pending을 유지해 webhook(DONE) 완결·재시도 경로를 열어 둔다(승인됐는데 미발급 방지).
-    if (result.status >= 400 && result.status < 500) {
+    if (shouldMarkOrderFailed(result.status)) {
       await admin
         .from('orders')
         .update({ status: 'failed' })
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     }
     console.error(`[toss-confirm-failed] ${result.error.code}: ${result.error.message}`);
     return problem(
-      result.status >= 400 && result.status < 500 ? 400 : 502,
+      shouldMarkOrderFailed(result.status) ? 400 : 502,
       'toss-confirm-failed',
       'Payment confirmation failed',
       getTossFailureMessage(result.error.code, result.error.message),

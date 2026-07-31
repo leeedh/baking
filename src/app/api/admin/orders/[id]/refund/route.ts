@@ -1,7 +1,8 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
-import { refundOrder, totalCanceledAmount } from '@/lib/payments/orders';
+import { refundOrder } from '@/lib/payments/orders';
+import { totalCanceledAmount } from '@/lib/payments/policy';
 import { cancelTossPayment } from '@/lib/payments/toss';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';

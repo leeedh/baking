@@ -8,17 +8,6 @@ type AdminClient = ReturnType<typeof createAdminClient>;
 export type OrderRow = Tables<'orders'>;
 
 /**
- * PG 기준 누적 취소금액. Toss는 부분 취소를 반복하면 cancels 배열에 항목을 쌓으므로
- * 마지막 항목이 아니라 합계가 "지금까지 취소된 총액"이다(코드리뷰 H-3).
- * 취소 내역이 없으면 null → 호출부/RPC가 전액 취소로 간주한다.
- */
-export function totalCanceledAmount(payment: TossPayment): number | null {
-  const cancels = payment.cancels;
-  if (!cancels || cancels.length === 0) return null;
-  return cancels.reduce((sum, c) => sum + (c.cancelAmount ?? 0), 0);
-}
-
-/**
  * 승인 완료된 결제를 주문에 반영하고 수강권을 발급한다(멱등).
  * confirm 핸들러와 webhook이 공유 — 어느 쪽이 먼저 와도 결과는 동일하다.
  *
