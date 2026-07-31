@@ -289,3 +289,23 @@ Toss 샌드박스 결제창은 본인인증 때문에 자동화로 완결할 수
 
 **주문 상태 기계**(이 시점 기준):
 `pending → confirming → paid` / `confirming|pending → failed|canceled` / `paid → refunded`
+
+### 8-3. 4차 리뷰 후속 (2026-07-31)
+
+8-2에서 `confirming` 상태를 도입하면서 **유니크 인덱스 술어와 주문 생성 경로에는 반영하지
+않은** 불일치가 남아 있었다. CONFIRMED.
+
+| ID | 심각도 | 문제 | 처리 |
+|---|---|---|---|
+| P1 | Critical | 인덱스가 `(pending, paid)`만 덮고 `open_pending_order`도 `pending`만 찾아, 승인 진행 중(`confirming`)인데도 두 번째 pending 주문이 생성될 수 있었다. 첫 결제가 capture되면 `confirming → paid` 전이가 유니크 인덱스에 걸려 실패 → **청구됐는데 수강권 없음** | 인덱스 술어를 `('pending','confirming','paid')`로 확장하고, `open_pending_order`가 `confirming` 주문을 발견하면 `confirm_in_progress`로 거절(재사용·신규 생성 모두 금지) |
+
+`claim_order_for_confirm`의 `already_in_progress` 체크는 두 번째 주문의 **capture**만 막지
+**생성**은 막지 못한다는 것이 핵심이었다. 이제 "같은 (사용자, 강좌)에 살아 있는 주문은
+최대 1건"이 상태 전이 전 구간에서 인덱스로 보장된다.
+
+승인 진행 중 주문은 **절대 건드리지 않는다**: 금액을 바꾸면 8-2의 P1(capture 금액과 DB
+금액 불일치)이 되살아나고, 새로 만들면 위 인덱스 충돌이 난다. 잠금 사이 선점을 대비해
+갱신에 `and status = 'pending'` 가드를 두고 0행이면 물러난다.
+
+마이그레이션: `20260731043547_confirming_counts_as_open_order.sql`
+앱: `api/payments/create-order` — `confirm_in_progress` → 409 안내

@@ -68,6 +68,15 @@ export async function POST(request: Request) {
           'Order already paid',
           '이미 결제가 완료된 클래스입니다. 잠시 후 보관함에서 확인해 주세요.',
         );
+      case 'confirm_in_progress':
+        // 승인 진행 중인 주문은 건드리지 않는다 — 금액을 바꾸거나 새 주문을 만들면
+        // capture 결과와 DB가 어긋난다.
+        return problem(
+          409,
+          'confirm-in-progress',
+          'Confirmation in progress',
+          '이 클래스의 결제 승인이 진행 중입니다. 잠시 후 보관함에서 확인해 주세요.',
+        );
       case 'invalid_coupon':
         return problem(400, 'invalid-coupon', 'Invalid coupon', '유효하지 않은 쿠폰입니다.');
       default:
