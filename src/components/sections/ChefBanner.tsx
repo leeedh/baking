@@ -6,14 +6,20 @@ import { ChevronRight } from 'lucide-react';
 // DC-96 · 셰프 배너. 홈 게이트웨이에서 소개(/about)·도서(/books)로 보내는 진입점.
 export default function ChefBanner() {
   return (
-    <section className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/60">
+    <section
+      aria-labelledby="chef-heading"
+      className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/60"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left: Chef Narrative Intro */}
         <div className="lg:col-span-7 space-y-6">
           <span className="text-[10px] font-bold text-gold tracking-widest uppercase block">
             The Mastermind & Owner
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brown leading-tight break-keep">
+          <h2
+            id="chef-heading"
+            className="font-serif text-3xl sm:text-4xl font-bold text-brown leading-tight break-keep"
+          >
             Atelier Crème을 이끄는 1인 아티장 파티시에,{' '}
             <span className="font-serif text-terracotta italic">민소희</span> 입니다.
           </h2>

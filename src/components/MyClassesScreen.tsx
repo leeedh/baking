@@ -21,7 +21,8 @@ interface MyClassesScreenProps {
 
 export default function MyClassesScreen({ courses: purchasedClasses }: MyClassesScreenProps) {
   const router = useRouter();
-  const onNavigateToCatalog = () => router.push('/');
+  // 목록 본체는 /classes다 — 홈은 브랜드 게이트웨이라 그리드가 없다(DC-96, 코드리뷰 M-9).
+  const onNavigateToCatalog = () => router.push('/classes');
   const onResumeClass = (classId: string) => router.push(`/learn/${classId}`);
   return (
     <div

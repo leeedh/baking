@@ -21,7 +21,15 @@ const Bar = ({ className }: { className: string }) => (
  */
 export default function PageSkeleton({ variant = 'grid' }: PageSkeletonProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 animate-pulse" aria-hidden>
+    // 예전에는 래퍼가 aria-hidden이라 "로딩 중"이라는 사실 자체가 보조기술에 전달되지 않았다
+    // (코드리뷰 L-5). 이제 래퍼가 상태를 알리고, 의미 없는 회색 막대만 숨긴다.
+    // <output>은 role="status"의 시맨틱 요소다(div+role보다 이쪽을 쓰라는 a11y 규칙).
+    <output
+      aria-busy="true"
+      className="block max-w-7xl mx-auto px-4 sm:px-8 py-10 animate-pulse"
+    >
+      <span className="sr-only">불러오는 중</span>
+      <div aria-hidden>
       {/* 상단 히어로/제목 영역 — 모든 변형이 공유한다 */}
       <Bar className="h-8 w-2/3 sm:w-1/3" />
       <Bar className="mt-3 h-4 w-1/2 bg-brown-light/70" />
@@ -108,6 +116,7 @@ export default function PageSkeleton({ variant = 'grid' }: PageSkeletonProps) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </output>
   );
 }

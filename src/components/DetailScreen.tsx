@@ -52,7 +52,8 @@ export default function DetailScreen({
   const router = useRouter();
   const { isLoggedIn } = useAuth();
 
-  const onNavigateToCatalog = () => router.push('/');
+  // 목록 본체는 /classes다 — 홈은 브랜드 게이트웨이라 그리드가 없다(DC-96, 코드리뷰 M-9).
+  const onNavigateToCatalog = () => router.push('/classes');
   const onNavigateToPayment = (id: string) => {
     if (!isLoggedIn) {
       alert('결제 및 수강 지정을 완료하려면 먼저 로그인을 완료해 주셔야 합니다.');
