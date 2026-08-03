@@ -61,14 +61,15 @@ export async function getAdminInquiries(): Promise<InquiryRow[]> {
     await supabase
       .from('inquiries')
       .select(`${COLUMNS}, profiles!inquiries_user_id_fkey(display_name)`)
-      .order('created_at', { ascending: false }),
+      // 정렬을 JS에서 SQL로 옮겼다(코드리뷰 M-13). inquiry_status enum이
+      // ('open','answered','closed') 순으로 선언돼 있어 enum 오름차순이 곧 원하는 우선순위다.
+      .order('status', { ascending: true })
+      .order('created_at', { ascending: false })
+      // 무한 증가 방지용 상한 — 미답변이 항상 앞에 오므로 운영자가 놓치는 문의는 없다.
+      .limit(200),
     '문의 목록',
   );
 
   const rows = (data ?? []) as (Row & { profiles: { display_name: string | null } | null })[];
-  const statusRank = { open: 0, answered: 1, closed: 2 } as const;
-
-  return rows
-    .map((row) => toInquiry(row, row.profiles?.display_name ?? '수강생'))
-    .sort((a, b) => statusRank[a.status] - statusRank[b.status]);
+  return rows.map((row) => toInquiry(row, row.profiles?.display_name ?? '수강생'));
 }

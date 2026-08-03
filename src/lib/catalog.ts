@@ -150,7 +150,7 @@ export async function getEnrolledCourses(locale: string): Promise<EnrolledCourse
     .filter((id): id is string => !!id);
   if (courseIds.length === 0) return [];
 
-  const [{ data: rows }, { data: completedRows }] = await Promise.all([
+  const [rowsRes, completedRes] = await Promise.all([
     supabase
       .from('course_catalog')
       .select(CATALOG_COLUMNS)
@@ -160,8 +160,14 @@ export async function getEnrolledCourses(locale: string): Promise<EnrolledCourse
       .from('progress')
       .select('lessons!inner(course_id)')
       .eq('user_id', user.id)
-      .eq('completed', true),
+      .eq('completed', true)
+      // 수강 중인 코스로 범위를 좁힌다 — 예전엔 전량을 받아 대부분 버렸다(코드리뷰 L-3).
+      .in('lessons.course_id', courseIds),
   ]);
+
+  // 조회 실패를 '데이터 없음'으로 삼키지 않는다(코드리뷰 X-2) — 이 함수의 마지막 미적용 지점이었다.
+  const rows = unwrap(rowsRes, '내 클래스');
+  const completedRows = unwrap(completedRes, '완료 진도');
 
   const completedByCourse = new Map<string, number>();
   for (const p of completedRows ?? []) {
@@ -246,7 +252,10 @@ export async function getCourseDetail(slug: string, locale: string): Promise<Cou
       .from('reviews')
       .select('id, rating, content, created_at, profiles(display_name, avatar_url)')
       .eq('course_id', courseId)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      // 무한 증가 방지용 상한 — UI 페이지네이션이 아니라 응답 크기 백스톱이다(코드리뷰 M-13).
+      // 평균 평점·후기 수는 course_catalog 뷰가 집계하므로 이 상한에 영향받지 않는다.
+      .limit(50),
     // 후기 작성 자격 = 활성 수강권(환불 시 자동으로 false). RLS insert 정책과 동일한 판정식.
     user
       ? supabase.rpc('has_course_access', { p_course_id: courseId })
