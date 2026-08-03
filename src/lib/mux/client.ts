@@ -65,9 +65,19 @@ export async function getUploadResult(
     return { state: 'preparing', assetId: upload.asset_id, playbackId: null };
   }
 
+  // signed 정책 ID만 받는다(코드리뷰 M-5). 예전엔 없으면 첫 playback ID로 폴백했는데,
+  // public ID가 저장되면 서명 JWT 없이 재생 가능한 차시가 조용히 생겨 재생 토큰 라우트의
+  // 이중 방어가 통째로 무의미해진다. 업로드를 playback_policy:['signed']로 만들므로
+  // 정상 경로에선 항상 존재한다 — 없다면 비정상이므로 fail-closed로 errored 처리한다
+  // ('ready' + playbackId:null로 두면 폴링만 멈추고 운영자에게 신호가 남지 않는다).
   const signed = asset.playback_ids?.find((p) => p.policy === 'signed');
-  const playbackId = signed?.id ?? asset.playback_ids?.[0]?.id ?? null;
-  return { state: 'ready', assetId: upload.asset_id, playbackId };
+  if (!signed) {
+    console.error(
+      `[mux] asset ${upload.asset_id} is ready but has no signed playback ID — 저장을 거부한다.`,
+    );
+    return { state: 'errored', assetId: upload.asset_id, playbackId: null };
+  }
+  return { state: 'ready', assetId: upload.asset_id, playbackId: signed.id };
 }
 
 /**
