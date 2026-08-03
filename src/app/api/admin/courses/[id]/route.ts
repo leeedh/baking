@@ -30,7 +30,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
   const b = parsed.data;
 
@@ -51,7 +51,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       404,
       'course-not-found',
       'Course not found',
-      error?.message ?? '클래스를 찾을 수 없습니다.',
+      '클래스를 찾을 수 없습니다.',
     );
   }
 

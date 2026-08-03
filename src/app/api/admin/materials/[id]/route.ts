@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -32,7 +32,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
   const { error } = await admin.from('materials').delete().eq('id', id);
   if (error) {
-    return problem(500, 'material-delete-failed', 'Material deletion failed', error.message);
+    return problemWithCause(
+      500,
+      'material-delete-failed',
+      'Material deletion failed',
+      '자료를 삭제하지 못했습니다.',
+      error,
+    );
   }
 
   const { error: removeError } = await admin.storage

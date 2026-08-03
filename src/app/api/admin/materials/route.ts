@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     titleEn: form.get('titleEn') ?? undefined,
   });
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid fields', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid fields', '요청 형식이 올바르지 않습니다.');
   }
 
   const file = form.get('file');
@@ -93,7 +93,13 @@ export async function POST(request: Request) {
   if (error || !material) {
     // 메타 등록 실패 시 고아 파일이 남지 않도록 업로드를 되돌린다.
     await admin.storage.from('course-materials').remove([path]);
-    return problem(500, 'material-insert-failed', 'Material insert failed', error?.message ?? '');
+    return problemWithCause(
+      500,
+      'material-insert-failed',
+      'Material insert failed',
+      '자료를 등록하지 못했습니다.',
+      error,
+    );
   }
 
   return NextResponse.json(material, { status: 201 });

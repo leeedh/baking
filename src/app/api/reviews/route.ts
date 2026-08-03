@@ -42,7 +42,9 @@ function reviewError(code: string | undefined, message: string) {
   if (code === '42501') {
     return problem(403, 'not-enrolled', 'Not enrolled', '수강한 클래스에만 후기를 남길 수 있습니다.');
   }
-  return problem(500, 'review-failed', 'Review request failed', message);
+  // 매핑되지 않은 코드의 원문은 서버 로그로만 보낸다(코드리뷰 L-2).
+  console.error(`[review-failed] ${code ?? 'unknown'}: ${message}`);
+  return problem(500, 'review-failed', 'Review request failed', '후기를 저장하지 못했습니다.');
 }
 
 export async function POST(request: Request) {
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
 
   const parsed = CreateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
 
   const { data, error } = await supabase
@@ -93,7 +95,7 @@ export async function PATCH(request: Request) {
 
   const parsed = UpdateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
 
   const { data, error } = await supabase

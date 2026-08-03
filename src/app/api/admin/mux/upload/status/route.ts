@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { getUploadResult } from '@/lib/mux/client';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
   const { lessonId, uploadId } = parsed.data;
 
@@ -50,7 +50,13 @@ export async function POST(request: Request) {
       })
       .eq('id', lessonId);
     if (error) {
-      return problem(500, 'lesson-update-failed', 'Lesson update failed', error.message);
+      return problemWithCause(
+        500,
+        'lesson-update-failed',
+        'Lesson update failed',
+        '차시 정보를 저장하지 못했습니다.',
+        error,
+      );
     }
   }
 

@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       500,
       'inquiry-failed',
       'Inquiry request failed',
-      error?.message ?? '문의를 저장하지 못했습니다.',
+      '문의를 저장하지 못했습니다.',
     );
   }
 

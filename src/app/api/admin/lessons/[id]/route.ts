@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
   const b = parsed.data;
   const patch: TablesUpdate<'lessons'> = { updated_at: new Date().toISOString() };
@@ -57,7 +57,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       404,
       'lesson-not-found',
       'Lesson not found',
-      error?.message ?? '차시를 찾을 수 없습니다.',
+      '차시를 찾을 수 없습니다.',
     );
   }
 
@@ -80,7 +80,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const admin = createAdminClient();
   const { error } = await admin.from('lessons').delete().eq('id', id);
   if (error) {
-    return problem(500, 'lesson-delete-failed', 'Lesson deletion failed', error.message);
+    return problemWithCause(
+      500,
+      'lesson-delete-failed',
+      'Lesson deletion failed',
+      '차시를 삭제하지 못했습니다.',
+      error,
+    );
   }
 
   return NextResponse.json({ ok: true });

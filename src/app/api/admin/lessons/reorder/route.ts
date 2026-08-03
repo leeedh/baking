@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
   const { courseId, orderedIds } = parsed.data;
 
@@ -35,7 +35,13 @@ export async function POST(request: Request) {
     p_ids: orderedIds,
   });
   if (error) {
-    return problem(500, 'reorder-failed', 'Reorder failed', error.message);
+    return problemWithCause(
+      500,
+      'reorder-failed',
+      'Reorder failed',
+      '차시 순서를 변경하지 못했습니다.',
+      error,
+    );
   }
 
   return NextResponse.json({ ok: true });

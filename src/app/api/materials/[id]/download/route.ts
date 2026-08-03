@@ -66,7 +66,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       500,
       'signed-url-failed',
       'Signed URL failed',
-      error?.message ?? '다운로드 주소를 발급하지 못했습니다.',
+      '다운로드 주소를 발급하지 못했습니다.',
     );
   }
 

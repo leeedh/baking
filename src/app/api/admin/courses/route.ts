@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
   const b = parsed.data;
   const admin = createAdminClient();
@@ -65,7 +65,13 @@ export async function POST(request: Request) {
     .select('id, slug')
     .single();
   if (error || !course) {
-    return problem(500, 'course-create-failed', 'Course creation failed', error?.message);
+    return problemWithCause(
+      500,
+      'course-create-failed',
+      'Course creation failed',
+      '클래스를 생성하지 못했습니다.',
+      error,
+    );
   }
 
   return NextResponse.json({ id: course.id, slug: course.slug }, { status: 201 });

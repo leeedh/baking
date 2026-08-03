@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid request body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid request body', '요청 형식이 올바르지 않습니다.');
   }
   const { courseId, couponCode } = parsed.data;
 
@@ -44,7 +44,13 @@ export async function POST(request: Request) {
     p_coupon_code: couponCode,
   });
   if (error) {
-    return problem(500, 'order-failed', 'Order creation failed', error.message);
+    return problemWithCause(
+      500,
+      'order-failed',
+      'Order creation failed',
+      '주문을 생성하지 못했습니다.',
+      error,
+    );
   }
 
   const result = data as {

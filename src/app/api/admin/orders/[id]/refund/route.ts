@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { refundOrder } from '@/lib/payments/orders';
 import { totalCanceledAmount } from '@/lib/payments/policy';
 import { cancelTossPayment } from '@/lib/payments/toss';
+import { getTossFailureMessage } from '@/lib/payments/toss-error-messages';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -33,7 +34,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
-    return problem(400, 'invalid-request', 'Invalid body', parsed.error.message);
+    return problem(400, 'invalid-request', 'Invalid body', '요청 형식이 올바르지 않습니다.');
   }
   const reason = parsed.data.reason ?? '운영자 환불';
 
@@ -71,7 +72,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!result.ok) {
     if (!ALREADY_CANCELED_CODES.has(result.error.code)) {
       const status = result.status >= 500 ? 502 : 409;
-      return problem(status, 'pg-cancel-failed', 'PG cancel failed', result.error.message);
+      console.error(`[pg-cancel-failed] ${result.error.code}: ${result.error.message}`);
+      return problem(
+        status,
+        'pg-cancel-failed',
+        'PG cancel failed',
+        getTossFailureMessage(result.error.code, null),
+      );
     }
     // 이미 취소됨 — DB만 정합화한다.
   } else {

@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getUser } from '@/lib/supabase/server';
@@ -65,7 +65,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     .maybeSingle();
 
   if (error) {
-    return problem(500, 'inquiry-update-failed', 'Inquiry update failed', error.message);
+    return problemWithCause(
+      500,
+      'inquiry-update-failed',
+      'Inquiry update failed',
+      '답변을 저장하지 못했습니다.',
+      error,
+    );
   }
   if (!data) {
     return problem(404, 'inquiry-not-found', 'Inquiry not found', '문의를 찾을 수 없습니다.');
