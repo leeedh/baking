@@ -2,6 +2,7 @@
 
 import SecureVideoPlayer from '@/components/player/SecureVideoPlayer';
 import { useRouter } from '@/i18n/navigation';
+import { readError } from '@/lib/api/read-error';
 import { formatBytes } from '@/lib/format';
 import type { LessonProgress, PlayerChapter, PlayerLesson } from '@/lib/lessons';
 import type { MaterialItem } from '@/lib/materials';
@@ -46,12 +47,16 @@ export default function PlayerScreen({
 }: PlayerScreenProps) {
   const router = useRouter();
   const onNavigateBack = () => router.push(`/classes/${classId}`);
-  const initialLessonId = useSearchParams().get('lesson');
+  // 재생 중인 차시는 URL이 소스다(코드리뷰 M-10). 예전에는 ?lesson=을 useState 초기값으로만
+  // 읽어서, 뒤로/앞으로 가면 주소는 바뀌는데 재생 차시는 그대로인 불일치가 생겼다.
+  const lessonParam = useSearchParams().get('lesson');
 
   const allLessons = useMemo(() => chapters.flatMap((c) => c.lessons), [chapters]);
-  const defaultLesson = allLessons.find((l) => l.id === initialLessonId) ?? allLessons[0] ?? null;
+  const currentLesson = useMemo(
+    () => allLessons.find((l) => l.id === lessonParam) ?? allLessons[0] ?? null,
+    [allLessons, lessonParam],
+  );
 
-  const [currentLesson, setCurrentLesson] = useState<PlayerLesson | null>(defaultLesson);
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() =>
     Object.entries(progress)
       .filter(([, p]) => p.completed)
@@ -60,6 +65,8 @@ export default function PlayerScreen({
   // 자료 다운로드 중인 항목과 실패 사유(alert 대신 인라인 표시).
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [materialError, setMaterialError] = useState<string | null>(null);
+  // 완강 등록 실패 사유 — materialError와 같은 인라인 표시 방식을 따른다.
+  const [completeError, setCompleteError] = useState<string | null>(null);
 
   const totalLessonsCount = allLessons.length;
   const progressPercent =
@@ -74,22 +81,43 @@ export default function PlayerScreen({
       );
       return;
     }
-    setCurrentLesson(lesson);
+    // replace(≠push) — 차시 전환마다 히스토리가 쌓이면 뒤로가기로 강좌 상세에 못 돌아간다.
+    router.replace(`/learn/${classId}?lesson=${lesson.id}`, { scroll: false });
   };
 
-  const handleCompleteCurrentLesson = () => {
-    if (!currentLesson || completedLessonIds.includes(currentLesson.id)) return;
-    setCompletedLessonIds((ids) => [...ids, currentLesson.id]);
-    // 완주 등록도 progress upsert로 서버 저장 (completed=true).
-    fetch('/api/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lessonId: currentLesson.id,
-        watchedSec: currentLesson.durationSec ?? 0,
-        completed: true,
-      }),
-    }).catch(() => {});
+  const handleCompleteCurrentLesson = async () => {
+    const lesson = currentLesson;
+    if (!lesson || completedLessonIds.includes(lesson.id)) return;
+
+    // 낙관적으로 먼저 체크하되, 서버가 거부하면 되돌린다(코드리뷰 M-7).
+    // 예전에는 .catch(() => {})로 실패를 삼켜 새로고침하면 완강이 사라졌다.
+    setCompletedLessonIds((ids) => [...ids, lesson.id]);
+    setCompleteError(null);
+    try {
+      const res = await fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          watchedSec: lesson.durationSec ?? 0,
+          completed: true,
+        }),
+      });
+      if (!res.ok) {
+        setCompletedLessonIds((ids) => ids.filter((id) => id !== lesson.id));
+        setCompleteError(await readError(res));
+        return;
+      }
+      // 완강 여부의 진실은 서버가 정한다(진도 정책은 lib/progress/policy.ts).
+      const body = (await res.json()) as { completed?: boolean };
+      if (body.completed === false) {
+        setCompletedLessonIds((ids) => ids.filter((id) => id !== lesson.id));
+        setCompleteError('시청 기록이 충분하지 않아 완강으로 등록되지 않았습니다.');
+      }
+    } catch {
+      setCompletedLessonIds((ids) => ids.filter((id) => id !== lesson.id));
+      setCompleteError('네트워크 오류로 완강을 등록하지 못했습니다.');
+    }
   };
 
   // 서명 URL은 60초짜리 단기 발급 — 클릭 시점에 받아 즉시 사용한다(사전 발급·캐시 금지).
@@ -208,6 +236,12 @@ export default function PlayerScreen({
                   {completedLessonIds.includes(currentLesson.id) ? '완강 등록됨' : '차시 수강완료'}
                 </button>
               </div>
+
+              {completeError && (
+                <p role="alert" className="w-full text-xs text-terracotta sm:order-last">
+                  {completeError}
+                </p>
+              )}
             </div>
           )}
 
