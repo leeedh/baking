@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** 차시별 영상 업로드 진행 상태. */
 type UploadState = {
@@ -70,7 +70,21 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   const [materialTitle, setMaterialTitle] = useState('');
   const [materialUploading, setMaterialUploading] = useState<string | null>(null);
 
+  /**
+   * 언마운트 감지 (코드리뷰 M-8). 인코딩 폴링이 최대 5분간 도는데 정리 장치가 없어,
+   * 운영자가 화면을 떠나도 3초마다 요청이 계속 나가고 언마운트 후 setState가 발생했다.
+   */
+  const unmountedRef = useRef(false);
+  const pollAbortRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    return () => {
+      unmountedRef.current = true;
+      pollAbortRef.current?.abort();
+    };
+  }, []);
+
   const setUpload = (lessonId: string, state: UploadState | null) => {
+    if (unmountedRef.current) return;
     setUploads((prev) => {
       const next = { ...prev };
       if (state) next[lessonId] = state;
@@ -138,20 +152,39 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
       return;
     }
 
-    // 3) 인코딩 완료까지 폴링(최대 ~5분)
+    // 3) 인코딩 완료까지 폴링(최대 ~5분). 언마운트되면 즉시 빠져나온다(코드리뷰 M-8).
     setUpload(lessonId, { phase: 'encoding', progress: 100 });
+    const controller = new AbortController();
+    pollAbortRef.current = controller;
     for (let i = 0; i < 100; i++) {
       await new Promise((r) => setTimeout(r, 3000));
-      const stRes = await fetch('/api/admin/mux/upload/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId, uploadId }),
-      });
+      if (unmountedRef.current) return;
+
+      let stRes: Response;
+      try {
+        stRes = await fetch('/api/admin/mux/upload/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId, uploadId }),
+          signal: controller.signal,
+        });
+      } catch {
+        // abort(이탈) 또는 네트워크 오류 — 이탈이면 조용히 끝낸다.
+        if (unmountedRef.current) return;
+        setUpload(lessonId, {
+          phase: 'error',
+          progress: 100,
+          message: '인코딩 상태를 확인하지 못했습니다. 잠시 후 새로고침해 확인하세요.',
+        });
+        return;
+      }
+
       if (!stRes.ok) {
         setUpload(lessonId, { phase: 'error', progress: 100, message: await readError(stRes) });
         return;
       }
       const { state } = (await stRes.json()) as { state: string };
+      if (unmountedRef.current) return;
       if (state === 'ready') {
         setUpload(lessonId, null);
         router.refresh();
