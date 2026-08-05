@@ -68,14 +68,18 @@ describe('messages/{ko,en}.json 정합성', () => {
 const I18N_DONE: string[] = [
   'AboutScreen.tsx',
   'DetailScreen.tsx', // DC-62
-  //  Phase 3 → 'PaymentScreen.tsx', 'PlayerScreen.tsx'
+  'PaymentScreen.tsx', // DC-63
+  'PlayerScreen.tsx', // DC-63
   //  Phase 4 → 'LoginScreen.tsx', 'InquiriesScreen.tsx', 'MyClassesScreen.tsx'
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
 ];
 
-/** 주석을 걷어낸다 — 코드 주석은 한국어가 정본이라 검사 대상이 아니다. */
+/**
+ * 주석을 걷어낸다 — 코드 주석은 한국어가 정본이라 검사 대상이 아니다.
+ * 줄 끝 주석(`foo; // 설명`)까지 지우되, `https://`처럼 `:` 뒤의 `//`는 건드리지 않는다.
+ */
 function stripComments(src: string): string {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*/gm, '');
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(?<!:)\/\/[^\n]*/g, '');
 }
 
 function findComponent(fileName: string): string {

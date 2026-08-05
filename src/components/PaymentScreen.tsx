@@ -2,13 +2,14 @@
 
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { formatCount, formatKrw } from '@/lib/format';
 import { createClient } from '@/lib/supabase/client';
 import { getSupabasePublicEnv } from '@/lib/supabase/env';
 import type { ClassItem } from '@/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { type TossPaymentsWidgets, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { AlertCircle, BadgePercent, ShoppingBag } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Database } from '../../supabase/database.types';
@@ -31,17 +32,19 @@ interface AppliedCoupon {
 // 앱 레벨 근사 환율 — 비청구 표시 전용.
 const KRW_PER_TWD = 41;
 
-const COUPON_REASON_MESSAGES: Record<string, string> = {
-  invalid_code: '유효하지 않은 쿠폰입니다.',
-  not_started: '아직 사용 기간이 아닌 쿠폰입니다.',
-  expired: '만료된 쿠폰입니다.',
-  exhausted: '사용 한도가 소진된 쿠폰입니다.',
-  course_not_found: '해당 클래스에 적용할 수 없습니다.',
-};
+/** validate_coupon RPC가 돌려주는 사유 코드 — 메시지는 payment.couponReason.* 에 있다. */
+const COUPON_REASONS = [
+  'invalid_code',
+  'not_started',
+  'expired',
+  'exhausted',
+  'course_not_found',
+] as const;
 
 export default function PaymentScreen({ classId, course, courseId }: PaymentScreenProps) {
   const router = useRouter();
-  const locale = useLocale();
+  const locale = useLocale() as 'ko' | 'en';
+  const t = useTranslations('payment');
   const { user } = useAuth();
   const userEmail = user?.email ?? '';
   const supabase = useMemo<SupabaseClient<Database> | null>(() => {
@@ -70,11 +73,9 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
   // Supabase 공개 env 부재는 쿠폰 검증(RPC) 불가로 이어지므로 미리 알린다.
   useEffect(() => {
     if (!supabase) {
-      setPayError(
-        'Supabase 환경변수가 없습니다. Vercel Environment Variables를 설정한 뒤 재배포하세요.',
-      );
+      setPayError(t('errSupabaseEnv'));
     }
-  }, [supabase]);
+  }, [supabase, t]);
 
   // Toss 결제위젯 초기화 (로그인 사용자 확인 후 1회)
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
     (async () => {
       const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
       if (!clientKey) {
-        throw new Error('NEXT_PUBLIC_TOSS_CLIENT_KEY가 설정되지 않았습니다.');
+        throw new Error(t('errTossKey'));
       }
       const toss = await loadTossPayments(clientKey);
       const widgets = toss.widgets({ customerKey: user.id });
@@ -100,12 +101,12 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
       widgetsRef.current = widgets;
       setWidgetReady(true);
     })().catch((e: Error) => {
-      if (!cancelled) setPayError(`결제 모듈을 불러오지 못했습니다: ${e.message}`);
+      if (!cancelled) setPayError(t('errWidgetLoad', { message: e.message }));
     });
     return () => {
       cancelled = true;
     };
-  }, [user, price]);
+  }, [user, price, t]);
 
   // 쿠폰 적용 시 위젯 금액 동기화 (위젯이 늦게 준비돼도 최신 금액으로 맞춘다)
   // biome-ignore lint/correctness/useExhaustiveDependencies: widgetReady는 ref 준비 시점 재동기화 트리거
@@ -130,15 +131,13 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
       final_krw?: number;
     } | null;
     if (error || !result) {
-      setCouponMsg({ ok: false, text: '쿠폰 확인에 실패했습니다. 잠시 후 다시 시도해주세요.' });
+      setCouponMsg({ ok: false, text: t('couponCheckFailed') });
       return;
     }
     if (!result.valid) {
       setCoupon(null);
-      setCouponMsg({
-        ok: false,
-        text: COUPON_REASON_MESSAGES[result.reason ?? ''] ?? '유효하지 않은 쿠폰입니다.',
-      });
+      const reason = COUPON_REASONS.find((r) => r === result.reason) ?? 'invalid_code';
+      setCouponMsg({ ok: false, text: t(`couponReason.${reason}`) });
       return;
     }
     setCoupon({
@@ -148,7 +147,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
     });
     setCouponMsg({
       ok: true,
-      text: `쿠폰 할인 ₩${(result.discount_krw ?? 0).toLocaleString()}이 적용되었습니다.`,
+      text: t('couponApplied', { amount: formatKrw(result.discount_krw ?? 0, locale) }),
     });
   };
 
@@ -156,7 +155,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
   const handlePay = async () => {
     setPayError('');
     if (!agreedTerms) {
-      setPayError('구매 유의사항 및 평생 소장 동의 항목을 확인 및 체크해주세요.');
+      setPayError(t('errAgreeRequired'));
       return;
     }
     if (!widgetsRef.current) return;
@@ -172,7 +171,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
       });
       const body = await res.json();
       if (!res.ok) {
-        throw new Error(body.detail ?? body.title ?? '주문 생성에 실패했습니다.');
+        throw new Error(body.detail ?? body.title ?? t('errOrderCreate'));
       }
 
       // 서버 산출 금액을 위젯에 최종 반영 후 결제창 호출
@@ -192,7 +191,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
       // requestPayment 성공 시 브라우저가 successUrl로 리다이렉트되므로 이후 코드는 실행되지 않음
     } catch (e) {
       // 사용자가 결제창을 닫은 경우 등
-      setPayError((e as Error).message || '결제가 취소되었습니다.');
+      setPayError((e as Error).message || t('errPayCanceled'));
       setIsProcessing(false);
     }
   };
@@ -200,10 +199,8 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
   return (
     <div id="payment-screen" className="bg-cream py-12 px-4 sm:px-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold text-brown">안심 안전 주문 결제</h1>
-        <p className="text-xs text-brown-medium mt-1">
-          대만 및 국내 전용 신용카드, 간편결제 무중단 호환 · TossPayments 안전 결제
-        </p>
+        <h1 className="font-serif text-3xl font-bold text-brown">{t('title')}</h1>
+        <p className="text-xs text-brown-medium mt-1">{t('subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -212,13 +209,13 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
           {/* Orderer details card */}
           <div className="bg-white rounded-xl border border-brown-light p-6 space-y-4">
             <h3 className="font-serif text-base font-bold text-brown border-b border-cream pb-3">
-              1. 주문 수강생 정보
+              {t('section1')}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-brown-medium mb-1.5">
-                  수강 아이디(이메일)
+                  {t('emailLabel')}
                 </label>
                 <input
                   type="text"
@@ -230,20 +227,20 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
 
               <div>
                 <label className="block text-xs font-semibold text-brown-medium mb-1.5">
-                  이름 (실명)
+                  {t('nameLabel')}
                 </label>
                 <input
                   type="text"
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
-                  placeholder="홍길동"
+                  placeholder={t('namePlaceholder')}
                   className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 />
               </div>
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-brown-medium mb-1.5">
-                  연락처 (선택)
+                  {t('phoneLabel')}
                 </label>
                 <input
                   type="text"
@@ -253,7 +250,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                   placeholder="010-XXXX-XXXX"
                 />
                 <span className="text-[10px] text-brown-medium/60 mt-1 block">
-                  결제 영수증 알림 수신에 사용됩니다.
+                  {t('phoneHint')}
                 </span>
               </div>
             </div>
@@ -262,13 +259,13 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
           {/* TossPayments 결제수단 위젯 */}
           <div className="bg-white rounded-xl border border-brown-light p-6 space-y-4">
             <h3 className="font-serif text-base font-bold text-brown border-b border-cream pb-3">
-              2. 결제 수단 선택
+              {t('section2')}
             </h3>
 
             {!widgetReady && !payError && (
               <div className="flex items-center gap-2 text-xs text-brown-medium py-8 justify-center">
                 <span className="w-4 h-4 border-2 border-t-transparent border-terracotta rounded-full animate-spin" />
-                결제 수단을 불러오는 중입니다...
+                {t('loadingMethods')}
               </div>
             )}
             <div id="toss-payment-methods" />
@@ -276,12 +273,9 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
 
             <div className="bg-cream p-3 rounded-lg border border-brown-light space-y-1.5 text-xs text-brown-medium">
               <span className="font-bold text-gold block flex items-center gap-1">
-                <AlertCircle size={14} /> 안전인증결제 가이드
+                <AlertCircle size={14} /> {t('guideTitle')}
               </span>
-              <p>
-                • 결제 금액은 서버에서 재검증되며, 승인 완료 즉시 평생 수강권이 발급됩니다. 해외
-                카드(Visa/Master/JCB)는 3D Secure 국제안심인증이 적용될 수 있습니다.
-              </p>
+              <p>{t('guideBody')}</p>
             </div>
           </div>
 
@@ -291,7 +285,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
             className="bg-white rounded-xl border border-brown-light p-6 space-y-3"
           >
             <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
-              <BadgePercent size={16} className="text-gold" /> 할인가 혜택 입력
+              <BadgePercent size={16} className="text-gold" /> {t('couponTitle')}
             </h3>
 
             <div className="flex gap-2">
@@ -299,14 +293,14 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
-                placeholder="할인 쿠폰코드 (예시: BAKING10)"
+                placeholder={t('couponPlaceholder')}
                 className="flex-1 px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown uppercase tracking-wider focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
               <button
                 type="submit"
                 className="px-4 py-2 bg-brown text-white text-xs font-semibold rounded-lg hover:bg-terracotta transition-colors cursor-pointer disabled:opacity-50"
               >
-                할인 적용
+                {t('couponApply')}
               </button>
             </div>
             {couponMsg && (
@@ -323,7 +317,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
         <div className="lg:col-span-5 sticky top-24">
           <div className="bg-white rounded-2xl border border-brown-light p-6 shadow-md space-y-4">
             <h3 className="font-serif text-base font-bold text-brown flex items-center gap-1.5 pb-2 border-b border-cream">
-              <ShoppingBag size={18} className="text-terracotta" /> 3. 최종 주문정보 요약
+              <ShoppingBag size={18} className="text-terracotta" /> {t('section3')}
             </h3>
 
             {/* Miniature class summary info */}
@@ -338,9 +332,9 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 <span className="text-[9px] font-bold text-gold">{course.category}</span>
                 <h4 className="text-xs font-bold text-brown line-clamp-1">{course.title}</h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-brown-medium mt-1">
-                  <span>강사: {course.instructor}</span>
+                  <span>{t('instructorLabel', { name: course.instructor })}</span>
                   <span>•</span>
-                  <span className="text-terracotta font-bold">평생 소장 VOD</span>
+                  <span className="text-terracotta font-bold">{t('lifetimeVod')}</span>
                 </div>
               </div>
             </div>
@@ -348,40 +342,43 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
             {/* Calculations pricing breakdown */}
             <div className="space-y-2.5 text-xs text-brown py-2">
               <div className="flex justify-between items-center text-brown-medium">
-                <span>정상가 VOD 라이선스 수강권</span>
-                <span>₩{listPrice.toLocaleString()}</span>
+                <span>{t('rowList')}</span>
+                <span>{formatKrw(listPrice, locale)}</span>
               </div>
               {eventDiscount > 0 && (
                 <div className="flex justify-between items-center text-brown-medium">
-                  <span>얼리버드 이벤트 자체 할인</span>
-                  <span className="text-terracotta">- ₩{eventDiscount.toLocaleString()}</span>
+                  <span>{t('rowEventDiscount')}</span>
+                  <span className="text-terracotta">- {formatKrw(eventDiscount, locale)}</span>
                 </div>
               )}
 
               {coupon && (
                 <div className="flex justify-between items-center text-gold font-semibold">
-                  <span>추가 적용 쿠폰 ({coupon.code})</span>
-                  <span>- ₩{coupon.discount_krw.toLocaleString()}</span>
+                  <span>{t('rowCoupon', { code: coupon.code })}</span>
+                  <span>- {formatKrw(coupon.discount_krw, locale)}</span>
                 </div>
               )}
 
               <div className="flex justify-between items-center text-brown-medium">
-                <span>자료 파일 수령 및 데이터 가입</span>
-                <span className="text-emerald-700 font-bold">₩0 (무상제공)</span>
+                <span>{t('rowMaterials')}</span>
+                <span className="text-emerald-700 font-bold">
+                  {t('rowMaterialsFree', { amount: formatKrw(0, locale) })}
+                </span>
               </div>
 
               <div className="h-px bg-brown-light" />
 
               <div className="flex justify-between items-baseline pt-2">
-                <span className="font-bold text-brown">최종 결제 금액 (원화)</span>
+                <span className="font-bold text-brown">{t('rowTotal')}</span>
                 <span className="text-xl font-serif font-extrabold text-terracotta">
-                  ₩{finalPrice.toLocaleString()}
+                  {formatKrw(finalPrice, locale)}
                 </span>
               </div>
               {locale === 'en' && (
                 <p className="text-right text-[10px] text-brown-medium/70">
-                  ≈ NT$ {Math.round(finalPrice / KRW_PER_TWD).toLocaleString()} (reference only —
-                  billed in KRW)
+                  {t('twdNote', {
+                    amount: formatCount(Math.round(finalPrice / KRW_PER_TWD), locale),
+                  })}
                 </p>
               )}
             </div>
@@ -395,8 +392,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 className="w-4 h-4 rounded text-terracotta border-brown-light focus:ring-terracotta accent-terracotta mt-0.5"
               />
               <span className="text-[11px] text-brown-medium leading-relaxed">
-                [필수] 본 상품은 영구 소장 디지털 VOD이며, 시청 개시 후 디지털 복제 방지법에
-                의거하여 단순 변심 환불이 제한됨을 동의합니다.
+                {t('termsAgree')}
               </span>
             </label>
 
@@ -421,10 +417,10 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
               {isProcessing ? (
                 <>
                   <span className="w-4 h-4 border-2 border-t-transparent border-cream rounded-full animate-spin" />
-                  결제창 호출 중...
+                  {t('processing')}
                 </>
               ) : (
-                <>₩{finalPrice.toLocaleString()} 결제 및 바로 평생소장 수강하기</>
+                <>{t('payCta', { amount: formatKrw(finalPrice, locale) })}</>
               )}
             </button>
 
@@ -434,7 +430,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
               disabled={isProcessing}
               className="w-full text-center text-xs text-brown-medium/80 hover:underline pt-2 font-medium cursor-pointer"
             >
-              이전으로 돌아가기
+              {t('back')}
             </button>
           </div>
         </div>

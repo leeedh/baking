@@ -7,6 +7,7 @@ import { formatBytes } from '@/lib/format';
 import type { LessonProgress, PlayerChapter, PlayerLesson } from '@/lib/lessons';
 import type { MaterialItem } from '@/lib/materials';
 import { BookOpen, CheckCircle, ChevronLeft, FileDown, Lock, PlayCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -46,6 +47,7 @@ export default function PlayerScreen({
   materials,
 }: PlayerScreenProps) {
   const router = useRouter();
+  const t = useTranslations('player');
   const onNavigateBack = () => router.push(`/classes/${classId}`);
   // 재생 중인 차시는 URL이 소스다(코드리뷰 M-10). 예전에는 ?lesson=을 useState 초기값으로만
   // 읽어서, 뒤로/앞으로 가면 주소는 바뀌는데 재생 차시는 그대로인 불일치가 생겼다.
@@ -76,9 +78,7 @@ export default function PlayerScreen({
 
   const handleLessonSelect = (lesson: PlayerLesson) => {
     if (isLocked(lesson)) {
-      alert(
-        '본 차시는 평생소장 라이선스를 구매하셔야 수강하실 수 있습니다. 1차시 무료 맛보기를 즐겨주세요!',
-      );
+      alert(t('lockedLesson'));
       return;
     }
     // replace(≠push) — 차시 전환마다 히스토리가 쌓이면 뒤로가기로 강좌 상세에 못 돌아간다.
@@ -112,11 +112,11 @@ export default function PlayerScreen({
       const body = (await res.json()) as { completed?: boolean };
       if (body.completed === false) {
         setCompletedLessonIds((ids) => ids.filter((id) => id !== lesson.id));
-        setCompleteError('시청 기록이 충분하지 않아 완강으로 등록되지 않았습니다.');
+        setCompleteError(t('completeNotEnough'));
       }
     } catch {
       setCompletedLessonIds((ids) => ids.filter((id) => id !== lesson.id));
-      setCompleteError('네트워크 오류로 완강을 등록하지 못했습니다.');
+      setCompleteError(t('completeNetworkError'));
     }
   };
 
@@ -128,13 +128,13 @@ export default function PlayerScreen({
       const res = await fetch(`/api/materials/${material.id}/download`);
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as { detail?: string } | null;
-        setMaterialError(body?.detail ?? '자료를 받을 수 없습니다.');
+        setMaterialError(body?.detail ?? t('materialFailed'));
         return;
       }
       const { url } = (await res.json()) as { url: string };
       window.location.href = url;
     } catch {
-      setMaterialError('네트워크 오류로 자료를 받지 못했습니다.');
+      setMaterialError(t('materialNetworkError'));
     } finally {
       setDownloadingId(null);
     }
@@ -152,22 +152,22 @@ export default function PlayerScreen({
             onClick={onNavigateBack}
             className="flex items-center gap-1 text-xs text-brown-medium hover:text-terracotta hover:underline mb-1 cursor-pointer"
           >
-            <ChevronLeft size={14} /> 클래스 상세 페이지로 돌아가기
+            <ChevronLeft size={14} /> {t('backToDetail')}
           </button>
           <h1 className="font-serif text-lg sm:text-xl font-bold text-brown">{courseTitle}</h1>
           <p className="text-xs text-brown-medium">
-            강사: {instructorName} •{' '}
-            {purchased
-              ? '✨ 평생 소장 라이선스 보관함 시청 중'
-              : '🔓 1차시 무료 오리엔테이션 재생 중'}
+            {t('instructorLabel', { name: instructorName })} •{' '}
+            {purchased ? t('statusPurchased') : t('statusPreview')}
           </p>
         </div>
 
         {/* Global Progress Rate Bar */}
         <div className="bg-white p-3 rounded-xl border border-brown-light w-full sm:w-64 space-y-1.5 self-stretch sm:self-auto shadow-sm">
           <div className="flex justify-between items-center text-xs font-semibold">
-            <span className="text-brown-medium">전체 진도율</span>
-            <span className="text-terracotta font-mono">{progressPercent}% 완료</span>
+            <span className="text-brown-medium">{t('progressLabel')}</span>
+            <span className="text-terracotta font-mono">
+              {t('progressPercent', { percent: progressPercent })}
+            </span>
           </div>
           <div className="w-full bg-cream h-2 rounded-full overflow-hidden">
             <div
@@ -176,8 +176,8 @@ export default function PlayerScreen({
             />
           </div>
           <div className="flex justify-between text-[10px] text-brown-medium/60">
-            <span>완료 차시: {completedLessonIds.length}개</span>
-            <span>총 수강 차시: {totalLessonsCount}개</span>
+            <span>{t('completedCount', { count: completedLessonIds.length })}</span>
+            <span>{t('totalCount', { count: totalLessonsCount })}</span>
           </div>
         </div>
       </div>
@@ -188,12 +188,12 @@ export default function PlayerScreen({
           <div className="relative aspect-[16/9] bg-black rounded-2xl overflow-hidden shadow-xl border-2 border-white">
             {!currentLesson ? (
               <div className="absolute inset-0 flex items-center justify-center text-white/70 text-sm">
-                등록된 차시가 없습니다.
+                {t('noLessons')}
               </div>
             ) : currentLocked ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center text-white/80">
                 <Lock size={24} className="text-terracotta" />
-                <p className="text-sm">평생소장 라이선스 구매 후 시청할 수 있는 차시입니다.</p>
+                <p className="text-sm">{t('lockedNotice')}</p>
               </div>
             ) : (
               <SecureVideoPlayer
@@ -215,9 +215,7 @@ export default function PlayerScreen({
                 </span>
                 <h3 className="text-sm font-bold text-brown mt-0.5">{currentLesson.title}</h3>
                 <p className="text-xs text-brown-medium mt-1">
-                  {currentLesson.isPreview
-                    ? '모든 수강생 무료 상시 공개 차시'
-                    : '평생 소장 회원 전용 고난이도 빌딩 세션'}
+                  {currentLesson.isPreview ? t('lessonPreviewNote') : t('lessonMemberNote')}
                 </p>
               </div>
 
@@ -233,7 +231,9 @@ export default function PlayerScreen({
                   }`}
                 >
                   <CheckCircle size={14} />
-                  {completedLessonIds.includes(currentLesson.id) ? '완강 등록됨' : '차시 수강완료'}
+                  {completedLessonIds.includes(currentLesson.id)
+                    ? t('completeDone')
+                    : t('completeCta')}
                 </button>
               </div>
 
@@ -250,14 +250,12 @@ export default function PlayerScreen({
             <div className="p-4 bg-white rounded-xl border border-brown-light space-y-2 shadow-sm">
               <h4 className="text-xs font-bold text-brown flex items-center gap-1">
                 <FileDown size={14} className="text-gold" />
-                레시피 배합표
+                {t('materialsTitle')}
               </h4>
 
               {currentMaterials.length === 0 ? (
                 <p className="text-xs text-brown-medium/70">
-                  {purchased
-                    ? '이 차시에 등록된 자료가 없습니다.'
-                    : '자료는 평생소장 라이선스 구매 후 받으실 수 있습니다.'}
+                  {purchased ? t('materialsEmpty') : t('materialsLocked')}
                 </p>
               ) : (
                 <ul className="space-y-1">
@@ -272,7 +270,7 @@ export default function PlayerScreen({
                         <span className="text-left">{material.title}</span>
                         <span className="text-[10px] text-brown-medium/70 font-mono shrink-0">
                           {downloadingId === material.id
-                            ? '발급 중…'
+                            ? t('materialIssuing')
                             : formatBytes(material.sizeBytes)}
                         </span>
                       </button>
@@ -292,18 +290,16 @@ export default function PlayerScreen({
           {/* Notes summary for student */}
           <div className="bg-white p-6 rounded-2xl border border-brown-light space-y-4">
             <h4 className="font-serif text-sm font-bold text-brown border-b border-cream pb-2">
-              실습 핵심 요약 참고서
+              {t('summaryTitle')}
             </h4>
             <div className="text-xs text-brown-medium space-y-3 leading-relaxed">
               <p>
-                <strong className="text-terracotta">1. 오븐 습도 컨트롤:</strong> 머랭 건조 시 오븐
-                내부 스팀 압축 벨브를 닫아서 강제 환풍해주는 단계가 필요합니다. 내부 대류 팬 속도는
-                상도 60% 로 세팅하여 공기 순환이 안정적으로 유지되도록 보증하세요.
+                <strong className="text-terracotta">{t('summaryPoint1Label')}</strong>{' '}
+                {t('summaryPoint1Body')}
               </p>
               <p>
-                <strong className="text-gold">2. 계량 오차 범위의 축소:</strong> 설탕 당분을
-                꼬끄 배합 시 무설탕 대체 당(알룰로스 등)으로 대량 대체할 경우 구조가 녹아 내리므로,
-                프랑스식 비율에 맞춰 황금 백설탕을 권고 값 이하로 억제하지 않습니다.
+                <strong className="text-gold">{t('summaryPoint2Label')}</strong>{' '}
+                {t('summaryPoint2Body')}
               </p>
             </div>
           </div>
@@ -313,10 +309,10 @@ export default function PlayerScreen({
         <div className="lg:col-span-4 bg-white rounded-2xl border border-brown-light p-5 space-y-4">
           <div className="border-b border-cream pb-3">
             <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
-              <BookOpen size={16} className="text-terracotta" /> 온라인 스마트 비디오 목록
+              <BookOpen size={16} className="text-terracotta" /> {t('lessonListTitle')}
             </h3>
             <p className="text-[10px] text-brown-medium mt-0.5">
-              클릭하면 즉시 비디오 스트리밍이 변환됩니다.
+              {t('lessonListHint')}
             </p>
           </div>
 
@@ -364,7 +360,7 @@ export default function PlayerScreen({
                         <div className="flex items-center gap-1 text-[9px] text-brown-medium/60 font-mono">
                           {locked ? (
                             <span className="text-[8px] bg-gold/10 text-gold px-1 rounded">
-                              잠김
+                              {t('lessonLocked')}
                             </span>
                           ) : (
                             <span>{formatDuration(lesson.durationSec)}</span>
@@ -381,11 +377,10 @@ export default function PlayerScreen({
           {!purchased && (
             <div className="bg-terracotta/5 border border-terracotta/20 rounded-xl p-3 text-center space-y-2">
               <span className="text-[10.5px] font-bold text-terracotta block">
-                🔒 나머지 고급 챕터가 미수금 상태입니다.
+                {t('upsellTitle')}
               </span>
               <p className="text-[9px] text-brown-medium leading-normal font-light">
-                평생무제한으로 셰프 전 오리지널 차시를 잠금해제하려면 수강 소장 프리패스를
-                취득하십시오!
+                {t('upsellBody')}
               </p>
             </div>
           )}
