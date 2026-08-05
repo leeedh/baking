@@ -123,5 +123,59 @@
     "bottomDesc": "프랑스 파리의 깊이감과 가치 있는 황금 배합비를 아카이브에 영구 저장해 두고 가보처럼 대대로 꺼내 보세요. 수강 및 레시피 수정에 대한 전 과정은 셰프인 제가 직접 전담합니다.",
     "bottomCtaClasses": "마스터 클래스 목록보기",
     "bottomCtaBooks": "베스트 전용서 판매처로"
+  },
+  "detail": {
+    "breadcrumbHome": "클래스 홈",
+    "loginRequired": "결제 및 수강 지정을 완료하려면 먼저 로그인을 완료해 주셔야 합니다.",
+    "previewCta": "1차시 무료 미리보기 즉시 시청",
+    "levelBadge": "★ {level} 수준 정밀 촬영",
+    "ratingSummary": "{rating}점 ({count}개의 실제 후기)",
+    "studentsCount": "수강생 {count}명 만족 수강 중",
+    "chefName": "{name} 셰프",
+    "tabIntro": "클래스 소개",
+    "tabCurriculum": "커리큘럼 ({count}개 차시)",
+    "tabReviews": "수강 후기 ({count})",
+    "introHeading": "프리미엄 세션 소개",
+    "recipeHeading": "이 클래스에서 학습하는 레시피 구성",
+    "recipeItems": [
+      "완벽한 구색을 자랑하는 꼬끄의 결합 레시피",
+      "프랑스 천연 고메 버터 가공 헤이즐넛 농축법",
+      "피스타치오 프랄린의 당도와 침투율 분배식",
+      "제철 과일 당절임(콩피츄르) 추출 온도 매핑"
+    ],
+    "benefitHeading": "수강생에게 제공되는 다운로드 혜택",
+    "benefitItems": [
+      "[PDF] 셰프 소장 아티스트 전용 소수점 배합표",
+      "[PDF] 오븐 온도 편차 보정 보조 템플릿",
+      "대만/국내 번역 통합 정밀 스크립트 전문",
+      "영구 소장 평생 무제한 온라인 Q&A 액세스"
+    ],
+    "noticeHeading": "수강 전 확인사항",
+    "noticeBody": "본 VOD 클래스는 일회성 라이브가 아닌 사전 제작된 고화질 녹화 본 스트리밍 서비스이며, 결제 즉시 평생 소장 자격이 주어집니다. 타 플랫폼 제품과 달리 기간 제약 없이 원하실 때 언제든 완주가 가능합니다. 해외에서 발행된 신용카드가 완전하게 호환됩니다.",
+    "previewNotice": "💡 1차시 영상은 비회원도 결제 없이 볼 수 있는 무료 수강용 오리엔테이션입니다.",
+    "chapterLessons": "{count}차시 구성",
+    "freeBadge": "무료 맛보기",
+    "watchNow": "즉시 시청",
+    "locked": "잠금",
+    "ratingLabel": "수강생 평점",
+    "reviewsIntro": "실제 결제하여 강의를 영구 소장한 한국 & 대만 글로벌 수강생의 후기입니다. 100% 무편집 신뢰를 바탕으로 후기를 수합하고 있으며 피드백을 통해 셰프가 답변을 기재합니다.",
+    "reviewsEmpty": "아직 작성된 후기가 없습니다. 첫 번째 영구 소장 수강생 후기를 남겨주세요.",
+    "passBadge": "LIFETIME ACCESS PASS (평생 소장)",
+    "vatIncluded": "VAT 포함",
+    "discountNote": "* {percent}% 얼리버드 한정 혜택 (한 번만 사면 평생 소장)",
+    "perks": [
+      "시간/횟수 무제한 시청 VOD",
+      "셰프 조율 소수점 원본 배합표 100% 동봉",
+      "대만・해외 카드 간편 결제 완벽 연동",
+      "1:1 셰프 보이스 피드백 3회 제공 패스권 예약"
+    ],
+    "ownedNotice": "이미 권한을 보유 중인 평생소장 강의입니다.",
+    "goToPlayer": "시청하기 플레이어로 이동",
+    "buyNow": "지금 평생 소장권 결제하기",
+    "previewFirst": "1차시 무료 맛보기 먼저 보기",
+    "refundNote": "글로벌 수강생 대상 한정 가격이며, 결제 후 7일 이내 동영상 시청 이력이 없을 시 100% 환불 처리 가능합니다. (맛보기 1차시 시청은 환불 정책에 포함되지 않습니다.)",
+    "discountBadge": "{percent}% 특가",
+    "goToPlayerShort": "플레이어로 이동",
+    "buyNowShort": "지금 평생소장 결제"
   }
 }

@@ -123,5 +123,59 @@
     "bottomDesc": "Store the depth of Paris and its valuable golden ratios permanently in the archive, and pass them down like an heirloom. I, the chef, personally handle the entire process of instruction and recipe refinement.",
     "bottomCtaClasses": "View the Masterclass List",
     "bottomCtaBooks": "To the Bestselling Books"
+  },
+  "detail": {
+    "breadcrumbHome": "Class Home",
+    "loginRequired": "Please sign in first to complete your purchase and enrollment.",
+    "previewCta": "Watch Lesson 1 free right now",
+    "levelBadge": "★ {level} level, precision filmed",
+    "ratingSummary": "{rating} ({count} verified reviews)",
+    "studentsCount": "{count} students enrolled and satisfied",
+    "chefName": "Chef {name}",
+    "tabIntro": "About the Class",
+    "tabCurriculum": "Curriculum ({count} lessons)",
+    "tabReviews": "Reviews ({count})",
+    "introHeading": "Premium Session Overview",
+    "recipeHeading": "Recipes you will learn in this class",
+    "recipeItems": [
+      "Coque assembly recipe with flawless consistency",
+      "Hazelnut concentration using French gourmet butter",
+      "Sugar balance and infusion ratios for pistachio praline",
+      "Temperature mapping for seasonal fruit confiture"
+    ],
+    "benefitHeading": "Downloads included for students",
+    "benefitItems": [
+      "[PDF] The chef's own decimal-precision formula sheet",
+      "[PDF] Oven temperature deviation correction template",
+      "Full precision script, Korean and Taiwanese translations combined",
+      "Lifetime unlimited online Q&A access"
+    ],
+    "noticeHeading": "Before you enroll",
+    "noticeBody": "This is a pre-produced, high-definition recorded VOD stream rather than a one-time live session, and lifetime access is granted the moment you pay. Unlike other platforms there is no time limit, so you can finish it whenever you like. Credit cards issued outside Korea are fully supported.",
+    "previewNotice": "💡 Lesson 1 is a free orientation that anyone can watch without signing in or paying.",
+    "chapterLessons": "{count} lessons",
+    "freeBadge": "Free preview",
+    "watchNow": "Watch now",
+    "locked": "Locked",
+    "ratingLabel": "Student rating",
+    "reviewsIntro": "Reviews from students in Korea and Taiwan who paid for lifetime access. We collect them 100% unedited, and the chef replies to the feedback.",
+    "reviewsEmpty": "No reviews yet. Be the first lifetime-access student to leave one.",
+    "passBadge": "LIFETIME ACCESS PASS",
+    "vatIncluded": "VAT included",
+    "discountNote": "* {percent}% early-bird offer (buy once, keep it for life)",
+    "perks": [
+      "Unlimited VOD viewing, any time, any number of times",
+      "The chef's original decimal-precision formula sheet, 100% included",
+      "Fully integrated checkout for Taiwanese and overseas cards",
+      "Reserved pass for 3 rounds of 1:1 voice feedback from the chef"
+    ],
+    "ownedNotice": "You already have lifetime access to this class.",
+    "goToPlayer": "Go to the player and start watching",
+    "buyNow": "Get lifetime access now",
+    "previewFirst": "Watch the free Lesson 1 first",
+    "refundNote": "This is a limited price for global students. If there is no viewing history within 7 days of payment, a 100% refund is available. (Watching the free Lesson 1 is not counted against the refund policy.)",
+    "discountBadge": "{percent}% off",
+    "goToPlayerShort": "Go to player",
+    "buyNowShort": "Buy lifetime access"
   }
 }

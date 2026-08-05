@@ -67,7 +67,7 @@ describe('messages/{ko,en}.json 정합성', () => {
 // -----------------------------------------------------------------------------
 const I18N_DONE: string[] = [
   'AboutScreen.tsx',
-  //  Phase 2 → 'DetailScreen.tsx'
+  'DetailScreen.tsx', // DC-62
   //  Phase 3 → 'PaymentScreen.tsx', 'PlayerScreen.tsx'
   //  Phase 4 → 'LoginScreen.tsx', 'InquiriesScreen.tsx', 'MyClassesScreen.tsx'
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
