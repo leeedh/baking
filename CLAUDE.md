@@ -20,6 +20,7 @@ Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `
 - `pnpm typecheck` — `tsc --noEmit`
 - `pnpm test` — Vitest(`vitest run`). 순수 판정 로직만 대상이며 DB·네트워크에 의존하지 않는다(`vitest.config.ts` 주석 참조).
 - `pnpm format` 존재하나 **리포 전체 실행 금지**(CRLF로 대량 diff). 포맷은 변경 파일에만 개별 적용.
+- **변경 검증 순서**: `pnpm typecheck` → `pnpm test` → `pnpm build` → `PORT=3100 pnpm start` → curl 스모크 → **포트 해제 확인**. 마지막을 빠뜨리면 다음 회차가 구 빌드를 측정한다.
 - Database: migrations live in `supabase/migrations/` (timestamped). 원격 프로젝트는 **`sowoo` = `ptwgrmdtzdphervuanxi`**. 로컬 Docker가 없어 Supabase **MCP**로 운영: `apply_migration`(DDL) 후 `generate_typescript_types`로 `supabase/database.types.ts` 재생성. **`apply_migration`은 자체 UTC 타임스탬프를 version으로 부여하므로**, 적용 후 `list_migrations`로 확인해 **로컬 파일명을 그 version에 맞출 것**(로컬 KST로 지으면 어긋난다). 권한(GRANT)·CHECK 제약만 바꿨다면 타입 재생성은 불필요하다. **주의: MCP `execute_sql`의 쓰기(INSERT/UPDATE/DELETE)는 하네스 안전 분류기가 차단**하므로 데이터 시드/변경은 앱 플로우로 하거나 사용자에게 요청. `createServerClient<Database>`가 타입에 의존하므로 스키마 변경 후 재생성 필수.
 
 **Windows quirk**: Bash 툴에서 Python/echo로 한글을 stdout에 출력하면 `UnicodeEncodeError: 'cp949'`가 난다. Python은 `sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`로 감쌀 것.
@@ -54,6 +55,11 @@ The webhook (`payments/webhook/route.ts`, `TS-API-11`) is the completion path fo
 ### Video playback (`src/app/api/playback/token`, `lib/mux`)
 Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`). Token TTL scales with lesson duration so one token covers full playback. Returns `503 mux-unconfigured` when Mux keys aren't provisioned — the code ships before keys exist.
 
+### 테스트 규약
+로컬 Docker가 없어 DB 통합 테스트를 못 돌린다. 그래서 **판정 로직만 순수 모듈로 분리하고 콜로케이트 테스트를 붙이는 것**이 이 리포의 규약이다 — `lib/mux/ttl.ts` · `lib/payments/policy.ts` · `lib/progress/policy.ts` · `lib/api/origin.ts`. 라우트는 Supabase 클라이언트에 묶여 import할 수 없으므로 **라우트에 직접 테스트를 붙이려 하지 말 것**. 결제 상태 전이·RLS 같은 불변식은 DB 제약과 RPC가 대신 강제한다.
+
+**게이트를 추가했으면 일부러 깨뜨려 실패를 확인할 것** — 통과만 하는 검사는 무용하다(`messages.test.ts`의 키 유효성 검사가 실제로 이 방식으로 검증됐다).
+
 ### API conventions
 - Errors use RFC 7807 Problem Details via `problem(status, type, title, detail)` (`lib/api/problem.ts`); `detail` is Korean, user-facing.
 - Request bodies validated with **Zod** (v4). Use `z.guid()` for Postgres UUIDs, **not** `z.uuid()` — Zod v4's `z.uuid()` validates RFC 4122 variant/version bits and rejects otherwise-valid Postgres UUIDs.
@@ -72,7 +78,7 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 **강좌·차시 콘텐츠는 아직 한국어뿐이다** — `pickLocale()`(`lib/i18n-json.ts`)은 정상이지만 DB의 `en` 값이 비어 있어 `/en`에서도 강좌 제목·설명이 한국어로 나온다. 코드가 아니라 데이터 문제이며 **Jira DC-108** 소관이다.
 
 ### 정보구조 — 홈·소개·온라인 클래스 3면 (DC-96)
-홈(`/`)은 **브랜드 게이트웨이**이고 클래스 목록 본체는 **`/classes`**, 브랜드/셰프 소개는 **`/about`**이다(구 `/instructor`는 `/about` 리다이렉트). 화면 골격은 `src/components/{HomeScreen,ClassesScreen,AboutScreen}.tsx`가 조립하고, 재사용 섹션은 **`src/components/sections/`**(`PhilosophyPillars`·`RecommendationQuiz`·`ClassCard`·`ClassCatalogGrid`·`StudentArchive`·`ChefBanner`·`FaqAccordion`·`NewsletterCTA`·`BestClasses`)에 있다. **`src/features/`는 없다** — TechSpec의 `features/*` 표기는 to-be다.
+홈(`/`)은 **브랜드 게이트웨이**이고 클래스 목록 본체는 **`/classes`**, 브랜드/셰프 소개는 **`/about`**이다(구 `/instructor`는 `/about` 리다이렉트). 화면 골격은 `src/components/{HomeScreen,ClassesScreen,AboutScreen}.tsx`가 조립하고, 재사용 섹션은 **`src/components/sections/`**(`AnnouncementBar`·`PhilosophyPillars`·`RecommendationQuiz`·`ClassCard`·`ClassCatalogGrid`·`StudentArchive`·`ChefBanner`·`FaqAccordion`·`NewsletterCTA`·`BestClasses`)에 있다. **`src/features/`는 없다** — TechSpec의 `features/*` 표기는 to-be다.
 
 **검색은 URL이 소스**: `MeringueHero`(홈)는 검색어를 자체 state로 두고 제출 시 `/classes?q=`로 `push`하며, `/classes` 페이지가 `searchParams`로 초기값을 받아 `ClassCatalogGrid`에 넘긴다. 홈에 그리드가 없으므로 히어로에 검색 state를 되돌리지 말 것.
 
@@ -85,7 +91,9 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 도서는 **추천 큐레이션**(외부 쿠팡 판매, 파트너스 제휴)으로, 자체 결제·배송이 없다. 데이터는 `books` 테이블이 아니라 **정적 상수 `src/lib/books-data.ts`**에서 오며(`getBooks()` in `src/lib/books.ts`), 표지는 로컬 자산(`public/books/`). `books` 테이블·seed는 이력용으로 존치되지만 앱은 읽지 않는다.
 
 ## Docs & a documentation gotcha
-Design docs are in `Docs/` (`PRD.md`, `TechSpec.md`, `DBSchema.md`, `UXGuide.md`) and API/security items are traceable by `TS-*` codes (e.g. `TS-API-10`, `TS-SEC-02`) referenced in route comments.
+Design docs are in `Docs/` (`PRD.md`, `TechSpec.md`, `DBSchema.md`, `UXGuide.md`, `plan.md`, `CodeReview-2026-07.md`) and API/security items are traceable by `TS-*` codes (e.g. `TS-API-10`, `TS-SEC-02`) referenced in route comments.
+
+**`Docs/CodeReview-2026-07.md` §12에 미완 사람 검증 18건이 모여 있다** — 로그인 세션·운영자 권한·Toss 결제창 본인인증이 필요해 도구로 완결할 수 없는 항목들이다. 관련 화면을 건드릴 때 함께 확인하도록 유도할 것.
 
 **`TechSpec.md` is the "to-be" target spec, not as-built.** It lists TanStack Query and Zustand, but the actual app installs neither — server state is plain RSC fetching and there is no global client store yet. Trust the code over the spec for what's actually wired up.
 
