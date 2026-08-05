@@ -70,7 +70,9 @@ const I18N_DONE: string[] = [
   'DetailScreen.tsx', // DC-62
   'PaymentScreen.tsx', // DC-63
   'PlayerScreen.tsx', // DC-63
-  //  Phase 4 → 'LoginScreen.tsx', 'InquiriesScreen.tsx', 'MyClassesScreen.tsx'
+  'LoginScreen.tsx', // DC-64
+  'InquiriesScreen.tsx', // DC-10 (DC-97 이후 신설 화면)
+  'MyClassesScreen.tsx', // DC-10 (DC-96 이후 신설 화면)
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
 ];
 

@@ -5,24 +5,29 @@ import { createClient } from '@/lib/supabase/client';
 import { getSupabasePublicEnv } from '@/lib/supabase/env';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import type { Database } from '../../supabase/database.types';
 
-/** Supabase Auth 에러 메시지를 사용자 친화 한국어로 매핑. */
-function translateAuthError(message: string): string {
-  if (/invalid login credentials/i.test(message))
-    return '이메일 또는 비밀번호가 올바르지 않습니다.';
-  if (/email not confirmed/i.test(message))
-    return '이메일 인증이 완료되지 않았습니다. 메일함을 확인해주세요.';
-  if (/user already registered/i.test(message)) return '이미 가입된 이메일입니다. 로그인해주세요.';
-  if (/password should be at least/i.test(message))
-    return '비밀번호는 최소 6자리 이상이어야 합니다.';
-  return message;
-}
+/**
+ * Supabase Auth의 영문 에러 메시지를 메시지 카탈로그 키로 옮긴다.
+ * 매핑되지 않은 코드는 공급자 원문을 그대로 보여준다(번역할 근거가 없다).
+ */
+const AUTH_ERROR_KEYS: [RegExp, string][] = [
+  [/invalid login credentials/i, 'errInvalidCredentials'],
+  [/email not confirmed/i, 'errEmailNotConfirmed'],
+  [/user already registered/i, 'errAlreadyRegistered'],
+  [/password should be at least/i, 'errPasswordShort'],
+];
 
 export default function LoginScreen() {
   const router = useRouter();
+  const t = useTranslations('login');
+  const translateAuthError = (message: string): string => {
+    const hit = AUTH_ERROR_KEYS.find(([re]) => re.test(message));
+    return hit ? t(hit[1]) : message;
+  };
   // Vercel에 NEXT_PUBLIC_SUPABASE_* 미설정 시 createClient throw로 페이지가 죽지 않게 한다.
   const supabase = useMemo<SupabaseClient<Database> | null>(() => {
     if (!getSupabasePublicEnv()) return null;
@@ -45,17 +50,15 @@ export default function LoginScreen() {
     setErrorMsg('');
     setSuccessMsg('');
     if (!supabase) {
-      setErrorMsg(
-        'Supabase 환경변수가 없습니다. Vercel Project Settings > Environment Variables에 NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY를 추가한 뒤 재배포하세요.',
-      );
+      setErrorMsg(t('errNoEnv'));
       return;
     }
     if (!email) {
-      setErrorMsg('이메일을 입력해주세요.');
+      setErrorMsg(t('errEmailRequired'));
       return;
     }
     if (password.length < 6) {
-      setErrorMsg('비밀번호는 최소 6자리 이상이어야 합니다.');
+      setErrorMsg(t('errPasswordShort'));
       return;
     }
 
@@ -67,7 +70,7 @@ export default function LoginScreen() {
         setSubmitting(false);
         return;
       }
-      setSuccessMsg('성공적으로 로그인되었습니다!');
+      setSuccessMsg(t('okLogin'));
       router.push('/');
       router.refresh();
     } else {
@@ -82,13 +85,13 @@ export default function LoginScreen() {
         return;
       }
       if (data.session) {
-        setSuccessMsg('회원가입이 완료되었습니다! 로그인 상태로 전환됩니다.');
+        setSuccessMsg(t('okRegister'));
         router.push('/');
         router.refresh();
       } else {
         // 이메일 확인이 켜진 경우 세션 없이 확인 메일 발송
         setSubmitting(false);
-        setSuccessMsg('확인 이메일을 발송했습니다. 메일함에서 인증 후 로그인해주세요.');
+        setSuccessMsg(t('okConfirmSent'));
       }
     }
   };
@@ -97,9 +100,7 @@ export default function LoginScreen() {
     setErrorMsg('');
     setSuccessMsg('');
     if (!supabase) {
-      setErrorMsg(
-        'Supabase 환경변수가 없습니다. Vercel Environment Variables를 설정한 뒤 재배포하세요.',
-      );
+      setErrorMsg(t('errNoEnvSocial'));
       return;
     }
     const { error } = await supabase.auth.signInWithOAuth({
@@ -108,7 +109,7 @@ export default function LoginScreen() {
     });
     // 성공 시 브라우저가 provider로 리다이렉트됨. 실패(미설정 등) 시 안내.
     if (error) {
-      setErrorMsg(`${provider} 로그인을 사용할 수 없습니다: ${error.message}`);
+      setErrorMsg(t('errSocialUnavailable', { provider, message: error.message }));
     }
   };
 
@@ -131,7 +132,7 @@ export default function LoginScreen() {
               Atelier Crème
             </span>
             <p className="text-xs text-brown-medium mt-2 font-sans tracking-wide">
-              디저트 아티스트의 고감도 VOD 베이킹 아틀리에
+              {t('tagline')}
             </p>
           </div>
 
@@ -151,7 +152,7 @@ export default function LoginScreen() {
                   : 'text-brown-medium/60 hover:text-brown-medium'
               }`}
             >
-              로그인
+              {t('tabLogin')}
             </button>
             <button
               id="tab-register"
@@ -167,7 +168,7 @@ export default function LoginScreen() {
                   : 'text-brown-medium/60 hover:text-brown-medium'
               }`}
             >
-              회원가입
+              {t('tabRegister')}
             </button>
           </div>
 
@@ -190,7 +191,7 @@ export default function LoginScreen() {
             {!isLoginTab && (
               <div>
                 <label className="block text-xs font-semibold text-brown uppercase tracking-wide mb-1.5">
-                  이름 (실명)
+                  {t('nameLabel')}
                 </label>
                 <div className="relative">
                   <input
@@ -198,7 +199,7 @@ export default function LoginScreen() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="홍길동"
+                    placeholder={t('namePlaceholder')}
                     className="w-full px-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
                   />
                 </div>
@@ -208,7 +209,7 @@ export default function LoginScreen() {
             {/* Email */}
             <div>
               <label className="block text-xs font-semibold text-brown uppercase tracking-wide mb-1.5">
-                이메일 주소
+                {t('emailLabel')}
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-brown-medium/50">
@@ -230,18 +231,18 @@ export default function LoginScreen() {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-xs font-semibold text-brown uppercase tracking-wide">
-                  비밀번호
+                  {t('passwordLabel')}
                 </label>
                 {isLoginTab && (
                   <a
                     href="#find-pw"
                     onClick={(e) => {
                       e.preventDefault();
-                      setErrorMsg('이메일로 임시 비밀번호 전송 기능을 구현할 수 있습니다.');
+                      setErrorMsg(t('notImplementedResetPw'));
                     }}
                     className="text-[10px] text-gold hover:underline font-medium"
                   >
-                    비밀번호를 잊으셨나요?
+                    {t('forgotPassword')}
                   </a>
                 )}
               </div>
@@ -278,7 +279,7 @@ export default function LoginScreen() {
                     onChange={() => setRememberMe(!rememberMe)}
                     className="w-4 h-4 rounded text-terracotta border-brown-light focus:ring-terracotta accent-terracotta"
                   />
-                  <span className="text-xs text-brown-medium">이메일 기억하기</span>
+                  <span className="text-xs text-brown-medium">{t('rememberMe')}</span>
                 </label>
               </div>
             )}
@@ -291,10 +292,10 @@ export default function LoginScreen() {
               className="w-full py-3 px-4 bg-terracotta hover:bg-terracotta-deep disabled:opacity-60 disabled:cursor-not-allowed text-cream font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
             >
               {submitting
-                ? '처리 중...'
+                ? t('submitting')
                 : isLoginTab
-                  ? '크렘 가입 계정으로 로그인'
-                  : '이메일로 회원가입 및 즉시 시작'}
+                  ? t('submitLogin')
+                  : t('submitRegister')}
             </button>
           </form>
 
@@ -305,7 +306,7 @@ export default function LoginScreen() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-3 text-brown-medium/50 font-medium">
-                또는 간편 로그인
+                {t('orSocial')}
               </span>
             </div>
           </div>
@@ -336,21 +337,23 @@ export default function LoginScreen() {
                   d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.93 1.19 15.24 0 12 0 7.31 0 3.25 2.7 1.28 6.64l3.93 3.09c.96-2.87 3.63-5.01 6.79-5.01z"
                 />
               </svg>
-              Google 로그인
+              {t('googleLogin')}
             </button>
           </div>
 
           <p className="text-[10px] text-center text-brown-medium/60 mt-8 leading-normal">
-            가입 시 Atelier Crème의{' '}
-            <a href="#terms" className="underline hover:text-terracotta">
-              서비스 이용약관
-            </a>{' '}
-            및{' '}
-            <a href="#privacy" className="underline hover:text-terracotta">
-              개인정보 처리방침
-            </a>
-            에 동의하게 됩니다. 해외 수강생 서비스 및 중문 번역 기능은 로그인 후 프로필에서 설정
-            가능합니다.
+            {t.rich('terms', {
+              terms: (chunks) => (
+                <a href="#terms" className="underline hover:text-terracotta">
+                  {chunks}
+                </a>
+              ),
+              privacy: (chunks) => (
+                <a href="#privacy" className="underline hover:text-terracotta">
+                  {chunks}
+                </a>
+              ),
+            })}
           </p>
         </div>
       </div>

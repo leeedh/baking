@@ -1,5 +1,9 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
+import {
+  DEFAULT_INQUIRY_CATEGORY,
+  INQUIRY_CATEGORY_VALUES,
+} from '@/lib/inquiry-categories';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -11,10 +15,8 @@ import { z } from 'zod';
 //   · getUser         — 로그인 회원만 작성(비로그인은 401 → 화면에서 로그인 유도)
 //   · user_id는 서버 세션에서 주입 — 클라이언트가 보낸 소유자 값은 신뢰하지 않는다
 // RLS(inquiries_insert_own)는 backstop이다.
-const CATEGORIES = ['결제', '수강', '영상', '자료', '기타'] as const;
-
 const CreateSchema = z.object({
-  category: z.enum(CATEGORIES).default('기타'),
+  category: z.enum(INQUIRY_CATEGORY_VALUES).default(DEFAULT_INQUIRY_CATEGORY),
   subject: z.string().trim().min(2).max(120),
   body: z.string().trim().min(5).max(4000),
 });
