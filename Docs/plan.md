@@ -162,11 +162,16 @@
 - 🔲 남은 것: Husky+lint-staged, Vitest(단위) + Playwright(결제·시청 E2E), CI/CD 파이프라인, Vercel 환경 분리.
 - **참조**: TS §1.4, §7
 
-### EPIC-K · i18n 완성 (P1)
-- 현재 `t()` 실적용은 3개 컴포넌트(Header·MeringueHero·CatalogScreen)뿐, `translations` 키 ~30개. 상세·결제·플레이어·로그인·도서·강사 화면은 KO 하드코딩 → **전면 메시지화**.
-- 통화 현지화: KRW 청구 + 대만/EN 로케일 `≈ NT$` 참고가 병기(EPIC-D 통화 현지화와 연계)·날짜 로케일 포맷.
-- zh-CN 확장 구조 준비(값은 v1.1).
-- **참조**: PRD-F-01, PRD-NF-06, TS-ADR-05/07
+### EPIC-K · i18n 완성 (P1) — ✅ **화면 문구 완료**(2026-08-05, = Jira DC-62·63·64·65)
+- ✅ **전 고객 화면 메시지화**: 상세·결제·플레이어·로그인·문의·내 클래스 + DC-96으로 분리된 `sections/*` 전부. `/en`의 `about`·`books`·`inquiries`·`login`은 **한글 0자**로 확인.
+- ✅ **DC-65 로케일 포맷**: `lib/format.ts`의 `formatKrw`·`formatCount`·`formatDate`·`formatDateTime`. 예전엔 로케일 없는 `toLocaleString()`(하이드레이션 불일치 위험)과 `toLocaleDateString('ko-KR')` 하드코딩이 섞여 있었다. 대만향 `≈ NT$` 참고가도 키로 이관.
+- ✅ **회귀 방지**: `src/i18n/messages.test.ts` — ko/en 키 동등성 · 미참조 네임스페이스 · en 값의 한글 잔존 · `I18N_DONE` 컴포넌트의 하드코딩 한글 스캐너. 테스트 29 → 72건.
+- ✅ **고아 키 정리**: DC-96 이전 단일 랜딩용 `pillars`·`grid`·`btn` 네임스페이스(키 33개) 제거.
+- ✅ **계약 값 분리**: `lib/inquiry-categories.ts`·`lib/course-categories.ts` — API/DB에 저장되는 분류 값과 화면 라벨을 분리(라우트·화면에 중복돼 있던 목록도 단일화).
+- 🔲 **잔여 — 강좌 콘텐츠 영문화(Jira DC-108)**: `pickLocale()`은 정상이나 DB의 `courses.title/description/instructor_title`·`lessons.title`에 `en` 값이 없어 `/en`에서도 강좌 제목·설명이 한국어다. **코드가 아니라 데이터** 문제로 별건 진행.
+- 🔲 **운영자 콘솔 제외**(의도): `DashboardScreen`·`LessonManager`는 한국어 단일 사용자 대상.
+- 🔲 zh-CN 확장 구조 준비(값은 v1.1).
+- **참조**: PRD-F-01, PRD-NF-06, TS-ADR-05/07. Jira **DC-10**(에픽) · DC-62·63·64·65 · **DC-108**(잔여).
 
 ### EPIC-M · 정보구조 개편(홈/소개/온라인 클래스) (P1) — ✅ 완료(2026-07-29, = Jira DC-96)
 - **목표**: 단일 랜딩(`CatalogScreen.tsx`, 966줄)에 뭉친 브랜드/클래스 콘텐츠를 **홈(게이트웨이)·소개(`/about`)·온라인 클래스(`/classes`)** 3면으로 분리해 운영자가 소개와 판매를 독립 관리.
@@ -242,4 +247,10 @@
 
 ---
 
-*EPIC-A·B·C·D·E·F·G·L·**M·N** 완료(카탈로그·정보구조 개편·문의사항 포함, 2026-07-29). 다음 착수 권장: **EPIC-K(i18n 완성, Jira DC-10 — 분리된 섹션의 KO 하드코딩 메시지화 포함)** / **EPIC-I 품질(Jira DC-8: alert→토스트·접근성·색상 토큰 통일 DC-57)**. EPIC-D 잔여는 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 잔여는 실제 도서 판매 URL(§5-5).*
+*EPIC-A·B·C·D·E·F·G·L·M·N 완료. **EPIC-K(i18n) 화면 문구 완료**(2026-08-05) — 잔여는 강좌 DB 콘텐츠 영문화(Jira **DC-108**)뿐이며 코드가 아니라 데이터 작업이다.*
+
+*다음 착수 권장: **EPIC-I 품질(Jira DC-8)** — DC-53 Sentry(코드리뷰 L-2에서 넣은 `console.error`를 제대로 대체할 자리), DC-55 잔여 `alert()` 2곳(`DetailScreen:59`·`PlayerScreen:79`), DC-54 운영자 표 접근성(`th scope`·`caption` 0건), DC-56 모션·색 대비, DC-57 hover 토큰. 그다음은 **EPIC-J 인프라(DC-12)** — DC-69 Husky, DC-71/72 Playwright, DC-73 CI.*
+
+*외부 입력 대기: EPIC-D 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 도서 판매 URL(§5-5), DC-95 Supabase 대시보드 설정.*
+
+*⚠️ **사람 검증 미완 누적**: `Docs/CodeReview-2026-07.md` §12에 18건이 모여 있다(결제 3건은 Toss 본인인증 때문에 자동화 불가).*

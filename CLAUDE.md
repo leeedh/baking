@@ -57,6 +57,14 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 ### i18n
 `next-intl` with `/[locale]` routing (`src/i18n/routing.ts`, locales `ko`/`en`). Translations in `messages/{ko,en}.json`. All pages live under `src/app/[locale]/`. Use the navigation helpers in `src/i18n/navigation.ts`, not raw `next/link`, to keep locale prefixes.
 
+**네임스페이스 규약(EPIC-K)**: 화면 단위 평면 구조 — `detail`·`payment`·`player`·`login`·`myclasses`·`inquiries`·`classes`·`review`·`common`. `sections/*` 컴포넌트는 `sections` 아래 한 겹(`sections.chef`·`sections.catalog`·`sections.card` …). 배열 데이터는 `t.raw()` + 타입 단언(`AboutScreen.tsx` 참조).
+
+**`src/i18n/messages.test.ts`가 네 가지를 잠근다** — ko/en 키 집합 동등성, 미참조 네임스페이스, en 값의 한글 잔존, 그리고 **`I18N_DONE`에 오른 컴포넌트의 하드코딩 한글**. 새 고객 화면을 만들면 이 배열에 추가할 것. 운영자 콘솔(`DashboardScreen`·`LessonManager`)은 의도적으로 범위 밖이다(운영자는 한국어 단일 사용자).
+
+**번역하면 안 되는 것 두 가지**: ① 금액·날짜는 `lib/format.ts`의 `formatKrw`/`formatDate`로 — 로케일을 지정하지 않은 `toLocaleString()`은 서버/브라우저 기본값이 달라 하이드레이션이 깨진다. ② API·DB에 저장되는 **값**(문의 분류·코스 카테고리)은 `lib/inquiry-categories.ts`·`lib/course-categories.ts`에 두고 라벨만 메시지에서 꺼낸다.
+
+**강좌·차시 콘텐츠는 아직 한국어뿐이다** — `pickLocale()`(`lib/i18n-json.ts`)은 정상이지만 DB의 `en` 값이 비어 있어 `/en`에서도 강좌 제목·설명이 한국어로 나온다. 코드가 아니라 데이터 문제이며 **Jira DC-108** 소관이다.
+
 ### 정보구조 — 홈·소개·온라인 클래스 3면 (DC-96)
 홈(`/`)은 **브랜드 게이트웨이**이고 클래스 목록 본체는 **`/classes`**, 브랜드/셰프 소개는 **`/about`**이다(구 `/instructor`는 `/about` 리다이렉트). 화면 골격은 `src/components/{HomeScreen,ClassesScreen,AboutScreen}.tsx`가 조립하고, 재사용 섹션은 **`src/components/sections/`**(`PhilosophyPillars`·`RecommendationQuiz`·`ClassCard`·`ClassCatalogGrid`·`StudentArchive`·`ChefBanner`·`FaqAccordion`·`NewsletterCTA`·`BestClasses`)에 있다. **`src/features/`는 없다** — TechSpec의 `features/*` 표기는 to-be다.
 
