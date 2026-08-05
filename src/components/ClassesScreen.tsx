@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import type { ClassItem } from '../types';
 import ClassCatalogGrid from './sections/ClassCatalogGrid';
@@ -18,6 +19,7 @@ interface ClassesScreenProps {
 // DC-96 (PRD-F-20) · 온라인 클래스 = 판매 화면.
 // 추천 퀴즈 → 검색·카테고리 필터 + 전체 그리드 → FAQ → 뉴스레터.
 export default function ClassesScreen({ classes, initialSearchQuery }: ClassesScreenProps) {
+  const t = useTranslations();
   const router = useRouter();
 
   // 카드 클릭이 router.push라 자동 프리페치가 안 걸린다(dev에선 on-demand 컴파일 회피로 생략).
@@ -42,11 +44,10 @@ export default function ClassesScreen({ classes, initialSearchQuery }: ClassesSc
           id="classes-hero-heading"
           className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep"
         >
-          온라인 클래스
+          {t('classes.title')}
         </h1>
         <p className="text-sm text-brown-medium font-light max-w-2xl mx-auto break-keep">
-          평생 소장 VOD로 만나는 Atelier Crème의 프렌치 디저트 마스터 코스입니다. 추천 퀴즈로 나에게
-          맞는 클래스를 먼저 찾아보세요.
+          {t('classes.subtitle')}
         </p>
       </section>
 

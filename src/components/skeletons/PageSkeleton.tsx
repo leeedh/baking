@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 export type SkeletonVariant = 'grid' | 'table' | 'form' | 'detail';
 
 interface PageSkeletonProps {
@@ -20,6 +22,7 @@ const Bar = ({ className }: { className: string }) => (
  * 서버 렌더 완료 전까지 화면이 정지된 것처럼 보이는 문제를 없앤다. 외부 요청·상태 없음.
  */
 export default function PageSkeleton({ variant = 'grid' }: PageSkeletonProps) {
+  const t = useTranslations();
   return (
     // 예전에는 래퍼가 aria-hidden이라 "로딩 중"이라는 사실 자체가 보조기술에 전달되지 않았다
     // (코드리뷰 L-5). 이제 래퍼가 상태를 알리고, 의미 없는 회색 막대만 숨긴다.
@@ -28,7 +31,7 @@ export default function PageSkeleton({ variant = 'grid' }: PageSkeletonProps) {
       aria-busy="true"
       className="block max-w-7xl mx-auto px-4 sm:px-8 py-10 animate-pulse"
     >
-      <span className="sr-only">불러오는 중</span>
+      <span className="sr-only">{t('common.loading')}</span>
       <div aria-hidden>
       {/* 상단 히어로/제목 영역 — 모든 변형이 공유한다 */}
       <Bar className="h-8 w-2/3 sm:w-1/3" />

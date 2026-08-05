@@ -1,9 +1,9 @@
 'use client';
 
+import type { BookView } from '@/lib/books';
 import { BookOpen, Check, ExternalLink, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import type { BookView } from '@/lib/books';
 
 /**
  * 도서 화면 — **자체 결제·배송이 없다.** 추천 큐레이션 도서를 소개하고 구매 CTA는 외부
@@ -52,7 +52,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
 
       {/* Main Dual Columns Layout */}
       <section
-        aria-label="추천 도서 목록"
+        aria-label={t('books.listAria')}
         className="py-12 px-6 sm:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12"
       >
         {/* Left Side: Books Selector & Thumbnails */}

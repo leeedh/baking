@@ -73,6 +73,17 @@ const I18N_DONE: string[] = [
   'LoginScreen.tsx', // DC-64
   'InquiriesScreen.tsx', // DC-10 (DC-97 이후 신설 화면)
   'MyClassesScreen.tsx', // DC-10 (DC-96 이후 신설 화면)
+  // Phase 5a — 공통 UI·소형 컴포넌트
+  'Header.tsx',
+  'BooksScreen.tsx',
+  'ClassesScreen.tsx',
+  'ReviewForm.tsx',
+  'skeletons/PageSkeleton.tsx',
+  'player/SecureVideoPlayer.tsx',
+  'sections/AnnouncementBar.tsx',
+  'sections/BestClasses.tsx',
+  'ui/ConfirmDialog.tsx',
+  'ui/Modal.tsx',
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
 ];
 
@@ -92,7 +103,8 @@ function findComponent(fileName: string): string {
       if (statSync(full).isDirectory()) {
         const found = walk(full);
         if (found) return found;
-      } else if (full.endsWith(fileName)) {
+        // 목록은 'sections/Foo.tsx'처럼 POSIX 구분자로 적는다 — Windows의 `\`와 맞춘다.
+      } else if (full.replaceAll('\\', '/').endsWith(fileName)) {
         return full;
       }
     }

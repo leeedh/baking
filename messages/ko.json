@@ -1,5 +1,7 @@
 {
   "nav": {
+    "accountSuffix": "로그인 계정",
+    "mainMenu": "주요 메뉴",
     "books": "도서 상점",
     "about": "소개",
     "classes": "온라인 클래스",
@@ -50,6 +52,7 @@
     "chef": "대표 아티장 셰프: 민소희"
   },
   "books": {
+    "listAria": "추천 도서 목록",
     "badge": "CURATED RECIPE BOOKS",
     "title1": "민소희 셰프가 추천하는",
     "titleEm": "실전 레시피 도서",
@@ -345,6 +348,42 @@
       "open": "접수",
       "answered": "답변완료",
       "closed": "종료"
+    }
+  },
+  "common": {
+    "confirm": "확인",
+    "cancel": "취소",
+    "close": "닫기",
+    "loading": "불러오는 중",
+    "videoLoadFailed": "영상을 불러올 수 없습니다.",
+    "videoNetworkError": "네트워크 오류로 영상을 불러오지 못했습니다."
+  },
+  "classes": {
+    "title": "온라인 클래스",
+    "subtitle": "평생 소장 VOD로 만나는 Atelier Crème의 프렌치 디저트 마스터 코스입니다. 추천 퀴즈로 나에게 맞는 클래스를 먼저 찾아보세요."
+  },
+  "review": {
+    "notEnrolled": "후기는 이 클래스를 수강 중인 분만 남길 수 있습니다.",
+    "titleEdit": "내 후기 수정",
+    "titleNew": "수강 후기 남기기",
+    "ratingLegend": "별점 선택",
+    "ratingAria": "별점 {star}점",
+    "ratingValue": "{rating}점",
+    "placeholder": "수강하며 느낀 점을 남겨주세요.",
+    "submitEdit": "수정하기",
+    "submitNew": "후기 등록",
+    "delete": "삭제"
+  },
+  "sections": {
+    "announcement": {
+      "promo": "Sugar Lane & Happy Happy Academy 콜라보 레퍼런스 오픈 기념 최대 45% 즉시 할인",
+      "perk1": "• 오너 셰프 1:1 디렉션 보증",
+      "perk2": "• 실전 상업용 황금 배합비 PDF 즉시 배포"
+    },
+    "best": {
+      "title": "지금 가장 사랑받는 클래스",
+      "description": "수강생 평점이 가장 높은 세 개의 마스터 코스입니다. 전체 라인업은 온라인 클래스에서 확인하세요.",
+      "cta": "전체 클래스 보기"
     }
   }
 }

@@ -3,6 +3,7 @@
 import { readError } from '@/lib/api/read-error';
 import type { MyReview } from '@/types';
 import { Star } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export default function ReviewForm({ courseId, canReview, myReview }: Props) {
+  const t = useTranslations();
   const router = useRouter();
   const [rating, setRating] = useState(myReview?.rating ?? 5);
   const [content, setContent] = useState(myReview?.content ?? '');
@@ -24,7 +26,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
   if (!canReview) {
     return (
       <p className="text-xs text-brown-medium/70 bg-cream border border-brown-light rounded-xl p-4">
-        후기는 이 클래스를 수강 중인 분만 남길 수 있습니다.
+        {t('review.notEnrolled')}
       </p>
     );
   }
@@ -57,16 +59,16 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
   return (
     <div className="bg-white border border-brown-light rounded-xl p-4 space-y-3">
       <h3 className="text-xs font-bold text-brown">
-        {myReview ? '내 후기 수정' : '수강 후기 남기기'}
+        {myReview ? t('review.titleEdit') : t('review.titleNew')}
       </h3>
 
       <fieldset className="flex items-center gap-1">
-        <legend className="sr-only">별점 선택</legend>
+        <legend className="sr-only">{t('review.ratingLegend')}</legend>
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
-            aria-label={`별점 ${star}점`}
+            aria-label={t('review.ratingAria', { star })}
             aria-pressed={star === rating}
             onClick={() => setRating(star)}
             className="p-0.5 cursor-pointer text-gold"
@@ -74,7 +76,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
             <Star size={18} className={star <= rating ? 'fill-gold' : 'opacity-25'} />
           </button>
         ))}
-        <span className="ml-2 text-[11px] text-brown-medium">{rating}점</span>
+        <span className="ml-2 text-[11px] text-brown-medium">{t('review.ratingValue', { rating })}</span>
       </fieldset>
 
       <textarea
@@ -82,7 +84,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
         onChange={(e) => setContent(e.target.value)}
         maxLength={2000}
         rows={3}
-        placeholder="수강하며 느낀 점을 남겨주세요."
+        placeholder={t('review.placeholder')}
         className="w-full text-xs p-3 rounded-lg border border-brown-light bg-ivory text-brown resize-y"
       />
 
@@ -99,7 +101,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
           onClick={() => submit(myReview ? 'PATCH' : 'POST')}
           className="px-4 py-2 bg-brown hover:bg-gold disabled:opacity-50 text-cream text-xs font-bold rounded-lg transition-colors cursor-pointer"
         >
-          {myReview ? '수정하기' : '후기 등록'}
+          {myReview ? t('review.submitEdit') : t('review.submitNew')}
         </button>
         {myReview && (
           <button
@@ -108,7 +110,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
             onClick={() => submit('DELETE')}
             className="px-4 py-2 border border-brown-light hover:border-terracotta disabled:opacity-50 text-brown-medium text-xs rounded-lg transition-colors cursor-pointer"
           >
-            삭제
+            {t('review.delete')}
           </button>
         )}
       </div>

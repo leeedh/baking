@@ -1,5 +1,7 @@
 {
   "nav": {
+    "accountSuffix": "account",
+    "mainMenu": "Main menu",
     "books": "Book Shop",
     "about": "About",
     "classes": "Online Classes",
@@ -50,6 +52,7 @@
     "chef": "Head Artisan Chef: Sohee Min"
   },
   "books": {
+    "listAria": "Recommended books",
     "badge": "CURATED RECIPE BOOKS",
     "title1": "Chef Sohee Min's Recommended",
     "titleEm": "Hands-On Recipe Books",
@@ -345,6 +348,42 @@
       "open": "Received",
       "answered": "Answered",
       "closed": "Closed"
+    }
+  },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading",
+    "videoLoadFailed": "We could not load this video.",
+    "videoNetworkError": "A network error prevented the video from loading."
+  },
+  "classes": {
+    "title": "Online Classes",
+    "subtitle": "Atelier Crème's French dessert master courses, yours to keep for life on VOD. Take the recommendation quiz to find the class that fits you."
+  },
+  "review": {
+    "notEnrolled": "Only students enrolled in this class can leave a review.",
+    "titleEdit": "Edit my review",
+    "titleNew": "Leave a review",
+    "ratingLegend": "Choose a rating",
+    "ratingAria": "{star} stars",
+    "ratingValue": "{rating}",
+    "placeholder": "Tell us what you thought while taking the class.",
+    "submitEdit": "Save changes",
+    "submitNew": "Post review",
+    "delete": "Delete"
+  },
+  "sections": {
+    "announcement": {
+      "promo": "Up to 45% off to celebrate the Sugar Lane & Happy Happy Academy collaboration reference launch",
+      "perk1": "• 1:1 direction from the owner chef, guaranteed",
+      "perk2": "• Commercial golden-ratio formula PDF delivered instantly"
+    },
+    "best": {
+      "title": "Most loved classes right now",
+      "description": "The three master courses with the highest student ratings. See the full lineup under Online Classes.",
+      "cta": "See all classes"
     }
   }
 }

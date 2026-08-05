@@ -159,7 +159,7 @@ export default function Header() {
         {/* Desktop Navigation Items (Hidden on Mobile) */}
         <nav
           id="header-nav-desktop"
-          aria-label="주요 메뉴"
+          aria-label={t('nav.mainMenu')}
           className="hidden md:flex items-center gap-2 lg:gap-6 font-sans text-xs sm:text-sm font-medium"
         >
           {items.map((item) => (
@@ -275,7 +275,7 @@ export default function Header() {
             <div className="px-4 py-2 flex flex-col gap-2">
               <div className="flex flex-col">
                 <span className="text-[11px] text-brown-medium">
-                  {t('nav.student')} 로그인 계정
+                  {t('nav.student')} {t('nav.accountSuffix')}
                 </span>
                 <span className="text-xs font-semibold text-brown truncate">{userEmail}</span>
               </div>

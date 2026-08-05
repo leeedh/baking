@@ -1,5 +1,8 @@
 // DC-96 · 상단 프로모션 고지 바. 기존 CatalogScreen 최상단 블록을 그대로 추출(홈 전용).
+import { useTranslations } from 'next-intl';
+
 export default function AnnouncementBar() {
+  const t = useTranslations();
   return (
     <div className="bg-brown text-cream text-xs py-2 px-4 shadow-sm border-b border-cream/15">
       <div
@@ -11,12 +14,12 @@ export default function AnnouncementBar() {
             PROMO
           </span>
           <span className="text-[11px] font-light tracking-wide break-keep">
-            Sugar Lane & Happy Happy Academy 콜라보 레퍼런스 오픈 기념 최대 45% 즉시 할인
+            {t('sections.announcement.promo')}
           </span>
         </div>
         <div className="hidden md:flex items-center gap-4 text-[11px] text-white/80">
-          <span>• 오너 셰프 1:1 디렉션 보증</span>
-          <span>• 실전 상업용 황금 배합비 PDF 즉시 배포</span>
+          <span>{t('sections.announcement.perk1')}</span>
+          <span>{t('sections.announcement.perk2')}</span>
         </div>
       </div>
     </div>

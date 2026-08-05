@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useId, useRef } from 'react';
 
@@ -33,6 +34,7 @@ export default function Modal({
   footer,
   className,
 }: ModalProps) {
+  const t = useTranslations();
   const panelRef = useRef<HTMLDivElement>(null);
   /** 열기 직전에 포커스를 갖고 있던 요소 — 닫을 때 여기로 되돌린다. */
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -124,7 +126,7 @@ export default function Modal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="닫기"
+            aria-label={t('common.close')}
             className="shrink-0 p-2 -m-1 rounded-lg text-brown-medium hover:text-terracotta hover:bg-terracotta/5 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <X size={16} />

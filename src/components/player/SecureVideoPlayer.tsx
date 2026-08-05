@@ -2,6 +2,7 @@
 
 import MuxPlayer from '@mux/mux-player-react';
 import { Loader2, Lock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import WatermarkOverlay from './WatermarkOverlay';
 import { usePlaybackProgress } from './usePlaybackProgress';
@@ -26,6 +27,7 @@ export default function SecureVideoPlayer({
   initialWatchedSec,
   title,
 }: SecureVideoPlayerProps) {
+  const t = useTranslations();
   const [state, setState] = useState<TokenState>({ status: 'loading' });
   const { report, flush } = usePlaybackProgress(lessonId);
   const flushRef = useRef(flush);
@@ -46,7 +48,7 @@ export default function SecureVideoPlayer({
         if (!res.ok) {
           setState({
             status: 'error',
-            message: body?.detail ?? '영상을 불러올 수 없습니다.',
+            message: body?.detail ?? t('common.videoLoadFailed'),
           });
           return;
         }
@@ -54,13 +56,13 @@ export default function SecureVideoPlayer({
       })
       .catch(() => {
         if (active) {
-          setState({ status: 'error', message: '네트워크 오류로 영상을 불러오지 못했습니다.' });
+          setState({ status: 'error', message: t('common.videoNetworkError') });
         }
       });
     return () => {
       active = false;
     };
-  }, [lessonId]);
+  }, [lessonId, t]);
 
   // 언마운트 시 마지막 위치 저장 (이어보기).
   useEffect(() => {

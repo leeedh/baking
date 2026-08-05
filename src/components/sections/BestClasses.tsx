@@ -5,6 +5,7 @@ import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { Link } from '@/i18n/navigation';
 import { buttonClasses } from '@/lib/button-classes';
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import type { ClassItem } from '../../types';
 import ClassCard from './ClassCard';
@@ -15,6 +16,7 @@ interface BestClassesProps {
 
 // DC-96 · 홈 게이트웨이의 "베스트 클래스" 블록. 평점 상위 3개만 보여주고 /classes로 넘긴다.
 export default function BestClasses({ classes }: BestClassesProps) {
+  const t = useTranslations();
   const best = [...classes].sort((a, b) => b.rating - a.rating).slice(0, 3);
   const revealRef = useRevealOnScroll<HTMLDivElement>();
 
@@ -25,11 +27,11 @@ export default function BestClasses({ classes }: BestClassesProps) {
       <SectionHeading
         id="best-heading"
         eyebrow="Best Selection"
-        title="지금 가장 사랑받는 클래스"
-        description="수강생 평점이 가장 높은 세 개의 마스터 코스입니다. 전체 라인업은 온라인 클래스에서 확인하세요."
+        title={t('sections.best.title')}
+        description={t('sections.best.description')}
         action={
           <Link href="/classes" className={buttonClasses('primary', 'md', 'shrink-0')}>
-            <span>전체 클래스 보기</span>
+            <span>{t('sections.best.cta')}</span>
             <ChevronRight size={13} />
           </Link>
         }
