@@ -48,6 +48,29 @@ describe('formatDate', () => {
     expect(formatDate(undefined, 'ko')).toBe('');
     expect(formatDate('not-a-date', 'ko')).toBe('');
   });
+
+  // timeZone을 비워 두면 런타임 기본 시간대를 따라 서버(UTC)와 브라우저(KST)가 다른 날짜를
+  // 렌더한다 — 하이드레이션이 깨지고 사용자에겐 날짜가 하루 밀려 보인다(Codex 리뷰 P1).
+  it('자정 근처 UTC 타임스탬프를 KST 기준 날짜로 고정한다', () => {
+    // 2026-08-05T15:30Z = 2026-08-06 00:30 KST → 표기는 8월 6일이어야 한다.
+    expect(formatDate('2026-08-05T15:30:00.000Z', 'en')).toMatch(/Aug 6/);
+    // 2026-08-05T14:30Z = 2026-08-05 23:30 KST → 아직 8월 5일.
+    expect(formatDate('2026-08-05T14:30:00.000Z', 'en')).toMatch(/Aug 5/);
+  });
+
+  it('실행 환경의 TZ가 바뀌어도 같은 값을 낸다', () => {
+    const iso = '2026-08-05T15:30:00.000Z';
+    const prev = process.env.TZ;
+    try {
+      process.env.TZ = 'UTC';
+      const inUtc = formatDate(iso, 'en');
+      process.env.TZ = 'America/New_York';
+      const inNy = formatDate(iso, 'en');
+      expect(inUtc).toBe(inNy);
+    } finally {
+      process.env.TZ = prev;
+    }
+  });
 });
 
 describe('formatDateTime', () => {

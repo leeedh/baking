@@ -52,7 +52,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
 
       {/* Main Dual Columns Layout */}
       <section
-        aria-label={t('books.listAria')}
+        aria-label={t('listAria')}
         className="py-12 px-6 sm:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12"
       >
         {/* Left Side: Books Selector & Thumbnails */}

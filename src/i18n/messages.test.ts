@@ -155,3 +155,37 @@ describe('i18n 완료 화면에 하드코딩 한글이 없다', () => {
     expect(offending).toEqual([]);
   });
 });
+
+// -----------------------------------------------------------------------------
+// 키 유효성
+//
+// 한글 스캐너는 "한글이 사라졌는지"만 본다. 존재하지 않는 키를 참조해도 통과한다 —
+// 실제로 BooksScreen이 useTranslations('books')로 스코프된 채 t('books.listAria')를 불러
+// books.books.listAria를 찾고 있었다(Codex 리뷰 P2). 화면에는 키 문자열이 그대로 나온다.
+// 정적으로 판정 가능한 형태(리터럴 키 + 파일 상단의 단일 useTranslations 스코프)만 검사한다.
+// -----------------------------------------------------------------------------
+describe('t() 호출이 존재하는 키를 가리킨다', () => {
+  const koFlat = flatten(ko as Json);
+  /** 배열 키는 `a.b[0]`로 평탄화되므로, t.raw('a.b')를 위해 접두어 집합도 만든다. */
+  const known = new Set(Object.keys(koFlat));
+  for (const k of Object.keys(koFlat)) {
+    const base = k.replace(/\[\d+\].*$/, '');
+    if (base !== k) known.add(base);
+    const parts = base.split('.');
+    for (let i = 1; i < parts.length; i++) known.add(parts.slice(0, i).join('.'));
+  }
+
+  it.each(I18N_DONE)('%s', (fileName) => {
+    const src = stripComments(readFileSync(findComponent(fileName), 'utf-8'));
+    const scope = src.match(/useTranslations\(\s*'([^']+)'\s*\)/)?.[1] ?? '';
+    const multiScope = (src.match(/useTranslations\(/g) ?? []).length > 1;
+
+    const calls = [...src.matchAll(/\b(?:t|tq|tc)(?:\.raw)?\(\s*'([^'`$]+)'/g)].map((m) => m[1]);
+    const missing = calls.filter((key) => {
+      // 스코프가 여럿이면 어느 t인지 정적으로 못 가리므로, 어느 스코프에든 있으면 통과시킨다.
+      if (multiScope) return !known.has(key) && ![...known].some((k) => k.endsWith(`.${key}`));
+      return !known.has(scope ? `${scope}.${key}` : key);
+    });
+    expect(missing).toEqual([]);
+  });
+});
