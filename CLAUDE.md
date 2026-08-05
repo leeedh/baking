@@ -13,14 +13,18 @@ Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `
 - `pnpm dev` — dev server on **port 3000** (payment/origin guards assume `http://localhost:3000`)
 - **성능 진단 주의**: `pnpm dev`는 라우트를 처음 방문할 때마다 on-demand 컴파일한다 — "클릭이 느리다"는 대부분 이 dev 컴파일이지 앱 성능이 아니다. 실제 성능은 `pnpm build && pnpm start`로 검증할 것. dev 스크립트는 `--turbopack` 사용. 실행 모드 판별: `.next/BUILD_ID` 없으면 dev.
 - `pnpm build` / `pnpm start`
-- `pnpm lint` — Biome check. **주의: 커밋된 파일이 CRLF라 리포 전체에서 `format` 에러로 실패한다(main도 동일, pre-existing).** 신규 코드 검증은 `pnpm typecheck`에 의존하고, lint는 변경 파일만 개별 확인.
+- **프로덕션 검증은 포트 3100에서** — 3000은 사용자 dev 서버가 점유 중일 때가 많다. `PORT=3100 pnpm start`.
+- **`TaskStop`은 node를 죽이지 않는다** — 리스너가 남아 다음 `pnpm start`가 `EADDRINUSE`로 조용히 실패하고, 그대로 curl하면 **구 빌드를 측정하게 된다**. 종료 후 반드시 `netstat -ano | grep ":3100 "` → `taskkill //PID <pid> //F`로 해제를 확인할 것.
+- `pnpm lint` — Biome check. **주의: 커밋된 파일이 CRLF라 리포 전체에서 `format` 에러로 실패한다(main도 동일, pre-existing).** 실제 지적만 보려면 **`npx biome check --formatter-enabled=false <경로>`** — CRLF 노이즈가 걷히고 lint/organizeImports 위반만 남는다.
+- **`biome check --write`를 디렉터리에 돌리지 말 것** — 손대지 않은 파일의 import까지 정렬해 diff를 오염시킨다. 변경한 파일만 명시할 것.
 - `pnpm typecheck` — `tsc --noEmit`
+- `pnpm test` — Vitest(`vitest run`). 순수 판정 로직만 대상이며 DB·네트워크에 의존하지 않는다(`vitest.config.ts` 주석 참조).
 - `pnpm format` 존재하나 **리포 전체 실행 금지**(CRLF로 대량 diff). 포맷은 변경 파일에만 개별 적용.
-- Database: migrations live in `supabase/migrations/` (timestamped). 원격 프로젝트는 **`sowoo` = `ptwgrmdtzdphervuanxi`**. 로컬 Docker가 없어 Supabase **MCP**로 운영: `apply_migration`(DDL) 후 `generate_typescript_types`로 `supabase/database.types.ts` 재생성. **주의: MCP `execute_sql`의 쓰기(INSERT/UPDATE/DELETE)는 하네스 안전 분류기가 차단**하므로 데이터 시드/변경은 앱 플로우로 하거나 사용자에게 요청. `createServerClient<Database>`가 타입에 의존하므로 스키마 변경 후 재생성 필수.
-
-There is **no test suite** in this repo.
+- Database: migrations live in `supabase/migrations/` (timestamped). 원격 프로젝트는 **`sowoo` = `ptwgrmdtzdphervuanxi`**. 로컬 Docker가 없어 Supabase **MCP**로 운영: `apply_migration`(DDL) 후 `generate_typescript_types`로 `supabase/database.types.ts` 재생성. **`apply_migration`은 자체 UTC 타임스탬프를 version으로 부여하므로**, 적용 후 `list_migrations`로 확인해 **로컬 파일명을 그 version에 맞출 것**(로컬 KST로 지으면 어긋난다). 권한(GRANT)·CHECK 제약만 바꿨다면 타입 재생성은 불필요하다. **주의: MCP `execute_sql`의 쓰기(INSERT/UPDATE/DELETE)는 하네스 안전 분류기가 차단**하므로 데이터 시드/변경은 앱 플로우로 하거나 사용자에게 요청. `createServerClient<Database>`가 타입에 의존하므로 스키마 변경 후 재생성 필수.
 
 **Windows quirk**: Bash 툴에서 Python/echo로 한글을 stdout에 출력하면 `UnicodeEncodeError: 'cp949'`가 난다. Python은 `sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`로 감쌀 것.
+
+**Bash 툴 heredoc 한계**: 따옴표·중괄호가 많은 Python을 `python - <<'PY'`로 넘기면 bash가 `unexpected EOF`로 깨진다. 여러 줄 스크립트는 **스크래치패드에 `.py`로 쓴 뒤 `python <path>`로 실행**할 것. 반대로 git 커밋 메시지는 heredoc(`git commit -F - <<'EOF'`)이 안전하다 — **PowerShell here-string(`@'...'@`)을 Bash 툴에 쓰면 `@`가 본문에 그대로 들어간다.**
 
 ## Architecture — the parts that span files
 
@@ -63,6 +67,8 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 
 **번역하면 안 되는 것 두 가지**: ① 금액·날짜는 `lib/format.ts`의 `formatKrw`/`formatDate`로 — 로케일을 지정하지 않은 `toLocaleString()`은 서버/브라우저 기본값이 달라 하이드레이션이 깨진다. ② API·DB에 저장되는 **값**(문의 분류·코스 카테고리)은 `lib/inquiry-categories.ts`·`lib/course-categories.ts`에 두고 라벨만 메시지에서 꺼낸다.
 
+**`messages/*.json`은 CRLF다** — `json.dumps`로 통째로 재직렬화하면 인라인 객체가 펼쳐져 무관한 diff가 대량 발생한다. 네임스페이스 추가는 **닫는 `}` 앞에 텍스트로 삽입**하고 CRLF를 보존할 것.
+
 **강좌·차시 콘텐츠는 아직 한국어뿐이다** — `pickLocale()`(`lib/i18n-json.ts`)은 정상이지만 DB의 `en` 값이 비어 있어 `/en`에서도 강좌 제목·설명이 한국어로 나온다. 코드가 아니라 데이터 문제이며 **Jira DC-108** 소관이다.
 
 ### 정보구조 — 홈·소개·온라인 클래스 3면 (DC-96)
@@ -86,4 +92,6 @@ Design docs are in `Docs/` (`PRD.md`, `TechSpec.md`, `DBSchema.md`, `UXGuide.md`
 ## Jira
 이슈 추적은 **`claude.ai Atlassian Rovo` 커넥터**(cloudId `7cb9460c-4bd1-42dc-9f05-491aa11178dd`), 프로젝트 **`DC`(dessert Class)**. 다른 `mcp-atlassian` 커넥터는 접근 가능한 프로젝트가 없으니 쓰지 말 것. Jira의 EPIC/작업(DC-*)은 `Docs/plan.md`의 EPIC과 대응된다.
 
-**주의**: `searchJiraIssuesUsingJql`를 프로젝트 전체에 돌리면 description이 커서 토큰 한도를 초과(375k자)한다 — `fields`를 명시(예: summary·status·parent)하거나, 저장된 JSON 파일을 Python으로 파싱할 것. 상태 전이 ID(DC 워크플로): **할일=11 · 진행중=21 · 검토중=31 · 완료=41**.
+**주의**: `searchJiraIssuesUsingJql`를 프로젝트 전체에 돌리면 토큰 한도를 초과한다. **`fields`를 명시해도 초과한다**(실측) — 결과가 파일로 저장되므로 그 **JSON을 Python으로 파싱하는 것이 유일하게 확실한 방법**이다. 상태 전이 ID(DC 워크플로): **할일=11 · 진행중=21 · 검토중=31 · 완료=41**.
+
+**완료 전이 전에 `getJiraIssue`로 `description`의 완료 기준을 읽을 것.** 요약(summary)만 보고 판단하면 오판한다 — DC-70·DC-54를 "완료"로 잘못 보고했다가 정정한 전례가 있다(하네스만 있고 요구된 테스트 커버리지가 없었고, 모달만 됐고 표 접근성은 미비했다).
