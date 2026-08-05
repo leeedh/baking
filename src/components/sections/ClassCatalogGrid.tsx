@@ -4,7 +4,9 @@ import Button from '@/components/ui/Button';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { cn } from '@/lib/cn';
+import { ALL_CATEGORIES, CATEGORY_FILTER_VALUES, courseCategoryLabelKey } from '@/lib/course-categories';
 import { BadgeAlert, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type CSSProperties, useState } from 'react';
 import type { ClassItem } from '../../types';
 import ClassCard from './ClassCard';
@@ -16,19 +18,18 @@ interface ClassCatalogGridProps {
   initialSearchQuery?: string;
 }
 
-const CATEGORIES = ['All', '정통 프렌치 디저트', '클래식 구움과자', '모던 타르트'];
-
 // DC-96 · 전체 클래스 그리드 + 검색·카테고리 필터. 온라인 클래스 페이지(/classes) 본체.
 export default function ClassCatalogGrid({
   classes,
   initialSearchQuery = '',
 }: ClassCatalogGridProps) {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const t = useTranslations();
+  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORIES);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const revealRef = useRevealOnScroll<HTMLDivElement>();
 
   const filteredClasses = classes.filter((cls) => {
-    const matchesCategory = selectedCategory === 'All' || cls.category === selectedCategory;
+    const matchesCategory = selectedCategory === ALL_CATEGORIES || cls.category === selectedCategory;
     const q = searchQuery.toLowerCase();
     const matchesSearch =
       cls.title.toLowerCase().includes(q) ||
@@ -45,8 +46,8 @@ export default function ClassCatalogGrid({
         <SectionHeading
           id="catalog-heading"
           eyebrow="The Atelier Lineup"
-          title="아틀리에 클래스 라인업"
-          description="각 클래스는 영구 무제한 수강, 정밀 레시피 PDF 노트, 카페 대량 생산용 배합 파일 권리가 동시 상속됩니다."
+          title={t('sections.catalog.title')}
+          description={t('sections.catalog.description')}
           action={
             <div className="w-full md:w-auto space-y-3">
               {/* 검색 입력 — 홈 히어로에서 넘어온 ?q= 값을 이어받아 이 화면에서 계속 다듬는다. */}
@@ -59,8 +60,8 @@ export default function ClassCatalogGrid({
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="클래스·강사·키워드 검색"
-                  aria-label="클래스 검색"
+                  placeholder={t('sections.catalog.searchPlaceholder')}
+                  aria-label={t('sections.catalog.searchAria')}
                   className="w-full pl-8 pr-3 py-2.5 min-h-[44px] bg-white border border-brown-light rounded-xl text-xs text-brown placeholder:text-brown-medium/60 transition-[border-color] hover:border-terracotta/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 />
               </div>
@@ -70,10 +71,10 @@ export default function ClassCatalogGrid({
                 <div
                   // biome-ignore lint/a11y/useSemanticElements: 폼 입력이 아니라 즉시 적용되는 필터 버튼 묶음이라 fieldset이 부적절하다
                   role="group"
-                  aria-label="카테고리 필터"
+                  aria-label={t('sections.catalog.filterAria')}
                   className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 w-full md:w-auto"
                 >
-                  {CATEGORIES.map((cat) => (
+                  {CATEGORY_FILTER_VALUES.map((cat) => (
                     <button
                       type="button"
                       key={cat}
@@ -88,7 +89,11 @@ export default function ClassCatalogGrid({
                           : 'bg-white text-brown-medium border border-brown-light hover:text-brown hover:bg-cream/80',
                       )}
                     >
-                      {cat === 'All' ? '전체 클래스' : cat}
+                      {cat === ALL_CATEGORIES
+                        ? t('sections.catalog.allCategories')
+                        : courseCategoryLabelKey(cat)
+                          ? t(`sections.catalog.category.${courseCategoryLabelKey(cat)}`)
+                          : cat}
                     </button>
                   ))}
                 </div>
@@ -101,7 +106,7 @@ export default function ClassCatalogGrid({
 
         {/* 필터 결과 개수는 시각적으로는 그리드가 말해 주지만 스크린 리더에는 알려야 한다. */}
         <p aria-live="polite" className="sr-only">
-          {filteredClasses.length}개의 클래스가 검색되었습니다.
+          {t('sections.catalog.resultCount', { count: filteredClasses.length })}
         </p>
 
         {/* Catalog Grid Area */}
@@ -109,20 +114,20 @@ export default function ClassCatalogGrid({
           <div className="text-center py-20 bg-white rounded-3xl border border-brown-light p-8 max-w-lg mx-auto">
             <BadgeAlert className="mx-auto text-terracotta mb-3" size={32} />
             <h3 className="font-serif text-base font-bold text-brown">
-              일치하는 디저트 에디션이 없습니다.
+              {t('sections.catalog.emptyTitle')}
             </h3>
             <p className="text-brown-medium text-xs font-light mt-1">
-              검색어나 선택하신 카테고리 필터를 검토해주세요.
+              {t('sections.catalog.emptyBody')}
             </p>
             <Button
               variant="secondary"
               className="mt-4"
               onClick={() => {
-                setSelectedCategory('All');
+                setSelectedCategory(ALL_CATEGORIES);
                 setSearchQuery('');
               }}
             >
-              전체 목록 보기 초기화
+              {t('sections.catalog.reset')}
             </Button>
           </div>
         ) : (

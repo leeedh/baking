@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TossPayment } from './toss';
 import { shouldMarkOrderFailed, totalCanceledAmount } from './policy';
+import type { TossPayment } from './toss';
 
 describe('shouldMarkOrderFailed', () => {
   it('확정적 거절(4xx)만 주문을 failed로 마킹한다', () => {

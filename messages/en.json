@@ -13,6 +13,11 @@
     "student": "Student"
   },
   "hero": {
+    "sloganLine1": "Toward a Flawless Texture,",
+    "sloganLine2": "An Infinite Obsession of the Pâtissier",
+    "sloganBody": "Through the oven pressure formulas and cream masking techniques Atelier Crème refined over years, we deliver the moment your fingertips turn into a scientific masterpiece.",
+    "ctaExplore": "Explore Masterclasses",
+    "ctaPreview": "Watch Free Preview",
     "subtitle": "ARTISAN MASTERY CLASS",
     "title1": "The Sense of Perfection,",
     "title2": "Precise Oven Aesthetics",
@@ -48,6 +53,19 @@
     "rating": "Rating {rating} ({count} reviews)"
   },
   "footer": {
+    "intro": "Keep limited-edition pastry techniques from global dessert artists for life, in HD VOD. One purchase gives you unlimited, unrestricted study of original recipes and core know-how from master pâtissiers in Seoul, Taipei, and beyond.",
+    "languages": "Korean & 繁體中文 supported",
+    "locations": "Seongsu, Seoul & Xinyi, Taipei",
+    "benefitsTitle": "What you get",
+    "benefits": [
+      "• Lifetime VOD access (no time limit)",
+      "• Original PDF formula sheets & feedback notes",
+      "• Precisely mapped Korean and Taiwanese subtitles",
+      "• Player optimized for mobile and tablet"
+    ],
+    "supportTitle": "Support",
+    "supportHours": "• Weekdays 10:00 - 18:00 (excluding holidays)",
+    "supportPartnership": "• Partnership inquiries",
     "rights": "© 2026 Atelier Crème Inc. All rights reserved.",
     "chef": "Head Artisan Chef: Sohee Min"
   },
@@ -375,6 +393,40 @@
     "delete": "Delete"
   },
   "sections": {
+    "card": {
+      "lifetimeBadge": "Lifetime VOD",
+      "freeLesson": "Includes instant free access to Lesson 1",
+      "students": "{count} students",
+      "reviews": "({count} reviews)",
+      "levelSuffix": "{level} master",
+      "listPrice": "{amount}",
+      "oneTime": "One-time",
+      "installment": "With 12 interest-free installments",
+      "installmentAmount": "{amount}/month",
+      "cta": "Explore the master course",
+      "highlights": [
+        "#CostSavingRatios",
+        "#CloseOvenFeedback",
+        "#SecretPDFBook"
+      ]
+    },
+    "catalog": {
+      "category": {
+        "french": "Authentic French Desserts",
+        "baked": "Classic Baked Goods",
+        "tart": "Modern Tarts"
+      },
+      "title": "The Atelier class lineup",
+      "description": "Every class comes with permanent unlimited access, precision recipe PDF notes, and rights to the bulk-production formula files for cafés.",
+      "searchPlaceholder": "Search classes, chefs, keywords",
+      "searchAria": "Search classes",
+      "filterAria": "Category filter",
+      "allCategories": "All classes",
+      "resultCount": "{count} classes found.",
+      "emptyTitle": "No matching dessert edition.",
+      "emptyBody": "Try a different search term or category filter.",
+      "reset": "Reset and see all"
+    },
     "announcement": {
       "promo": "Up to 45% off to celebrate the Sugar Lane & Happy Happy Academy collaboration reference launch",
       "perk1": "• 1:1 direction from the owner chef, guaranteed",

@@ -1,4 +1,4 @@
-import { type BookSource, BOOKS } from '@/lib/books-data';
+import { BOOKS, type BookSource } from '@/lib/books-data';
 import { pickLocale } from '@/lib/i18n-json';
 
 /**

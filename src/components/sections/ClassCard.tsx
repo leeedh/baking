@@ -2,7 +2,9 @@
 
 import Button from '@/components/ui/Button';
 import { useRouter } from '@/i18n/navigation';
+import { formatCount, formatKrw } from '@/lib/format';
 import { ChevronRight, Clock, PlayCircle, Star } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useTransition } from 'react';
 import type { ClassItem } from '../../types';
@@ -11,11 +13,11 @@ interface ClassCardProps {
   cls: ClassItem;
 }
 
-const HIGHLIGHTS = ['#원가절감 배합', '#밀착 오븐피드백', '#비밀 PDF북'];
-
 // DC-96 · 카탈로그 카드. 홈(베스트 3)·온라인 클래스(전체 그리드) 양쪽에서 재사용한다.
 // 클릭 타깃이 제목·버튼 둘이라 <Link> 래핑 대신 router.push를 쓴다(프리페치는 호출부에서 수행).
 export default function ClassCard({ cls }: ClassCardProps) {
+  const t = useTranslations();
+  const locale = useLocale() as 'ko' | 'en';
   const router = useRouter();
   // 라우트 전환에 즉각 반응이 없어 클릭이 씹힌 것처럼 보였다 — CTA에 진행 상태를 붙인다.
   const [isPending, startTransition] = useTransition();
@@ -54,7 +56,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
         {/* Right Ownership/Discount Overlays */}
         <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
           <span className="bg-terracotta text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full tracking-wider uppercase shadow-card">
-            평생 소장 VOD
+            {t('sections.card.lifetimeBadge')}
           </span>
           {discountPercent > 0 && (
             <span className="bg-gold text-white text-[11px] font-extrabold px-1.5 py-0.5 rounded shadow-card">
@@ -70,11 +72,11 @@ export default function ClassCard({ cls }: ClassCardProps) {
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
           <span className="min-w-0 bg-white/95 backdrop-blur-md text-brown text-[11px] font-semibold px-2.5 py-1.5 rounded-lg shadow-card border border-brown-light/80 flex items-center gap-1.5">
             <PlayCircle size={13} className="shrink-0 text-terracotta" />
-            <span className="truncate">1차시 무료 즉시 보기 포함</span>
+            <span className="truncate">{t('sections.card.freeLesson')}</span>
           </span>
 
           <span className="shrink-0 bg-brown/70 backdrop-blur text-white text-[11px] px-2 py-1 rounded whitespace-nowrap">
-            누적 {cls.studentsCount.toLocaleString()}명
+            {t('sections.card.students', { count: formatCount(cls.studentsCount, locale) })}
           </span>
         </div>
       </div>
@@ -110,7 +112,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
               <Star size={11} className="fill-gold" />
               <span>{cls.rating.toFixed(1)}</span>
               <span className="text-[11px] text-brown-medium/80 font-medium">
-                ({cls.reviewCount} 리뷰)
+                {t('sections.card.reviews', { count: cls.reviewCount })}
               </span>
             </div>
             <div className="flex items-center gap-1 text-[11px] text-brown-medium font-light bg-cream px-2 py-1 rounded-md">
@@ -118,7 +120,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
               <span>{cls.duration}</span>
             </div>
             <div className="text-[11px] text-terracotta font-semibold bg-terracotta/6 px-2 py-1 rounded-md border border-terracotta/10">
-              {cls.level}마스터
+              {t('sections.card.levelSuffix', { level: cls.level })}
             </div>
           </div>
 
@@ -129,7 +131,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
 
           {/* Class custom highlights flags */}
           <div className="flex flex-wrap gap-1.5 pt-1.5">
-            {HIGHLIGHTS.map((tag) => (
+            {(t.raw('sections.card.highlights') as string[]).map((tag) => (
               <span
                 key={tag}
                 className="text-[11px] text-brown-medium bg-cream rounded-full px-2 py-0.5 border border-brown-light"
@@ -145,17 +147,21 @@ export default function ClassCard({ cls }: ClassCardProps) {
           <div className="space-y-0.5">
             {discountPercent > 0 && (
               <span className="block text-[11px] text-brown-medium/70 line-through">
-                ₩{cls.originalPrice.toLocaleString()}원
+                {t('sections.card.listPrice', { amount: formatKrw(cls.originalPrice, locale) })}
               </span>
             )}
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold text-brown">₩{cls.price.toLocaleString()}</span>
-              <span className="text-[11px] text-terracotta font-bold">일시불</span>
+              <span className="text-lg font-bold text-brown">{formatKrw(cls.price, locale)}</span>
+              <span className="text-[11px] text-terracotta font-bold">
+                {t('sections.card.oneTime')}
+              </span>
             </div>
             <span className="text-[11px] text-gold block font-light">
-              무이자 12개월 할부 시{' '}
+              {t('sections.card.installment')}{' '}
               <strong className="font-bold text-gold">
-                월 ₩{monthlyInstallment.toLocaleString()}원
+                {t('sections.card.installmentAmount', {
+                  amount: formatKrw(monthlyInstallment, locale),
+                })}
               </strong>
             </span>
           </div>
@@ -165,7 +171,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
             loading={isPending}
             className="w-full @[20rem]:w-auto shrink-0"
           >
-            <span>마스터 코스 탐색</span>
+            <span>{t('sections.card.cta')}</span>
             {!isPending && <ChevronRight size={12} />}
           </Button>
         </div>

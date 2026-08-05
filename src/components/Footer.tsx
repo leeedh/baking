@@ -1,6 +1,8 @@
 import { Globe, Mail, MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function Footer() {
+  const t = useTranslations();
   return (
     <footer
       id="platform-footer"
@@ -20,39 +22,38 @@ export default function Footer() {
             </span>
           </div>
           <p className="text-sm font-light leading-relaxed max-w-md text-cream/70">
-            글로벌 디저트 아티스트의 한정판 제과 테크닉을 HD 고화질 VOD로 평생 소장하세요. 한 번의
-            구매로 서울, 타이베이, 글로벌 마스터 파티시에의 오리지널 레시피와 핵심 노하우를 기간
-            제한 없이 반복 학습할 수 있습니다.
+            {t('footer.intro')}
           </p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-cream/70 py-2">
             <span className="flex items-center gap-1">
-              <Globe size={12} /> 한국어 & 繁體中文 지원
+              <Globe size={12} /> {t('footer.languages')}
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <MapPin size={12} /> 서울 성수 & 타이베이 신이 지구
+              <MapPin size={12} /> {t('footer.locations')}
             </span>
           </div>
         </div>
 
         <div>
-          <h4 className="font-serif text-lg font-bold text-gold mb-4">수강 혜택</h4>
+          <h4 className="font-serif text-lg font-bold text-gold mb-4">{t('footer.benefitsTitle')}</h4>
           <ul className="space-y-2 text-xs font-light text-cream/70">
-            <li>• 평생 소장 VOD (수강 기한 무제한)</li>
-            <li>• PDF 오리지널 배합표 & 피드백 노트</li>
-            <li>• 대만/국내 정밀 자막 완벽 매핑</li>
-            <li>• 모바일 및 태블릿 최적화 플레이어</li>
+            {(t.raw('footer.benefits') as string[]).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
         </div>
 
         <div>
-          <h4 className="font-serif text-lg font-bold text-terracotta mb-4">고객지원</h4>
+          <h4 className="font-serif text-lg font-bold text-terracotta mb-4">
+            {t('footer.supportTitle')}
+          </h4>
           <ul className="space-y-2 text-xs font-light text-cream/70">
             <li className="flex items-center gap-1">
               <Mail size={12} /> support@ateliercreme.com
             </li>
-            <li>• 평일 10:00 - 18:00 (공휴일 제외)</li>
-            <li>• 파트너십/제휴 문의</li>
+            <li>{t('footer.supportHours')}</li>
+            <li>{t('footer.supportPartnership')}</li>
             <li className="text-[11px] text-cream/60 mt-4 leading-normal">
               © 2026 Atelier Crème Inc. All rights reserved. <br />
               Atelier Crème is a premium educational brand powered by Antigravity.

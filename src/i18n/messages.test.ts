@@ -84,6 +84,11 @@ const I18N_DONE: string[] = [
   'sections/BestClasses.tsx',
   'ui/ConfirmDialog.tsx',
   'ui/Modal.tsx',
+  // Phase 5b-1 — 기능성 UI(히어로 슬로건·푸터·카드·카탈로그 필터)
+  'MeringueHero.tsx',
+  'Footer.tsx',
+  'sections/ClassCard.tsx',
+  'sections/ClassCatalogGrid.tsx',
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
 ];
 

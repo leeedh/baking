@@ -13,6 +13,11 @@
     "student": "수강생"
   },
   "hero": {
+    "sloganLine1": "완벽한 텍스처를 향한",
+    "sloganLine2": "파티시에의 무한한 집념",
+    "sloganBody": "아틀리에 크렘이 수년간 정교화한 오븐 기압 공식과 크림 마스킹 기술을 통해, 손가락 끝의 감각이 과학적 마스터피스가 되는 순간을 선사합니다.",
+    "ctaExplore": "마스터클래스 탐색",
+    "ctaPreview": "무료 맛보기 시청",
     "subtitle": "ARTISAN MASTERY CLASS",
     "title1": "완벽이라는 감각,",
     "title2": "오븐 속의 정밀한 미학",
@@ -48,6 +53,19 @@
     "rating": "평점 {rating} ({count}개 후기)"
   },
   "footer": {
+    "intro": "글로벌 디저트 아티스트의 한정판 제과 테크닉을 HD 고화질 VOD로 평생 소장하세요. 한 번의 구매로 서울, 타이베이, 글로벌 마스터 파티시에의 오리지널 레시피와 핵심 노하우를 기간 제한 없이 반복 학습할 수 있습니다.",
+    "languages": "한국어 & 繁體中文 지원",
+    "locations": "서울 성수 & 타이베이 신이 지구",
+    "benefitsTitle": "수강 혜택",
+    "benefits": [
+      "• 평생 소장 VOD (수강 기한 무제한)",
+      "• PDF 오리지널 배합표 & 피드백 노트",
+      "• 대만/국내 정밀 자막 완벽 매핑",
+      "• 모바일 및 태블릿 최적화 플레이어"
+    ],
+    "supportTitle": "고객지원",
+    "supportHours": "• 평일 10:00 - 18:00 (공휴일 제외)",
+    "supportPartnership": "• 파트너십/제휴 문의",
     "rights": "© 2026 Atelier Crème Inc. 모든 권리 보유.",
     "chef": "대표 아티장 셰프: 민소희"
   },
@@ -375,6 +393,40 @@
     "delete": "삭제"
   },
   "sections": {
+    "card": {
+      "lifetimeBadge": "평생 소장 VOD",
+      "freeLesson": "1차시 무료 즉시 보기 포함",
+      "students": "누적 {count}명",
+      "reviews": "({count} 리뷰)",
+      "levelSuffix": "{level}마스터",
+      "listPrice": "{amount}원",
+      "oneTime": "일시불",
+      "installment": "무이자 12개월 할부 시",
+      "installmentAmount": "월 {amount}원",
+      "cta": "마스터 코스 탐색",
+      "highlights": [
+        "#원가절감 배합",
+        "#밀착 오븐피드백",
+        "#비밀 PDF북"
+      ]
+    },
+    "catalog": {
+      "category": {
+        "french": "정통 프렌치 디저트",
+        "baked": "클래식 구움과자",
+        "tart": "모던 타르트"
+      },
+      "title": "아틀리에 클래스 라인업",
+      "description": "각 클래스는 영구 무제한 수강, 정밀 레시피 PDF 노트, 카페 대량 생산용 배합 파일 권리가 동시 상속됩니다.",
+      "searchPlaceholder": "클래스·강사·키워드 검색",
+      "searchAria": "클래스 검색",
+      "filterAria": "카테고리 필터",
+      "allCategories": "전체 클래스",
+      "resultCount": "{count}개의 클래스가 검색되었습니다.",
+      "emptyTitle": "일치하는 디저트 에디션이 없습니다.",
+      "emptyBody": "검색어나 선택하신 카테고리 필터를 검토해주세요.",
+      "reset": "전체 목록 보기 초기화"
+    },
     "announcement": {
       "promo": "Sugar Lane & Happy Happy Academy 콜라보 레퍼런스 오픈 기념 최대 45% 즉시 할인",
       "perk1": "• 오너 셰프 1:1 디렉션 보증",

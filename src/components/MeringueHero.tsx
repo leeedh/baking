@@ -439,27 +439,14 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
             THE SENSE OF ARTISAN MASTERY
           </span>
           <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light leading-tight text-white tracking-tight break-keep">
-            {language === 'ko' ? (
-              <>
-                완벽한 텍스처를 향한 <br className="sm:hidden" />
-                <span className="font-serif italic font-medium text-cream">
-                  파티시에의 무한한 집념
-                </span>
-              </>
-            ) : (
-              <>
-                An Infinite Obsession for <br className="sm:hidden" />
-                <span className="font-serif italic font-medium text-cream">
-                  the Absolute Perfect Texture
-                </span>
-              </>
-            )}
+            {t('hero.sloganLine1')} <br className="sm:hidden" />
+            <span className="font-serif italic font-medium text-cream">
+              {t('hero.sloganLine2')}
+            </span>
           </h2>
           <div className="w-16 h-[1px] bg-gold mx-auto my-4" />
           <p className="text-xs sm:text-sm text-white/85 max-w-lg mx-auto font-light leading-relaxed tracking-wide break-keep">
-            {language === 'ko'
-              ? '아틀리에 크렘이 수년간 정교화한 오븐 기압 공식과 크림 마스킹 기술을 통해, 손가락 끝의 감각이 과학적 마스터피스가 되는 순간을 선사합니다.'
-              : 'Discover the exact oven pressure formula and cream masking techniques perfected over years, transforming raw intuition into master-level French pastries.'}
+            {t('hero.sloganBody')}
           </p>
           <div className="pt-6 flex flex-col items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/20 rounded-full bg-white/5 backdrop-blur-sm text-[10px] font-semibold text-white uppercase tracking-[0.2em]">
@@ -473,14 +460,14 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
                 onClick={onExplore}
                 className="px-7 py-3 min-h-[44px] bg-gold hover:bg-gold-deep text-white text-[11px] font-bold tracking-[0.25em] uppercase rounded-full transition-all duration-300 shadow-lg shadow-gold/30 cursor-pointer"
               >
-                {language === 'ko' ? '마스터클래스 탐색' : 'Explore Masterclasses'}
+                {t('hero.ctaExplore')}
               </button>
               <button
                 type="button"
                 onClick={onExplore}
                 className="px-5 py-3 min-h-[44px] border border-white/30 hover:border-white/60 text-white/80 hover:text-white text-[11px] font-medium tracking-[0.15em] uppercase rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm"
               >
-                {language === 'ko' ? '무료 맛보기 시청' : 'Watch Free Preview'}
+                {t('hero.ctaPreview')}
               </button>
             </div>
           </div>
