@@ -46,6 +46,24 @@ describe('messages/{ko,en}.json 정합성', () => {
     expect(empty).toEqual([]);
   });
 
+  it('참조되지 않는 네임스페이스가 없다 — 화면이 사라져도 키는 남는다', () => {
+    // DC-96 정보구조 개편 때 단일 랜딩(CatalogScreen)이 sections/*로 쪼개지면서
+    // pillars·grid·btn 네임스페이스가 통째로 사장된 채 남아 있었다. 같은 일이 반복되지 않게 잠근다.
+    const src = readdirSync(join(process.cwd(), 'src'), { recursive: true, encoding: 'utf-8' })
+      .filter((f) => f.endsWith('.ts') || f.endsWith('.tsx'))
+      .map((f) => readFileSync(join(process.cwd(), 'src', f), 'utf-8'))
+      .join('\n');
+    const unused = Object.keys(ko as Record<string, unknown>).filter(
+      (ns) =>
+        !src.includes(`useTranslations('${ns}')`) &&
+        !src.includes(`getTranslations('${ns}')`) &&
+        !src.includes(`'${ns}.`) &&
+        !src.includes(`"${ns}.`) &&
+        !src.includes(`\`${ns}.`),
+    );
+    expect(unused).toEqual([]);
+  });
+
   it('en 값에 한글이 남아 있지 않다 — 번역 누락이 값에 그대로 복사된 경우', () => {
     const flatEn = flatten(en as Json);
     const leftover = Object.entries(flatEn)
@@ -89,6 +107,13 @@ const I18N_DONE: string[] = [
   'Footer.tsx',
   'sections/ClassCard.tsx',
   'sections/ClassCatalogGrid.tsx',
+  // Phase 5b-2 — 브랜드 산문 섹션
+  'sections/ChefBanner.tsx',
+  'sections/PhilosophyPillars.tsx',
+  'sections/FaqAccordion.tsx',
+  'sections/NewsletterCTA.tsx',
+  'sections/RecommendationQuiz.tsx',
+  'sections/StudentArchive.tsx',
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
 ];
 

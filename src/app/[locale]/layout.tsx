@@ -4,6 +4,7 @@ import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/lib/auth/AuthProvider';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { getMessages } from 'next-intl/server';
 import { Fraunces } from 'next/font/google';
 import { notFound } from 'next/navigation';
@@ -38,6 +39,7 @@ export default async function LocaleLayout({
     notFound();
   }
   const messages = await getMessages();
+  const t = await getTranslations('common');
 
   return (
     <html lang={locale} className={fraunces.variable}>
@@ -49,7 +51,7 @@ export default async function LocaleLayout({
           <AuthProvider initialUser={null}>
             {/* 키보드 사용자가 매 페이지에서 내비를 통과하지 않도록 — 포커스될 때만 보인다. */}
             <a href="#main" className="skip-link">
-              본문으로 건너뛰기
+              {t('skipToContent')}
             </a>
             <Header />
             <main id="main" className="flex-grow pb-24">

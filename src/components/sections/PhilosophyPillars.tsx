@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { buttonClasses } from '@/lib/button-classes';
 import { cn } from '@/lib/cn';
 import { ChevronRight, FileText, type LucideIcon, MessageSquare, Utensils } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 
 interface PhilosophyPillarsProps {
@@ -15,11 +16,11 @@ interface PhilosophyPillarsProps {
   variant?: 'summary' | 'full';
 }
 
+/** 문구는 메시지 카탈로그(sections.philosophy.pillars)에 있고, 여기엔 표현만 남긴다. */
+type PillarCopy = { title: string; body: string; footnote: string };
+
 type Pillar = {
   no: string;
-  title: string;
-  body: string;
-  footnote: string;
   Icon: LucideIcon;
   /** 카드별 액센트 — gold → terracotta → brown 순으로 톤이 깊어진다. */
   accent: { badge: string; badgeHover: string; border: string; text: string };
@@ -28,9 +29,6 @@ type Pillar = {
 const PILLARS: Pillar[] = [
   {
     no: '01',
-    title: '실패 원인을 해체하는 영상 가이드',
-    body: '머랭의 가벼운 공기 포집부터 오븐 입고 시 기체 이탈 과정, 기후 변화에 따른 습도 보정까지 오직 감각으로 눙치던 현업 장인들의 포인트를 과학적 정량 지표로 알려드립니다.',
-    footnote: '습도/기압 최적 세팅 시트',
     Icon: FileText,
     accent: {
       badge: 'bg-gold/10 text-gold',
@@ -41,9 +39,6 @@ const PILLARS: Pillar[] = [
   },
   {
     no: '02',
-    title: '원가 산출 및 상업 전용 대량 배합표',
-    body: '카페 창업 혹은 스튜디오 클래스를 운영 중이신가요? 100% 실전 판매용으로 구성되어, 고가의 자재 원가를 영리하게 조율하고 공정을 50% 단축시키는 오너 전용 엑셀 배합 마스터 파일이 포함됩니다.',
-    footnote: '셰프 사용 밀베이커 엑셀 마스터',
     Icon: Utensils,
     accent: {
       badge: 'bg-terracotta/10 text-terracotta',
@@ -54,9 +49,6 @@ const PILLARS: Pillar[] = [
   },
   {
     no: '03',
-    title: '현직 파티시에 오너의 밀착 컨설팅',
-    body: '수강 중 결과물이 한쪽으로 치우쳐 나오거나 꼬끄 겉면에 균열이 생긴 경우, 사진과 오븐 온도를 게시판에 올려주시면 세션 마스터가 가입 회원 계정에 직강 맞춤형 코멘트를 수시로 전송해 드립니다.',
-    footnote: '1:1 평생 수강생 게시판 피드백 보장',
     Icon: MessageSquare,
     accent: {
       badge: 'bg-brown/10 text-brown',
@@ -68,6 +60,8 @@ const PILLARS: Pillar[] = [
 ];
 
 export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillarsProps) {
+  const t = useTranslations('sections.philosophy');
+  const copy = t.raw('pillars') as PillarCopy[];
   const isSummary = variant === 'summary';
   const revealRef = useRevealOnScroll<HTMLDivElement>();
 
@@ -86,12 +80,11 @@ export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillar
             id="philosophy-heading"
             className="font-serif text-3xl sm:text-4xl font-bold text-brown leading-tight break-keep"
           >
-            일반 베이킹 강의들과 극명하게 대비되는{' '}
-            <span className="font-serif italic text-terracotta">차이점</span>
+            {t('headingPrefix')}{' '}
+            <span className="font-serif italic text-terracotta">{t('headingEm')}</span>
           </h2>
           <p className="text-sm text-brown-medium font-light break-keep">
-            단순히 레시피 받아쓰기 교육으로는 매장 경쟁력을 높이거나 감탄사를 만들어내는 텍스처를
-            빚어낼 수 없습니다. 프로들의 노하우를 가장 완벽하게 전달합니다.
+            {t('description')}
           </p>
         </div>
 
@@ -116,14 +109,14 @@ export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillar
               >
                 {pillar.no}
               </div>
-              <h3 className="font-serif text-xl font-bold text-brown break-keep">{pillar.title}</h3>
+              <h3 className="font-serif text-xl font-bold text-brown break-keep">{copy[i]?.title}</h3>
               <p
                 className={cn(
                   'text-xs sm:text-[13px] text-brown-medium leading-relaxed font-light break-keep',
                   isSummary && 'line-clamp-3',
                 )}
               >
-                {pillar.body}
+                {copy[i]?.body}
               </p>
               <div
                 className={cn(
@@ -132,7 +125,7 @@ export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillar
                 )}
               >
                 <pillar.Icon size={14} />
-                <span>{pillar.footnote}</span>
+                <span>{copy[i]?.footnote}</span>
               </div>
             </div>
           ))}
@@ -141,7 +134,7 @@ export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillar
         {isSummary && (
           <div className="mt-12 text-center">
             <Link href="/about" className={buttonClasses('outline')}>
-              <span>브랜드 철학 전문 보기</span>
+              <span>{t('ctaAbout')}</span>
               <ChevronRight size={13} />
             </Link>
           </div>

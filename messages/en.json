@@ -32,26 +32,6 @@
     "desc": "From scientific calibration to trendy artistic plating, find your 100% matched baking course in under 1 minute.",
     "start": "Launch DNA Matchmaker Quiz"
   },
-  "pillars": {
-    "pill": "Premium Standard",
-    "title": "The Definitive Atelier Crème Standard",
-    "desc": "Simple recipe tracing cannot elevate store competitiveness or craft breathtaking textures. We transmit authentic master-level secrets."
-  },
-  "grid": {
-    "badge": "ONLINE MASTERCLASSES",
-    "title": "Artisan Masterclass VOD Archives",
-    "desc": "Archived master collections designed through Parisian culinary bloodlines and thousands of retail validations.",
-    "all": "All",
-    "searchEmpty": "No masterclasses matched your search query.",
-    "searchEmptyDesc": "Try entering another search keyword or changing the category filter."
-  },
-  "btn": {
-    "detail": "View Cook Book Recipe",
-    "preview": "Free Preview First Lecture",
-    "purchase": "Acquire Lifetime Access",
-    "premiumBadge": "Lifetime Access Pass",
-    "rating": "Rating {rating} ({count} reviews)"
-  },
   "footer": {
     "intro": "Keep limited-edition pastry techniques from global dessert artists for life, in HD VOD. One purchase gives you unlimited, unrestricted study of original recipes and core know-how from master pâtissiers in Seoul, Taipei, and beyond.",
     "languages": "Korean & 繁體中文 supported",
@@ -369,6 +349,7 @@
     }
   },
   "common": {
+    "skipToContent": "Skip to main content",
     "confirm": "Confirm",
     "cancel": "Cancel",
     "close": "Close",
@@ -393,6 +374,131 @@
     "delete": "Delete"
   },
   "sections": {
+    "chef": {
+      "eyebrow": "The Mastermind & Owner",
+      "headingPrefix": "I am the sole artisan pâtissier behind Atelier Crème,",
+      "headingName": "Sohee Min",
+      "headingSuffix": ".",
+      "body1": "Atelier Crème is not a factory-style education platform filled with outsourced instructors or duplicated plans made by assistants.",
+      "body2": "Since graduating from <strong>Ritz Escoffier</strong> in Paris — every measurement in the recipes that sold out the Hannam-dong dessert stand, the meringue moisture control design, the cost-calculation spreadsheets, and every 1:1 student question — <em>I run all of it under a single-master system, staking my own name and owner's responsibility on it.</em>",
+      "ctaAbout": "Learn more about Chef Sohee Min's philosophy & history",
+      "ctaBooks": "Browse the published secret recipe books",
+      "cardBadge": "Taught solely by the owner",
+      "cardName": "Sohee Min",
+      "cardRole": "Head Pâtissier, Atelier Crème",
+      "quote": "“Under one person's complete control, I deliver only recipes whose quality is guaranteed — straight to your kitchen.”",
+      "stat1": "3 VOD master courses",
+      "stat2": "Satisfaction rating 4.93/5.0"
+    },
+    "philosophy": {
+      "ctaAbout": "Read the full brand philosophy",
+      "headingPrefix": "What sets us sharply apart from ordinary baking classes:",
+      "headingEm": "the difference",
+      "description": "Simply transcribing recipes will not raise your shop's competitiveness or build a texture that draws gasps. We deliver professional know-how as completely as it can be delivered.",
+      "pillars": [
+        {
+          "title": "Video guides that take failure apart",
+          "body": "From the light air capture of meringue to gas escape as it enters the oven and humidity correction for changing weather — the points working artisans used to handle by feel alone, given to you as scientific, quantified indicators.",
+          "footnote": "Humidity/pressure optimal setting sheet"
+        },
+        {
+          "title": "Cost calculation and commercial bulk formulas",
+          "body": "Opening a café or running a studio class? Built 100% for real sales, it includes an owner-only Excel formula master file that tunes expensive material costs intelligently and cuts the process time in half.",
+          "footnote": "The chef's own mill-baker Excel master"
+        },
+        {
+          "title": "Close consulting from a working pâtissier-owner",
+          "body": "If your result comes out lopsided or the coque surface cracks, post a photo and the oven temperature on the board and the session master will send tailored comments directly to your member account.",
+          "footnote": "1:1 lifetime student board feedback, guaranteed"
+        }
+      ]
+    },
+    "faq": {
+      "title": "Frequently asked questions (FAQ)",
+      "description": "Check these before you start your Atelier Crème VOD library.",
+      "items": [
+        {
+          "q": "I am a complete beginner at baking. Can I keep up with a professional-level class?",
+          "a": "Yes. Atelier Crème classes are filmed up close with high-end macro cameras — from milligram-level measurement to dough texture and the exact moment of expansion inside the oven. You can try the guide to the counting mistakes and tool-contamination prevention that beginners struggle with most, free, in the Lesson 1 VOD."
+        },
+        {
+          "q": "Are subtitles or a global learning environment supported for overseas students (Taiwan, Japan, etc.)?",
+          "a": "Yes. Every VOD lesson is reviewed by professional multilingual translators, and Korean and Chinese subtitles are developed in 100% sync so no discrepancy occurs. Subtitle controls let you study smoothly on any device."
+        },
+        {
+          "q": "Do I also get the recipe book (PDF) and cost-analysis formula templates for the class I bought?",
+          "a": "Of course. The moment you own a class, the commercial secret recipe book PDF each owner-pâtissier uses in real shops and brand consulting, plus the Excel master template for ingredient unit-cost calculation, are available in the materials library — downloadable for life with no limit."
+        },
+        {
+          "q": "What is the advantage of one-time lifetime VOD over a subscription education platform?",
+          "a": "Unlike subscription sites that auto-charge every month and leave you with a sense of unwatched debt worth millions of won, lifetime access permanently syncs the pass to the ID you signed up with, in a single purchase. You can pull it back out 5 or 10 years later, whenever your baking season or café menu launch calls for it."
+        }
+      ]
+    },
+    "newsletter": {
+      "perk1": "• Offline academy partnerships in Seoul and Taipei",
+      "perk2": "• 24-hour feedback via KakaoTalk and email",
+      "headingPrefix": "The French values that turn the everyday into art — join the",
+      "headingEm": "atelier",
+      "headingSuffix": " with your account today",
+      "description": "The moment you hold premium authentic confiture and meringue humidity correction in one hand, the balance of the neighborhood dessert shop changes. Secure lifetime access with a single purchase and join sessions taught directly by artisan chefs.",
+      "emailLabel": "Newsletter subscription email",
+      "emailPlaceholder": "Email address for recipe newsletters...",
+      "submitPending": "Coming soon",
+      "noticePrefix": "We are still setting up the newsletter channel. For now, leave a note under",
+      "noticeLink": "Support",
+      "noticeSuffix": " and we will contact you individually when it opens."
+    },
+    "quiz": {
+      "step1Question": "Where does your oven skill stand right now?",
+      "step1Beginner": "Baking beginner (I want to learn basic measurement and tools)",
+      "step1Hobbyist": "Dessert home baker (I have baked macarons and canelés and want better quality)",
+      "step1Expert": "Working pâtissier / café owner (I need fine cost ratios and sales know-how)",
+      "step2Question": "What flavor and design are you aiming for?",
+      "step2Sweet": "Dense, chewy, dazzling sweetness (precise authentic macarons and ganache filling)",
+      "step2Butter": "Deep, nutty baked aromas (rich brown-butter financiers, fine madeleines)",
+      "step2French": "Pastry frames like works of art (sablé dough, vanilla tart, Saint-Honoré)",
+      "resultLead": "We matrix-matched the class below as your baking companion!",
+      "resultInstructor": "Recommended chef:",
+      "resultLevel": "({level} course)",
+      "resultReviews": "({count} ratings)",
+      "resultCta": "See the matched class in detail",
+      "resultRetry": "Retake the quiz"
+    },
+    "archive": {
+      "title": "Student practice archive",
+      "description": "Real photo reviews baked by students themselves in home studios and commercial ovens after taking Atelier Crème's original curriculum.",
+      "filterAria": "Practice work category filter",
+      "allWorks": "All works",
+      "ratingAria": "5 out of 5 stars",
+      "viewClass": "View the class",
+      "works": [
+        {
+          "title": "Rose-gold caramel original madeleines",
+          "studentName": "Jiwon Choi, student",
+          "classTitle": "Caramel Terracotta Baked Goods Class",
+          "comment": "Thanks to the exact visual comparison of brown butter temperature, for the first time in my life the hump rose beautifully and the madeleines came out full of butter aroma — without a commercial oven!"
+        },
+        {
+          "title": "Luminous hollow-free coque & fig ganache macarons",
+          "studentName": "Jiyeon Lee, student",
+          "classTitle": "Pierre Macaron Master Class",
+          "comment": "I kept pausing the video to stick with the humidity analysis, and finally conquered the over-dried macaronage coque and uneven oven baking that had bothered me for so long. Very satisfied!"
+        },
+        {
+          "title": "Sablé pâte Saint-Honoré full of seasonal fruit",
+          "studentName": "Marcia Liu, student in Taiwan",
+          "classTitle": "Tart Editorial Martin Class",
+          "comment": "The foncage step came out very firm thanks to the guideline, so it did not collapse when baked! The refined taste of the crémeux vanilla cream is easily beyond a local dessert shop."
+        },
+        {
+          "title": "Golden piston cookie collection with a chewy bite",
+          "studentName": "Sihyun Hwang, café owner",
+          "classTitle": "Caramel Terracotta Baked Goods Class",
+          "comment": "The moment I added the salted original cookie to the baked-goods line, store delivery and on-site sales jumped about 150%. The PDF Excel for cost calculation was extremely useful."
+        }
+      ]
+    },
     "card": {
       "lifetimeBadge": "Lifetime VOD",
       "freeLesson": "Includes instant free access to Lesson 1",

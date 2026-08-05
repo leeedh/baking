@@ -1,6 +1,6 @@
-import { getLocale } from 'next-intl/server';
 import BooksScreen from '@/components/BooksScreen';
 import { getBooks } from '@/lib/books';
+import { getLocale } from 'next-intl/server';
 
 export default async function BooksPage() {
   const locale = await getLocale();

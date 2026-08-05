@@ -12,39 +12,11 @@ interface RecommendationQuizProps {
   classes: ClassItem[];
 }
 
-type QuizAnswer = { value: string; label: string };
-
-const STEP_1: { badge: string; question: string; answers: QuizAnswer[] } = {
-  badge: 'STEP 01',
-  question: '현재 나의 오븐 숙련도는 어느 쪽인가요?',
-  answers: [
-    { value: 'beginner', label: '베이킹 초보 (기초적인 계량과 도구를 배우고 싶어요)' },
-    {
-      value: 'hobbyist',
-      label: '디저트 홈베이커 (마카롱, 까눌레 구운 성적이 있고 품질을 높이고 싶어요)',
-    },
-    {
-      value: 'expert',
-      label: '현직 파티시에 / 카페 자영업 (원가 세밀 배합과 판매 전개 노하우가 필요합니다)',
-    },
-  ],
-};
-
-const STEP_2: { badge: string; question: string; answers: QuizAnswer[] } = {
-  badge: 'STEP 02',
-  question: '추구하시는 베이킹의 풍미와 추구 디자인은 무엇인가요?',
-  answers: [
-    { value: 'sweet', label: '밀착 쫀득하고 화려한 달콤함 (정밀한 정통 마카롱과 가나슈 필링)' },
-    {
-      value: 'butter',
-      label: '진하고 고소한 구운 구움과자 향 (깊은 탄버터 휘낭시에, 명품 마들렌)',
-    },
-    {
-      value: 'french',
-      label: '예술 작품 같은 페이스트리 프레임 (사블레 도우, 바닐라 타르트, 생또노레)',
-    },
-  ],
-};
+/** 문항 값은 매칭 로직의 키다 — 라벨만 메시지 카탈로그에서 꺼낸다. */
+const STEP_1_VALUES = ['beginner', 'hobbyist', 'expert'] as const;
+const STEP_2_VALUES = ['sweet', 'butter', 'french'] as const;
+const STEP_1_KEYS = ['step1Beginner', 'step1Hobbyist', 'step1Expert'] as const;
+const STEP_2_KEYS = ['step2Sweet', 'step2Butter', 'step2French'] as const;
 
 /** 6번 복붙되어 있던 옵션 버튼. */
 function QuizOption({ label, onSelect }: { label: string; onSelect: () => void }) {
@@ -66,6 +38,7 @@ function QuizOption({ label, onSelect }: { label: string; onSelect: () => void }
 // DC-96 · 추천 퀴즈. 온라인 클래스 페이지(/classes) 전용 섹션으로 분리.
 // 앵커 id는 히어로의 "퀴즈 바로가기"가 /classes#baking-quiz-section으로 넘어올 때 스크롤 타깃이 된다.
 export default function RecommendationQuiz({ classes }: RecommendationQuizProps) {
+  const tq = useTranslations('sections.quiz');
   const t = useTranslations();
   const router = useRouter();
 
@@ -154,17 +127,17 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
               <div className="space-y-6">
                 <div className="flex items-center gap-1.5 text-terracotta">
                   <span className="text-xs font-bold bg-terracotta/10 px-2 py-0.5 rounded">
-                    {STEP_1.badge}
+                    STEP 01
                   </span>
-                  <span className="text-xs font-semibold break-keep">{STEP_1.question}</span>
+                  <span className="text-xs font-semibold break-keep">{tq('step1Question')}</span>
                 </div>
 
                 <div className="space-y-3">
-                  {STEP_1.answers.map((a) => (
+                  {STEP_1_VALUES.map((value, i) => (
                     <QuizOption
-                      key={a.value}
-                      label={a.label}
-                      onSelect={() => handleQuizAnswer(1, a.value)}
+                      key={value}
+                      label={tq(STEP_1_KEYS[i])}
+                      onSelect={() => handleQuizAnswer(1, value)}
                     />
                   ))}
                 </div>
@@ -175,17 +148,17 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
               <div className="space-y-6">
                 <div className="flex items-center gap-1.5 text-terracotta">
                   <span className="text-xs font-bold bg-terracotta/10 px-2 py-0.5 rounded">
-                    {STEP_2.badge}
+                    STEP 02
                   </span>
-                  <span className="text-xs font-semibold break-keep">{STEP_2.question}</span>
+                  <span className="text-xs font-semibold break-keep">{tq('step2Question')}</span>
                 </div>
 
                 <div className="space-y-3">
-                  {STEP_2.answers.map((a) => (
+                  {STEP_2_VALUES.map((value, i) => (
                     <QuizOption
-                      key={a.value}
-                      label={a.label}
-                      onSelect={() => handleQuizAnswer(2, a.value)}
+                      key={value}
+                      label={tq(STEP_2_KEYS[i])}
+                      onSelect={() => handleQuizAnswer(2, value)}
                     />
                   ))}
                 </div>
@@ -199,7 +172,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                     MATCH COMPLETE
                   </span>
                   <span className="text-xs font-semibold break-keep">
-                    당신의 베이킹 수강 동반자로 아래 클래스를 매트릭스 매칭했습니다!
+                    {tq('resultLead')}
                   </span>
                 </div>
 
@@ -223,8 +196,8 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                       {quizResult.title}
                     </h3>
                     <p className="text-[11px] text-brown-medium font-light">
-                      추천 강사: <strong>{quizResult.instructor}</strong> ({quizResult.level}자용
-                      코스)
+                      {tq('resultInstructor')} <strong>{quizResult.instructor}</strong>{' '}
+                      {tq('resultLevel', { level: quizResult.level })}
                     </p>
 
                     <div className="flex items-center gap-1 pt-1">
@@ -233,7 +206,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                         {quizResult.rating.toFixed(1)}
                       </span>
                       <span className="text-[11px] text-brown-medium/70">
-                        ({quizResult.reviewCount}평가)
+                        {tq('resultReviews', { count: quizResult.reviewCount })}
                       </span>
                     </div>
                   </div>
@@ -244,10 +217,10 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                     className="flex-1"
                     onClick={() => router.push(`/classes/${quizResult.id}`)}
                   >
-                    매칭 클래스 상세 보러가기
+                    {tq('resultCta')}
                   </Button>
                   <Button variant="outline" onClick={resetQuiz}>
-                    다시 테스트
+                    {tq('resultRetry')}
                   </Button>
                 </div>
               </div>
