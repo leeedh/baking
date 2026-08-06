@@ -1,6 +1,7 @@
 'use client';
 
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useAdminMutation } from '@/hooks/useAdminMutation';
 import { Link } from '@/i18n/navigation';
 import { readError } from '@/lib/api/read-error';
 import { formatBytes } from '@/lib/format';
@@ -45,11 +46,11 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
   const router = useRouter();
   const lessons = initialLessons;
 
-  const [busy, setBusy] = useState(false);
   /** 삭제 확인 대상 — 네이티브 confirm() 대신 ConfirmDialog를 띄운다. */
   const [pendingLessonDelete, setPendingLessonDelete] = useState<string | null>(null);
   const [pendingMaterialDelete, setPendingMaterialDelete] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+
+  const { busy, error, setError, runMutation } = useAdminMutation();
 
   const [showAdd, setShowAdd] = useState(false);
   const [title, setTitle] = useState('');
@@ -252,33 +253,11 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
     }
   };
 
-  /**
-   * 운영 액션 공통 실행기 — fetch가 throw해도 finally에서 busy를 반드시 푼다.
-   * 예전에는 액션마다 setBusy(false)를 수동으로 불러서, 네트워크 예외가 나면
-   * 화면이 "처리 중"으로 고착돼 다음 작업을 못 했다(코드리뷰 X-3).
-   */
-  const runMutation = async (request: () => Promise<Response>): Promise<boolean> => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await request();
-      if (!res.ok) {
-        setError(await readError(res));
-        return false;
-      }
-      router.refresh();
-      return true;
-    } catch {
-      setError('요청을 처리하지 못했습니다. 네트워크 상태를 확인해 주세요.');
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const removeMaterial = async (materialId: string) => {
     setPendingMaterialDelete(null);
-    await runMutation(() => fetch(`/api/admin/materials/${materialId}`, { method: 'DELETE' }));
+    await runMutation(() => fetch(`/api/admin/materials/${materialId}`, { method: 'DELETE' }), {
+      successMessage: '자료를 삭제했습니다.',
+    });
   };
 
   const create = async (e: React.FormEvent) => {
@@ -300,6 +279,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
           isPreview,
         }),
       }),
+      { successMessage: '차시를 추가했습니다.' },
     );
     if (!ok) return;
     setShowAdd(false);
@@ -321,7 +301,9 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
 
   const remove = async (id: string) => {
     setPendingLessonDelete(null);
-    await runMutation(() => fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' }));
+    await runMutation(() => fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' }), {
+      successMessage: '차시를 삭제했습니다.',
+    });
   };
 
   const move = async (index: number, dir: -1 | 1) => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useToast } from '@/components/ui/Toast';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { formatCount, formatKrw } from '@/lib/format';
@@ -54,13 +55,15 @@ export default function DetailScreen({
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const t = useTranslations('detail');
+  const toast = useToast();
   const locale = useLocale() as 'ko' | 'en';
 
   // 목록 본체는 /classes다 — 홈은 브랜드 게이트웨이라 그리드가 없다(DC-96, 코드리뷰 M-9).
   const onNavigateToCatalog = () => router.push('/classes');
   const onNavigateToPayment = (id: string) => {
     if (!isLoggedIn) {
-      alert(t('loginRequired'));
+      // 토스트는 레이아웃에 있어 아래 내비게이션 뒤에도 남는다.
+      toast({ tone: 'info', message: t('loginRequired') });
       router.push('/login');
       return;
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import SecureVideoPlayer from '@/components/player/SecureVideoPlayer';
+import { useToast } from '@/components/ui/Toast';
 import { useRouter } from '@/i18n/navigation';
 import { readError } from '@/lib/api/read-error';
 import { formatBytes } from '@/lib/format';
@@ -48,6 +49,7 @@ export default function PlayerScreen({
 }: PlayerScreenProps) {
   const router = useRouter();
   const t = useTranslations('player');
+  const toast = useToast();
   const onNavigateBack = () => router.push(`/classes/${classId}`);
   // 재생 중인 차시는 URL이 소스다(코드리뷰 M-10). 예전에는 ?lesson=을 useState 초기값으로만
   // 읽어서, 뒤로/앞으로 가면 주소는 바뀌는데 재생 차시는 그대로인 불일치가 생겼다.
@@ -78,7 +80,7 @@ export default function PlayerScreen({
 
   const handleLessonSelect = (lesson: PlayerLesson) => {
     if (isLocked(lesson)) {
-      alert(t('lockedLesson'));
+      toast({ tone: 'info', message: t('lockedLesson') });
       return;
     }
     // replace(≠push) — 차시 전환마다 히스토리가 쌓이면 뒤로가기로 강좌 상세에 못 돌아간다.

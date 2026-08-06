@@ -1,5 +1,6 @@
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import { ToastProvider } from '@/components/ui/Toast';
 import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/lib/auth/AuthProvider';
 import type { Metadata } from 'next';
@@ -49,15 +50,19 @@ export default async function LocaleLayout({
               초기 user는 null로 두고 클라이언트 AuthProvider가 세션 쿠키로 하이드레이션.
               실제 보호는 각 페이지의 서버 가드 + RLS가 담당. */}
           <AuthProvider initialUser={null}>
-            {/* 키보드 사용자가 매 페이지에서 내비를 통과하지 않도록 — 포커스될 때만 보인다. */}
-            <a href="#main" className="skip-link">
-              {t('skipToContent')}
-            </a>
-            <Header />
-            <main id="main" className="flex-grow pb-24">
-              {children}
-            </main>
-            <Footer />
+            {/* 토스트는 레이아웃에 둬야 클라이언트 내비게이션을 넘어 살아남는다
+                (안내를 띄운 직후 /login으로 이동하는 흐름이 있다). */}
+            <ToastProvider>
+              {/* 키보드 사용자가 매 페이지에서 내비를 통과하지 않도록 — 포커스될 때만 보인다. */}
+              <a href="#main" className="skip-link">
+                {t('skipToContent')}
+              </a>
+              <Header />
+              <main id="main" className="flex-grow pb-24">
+                {children}
+              </main>
+              <Footer />
+            </ToastProvider>
           </AuthProvider>
         </NextIntlClientProvider>
       </body>

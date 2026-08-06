@@ -4,8 +4,8 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
 import Modal from '@/components/ui/Modal';
+import { useAdminMutation } from '@/hooks/useAdminMutation';
 import { Link } from '@/i18n/navigation';
-import { readError } from '@/lib/api/read-error';
 import { ADMIN_INQUIRY_STATUS, ORDER_STATUS } from '@/lib/status-badges';
 import type { AdminClassRow, AdminKpi, AdminOrderRow, InquiryRow } from '@/types';
 import {
@@ -53,8 +53,7 @@ export default function DashboardScreen({
   const classList = initialClasses;
   const orderList = initialOrders;
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy, error, setError, runMutation } = useAdminMutation();
 
   // DC-97 문의 답변
   const [answeringId, setAnsweringId] = useState<string | null>(null);
@@ -74,30 +73,6 @@ export default function DashboardScreen({
   const [newInstructor, setNewInstructor] = useState('');
   const [newPrice, setNewPrice] = useState<number>(0);
 
-  /**
-   * 운영 액션 공통 실행기 — fetch가 throw해도 finally에서 busy를 반드시 푼다.
-   * 예전에는 액션마다 setBusy(false)를 수동으로 불러서, 네트워크 예외가 나면
-   * 화면이 "처리 중"으로 고착돼 다음 작업을 못 했다(코드리뷰 X-3).
-   */
-  const runMutation = async (request: () => Promise<Response>): Promise<boolean> => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await request();
-      if (!res.ok) {
-        setError(await readError(res));
-        return false;
-      }
-      router.refresh();
-      return true;
-    } catch {
-      setError('요청을 처리하지 못했습니다. 네트워크 상태를 확인해 주세요.');
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  };
-
   /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
   const patchInquiry = (id: string, patch: { answerBody?: string; status?: string }) =>
     runMutation(() =>
@@ -106,6 +81,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch),
       }),
+      { successMessage: '문의 답변을 등록했습니다.' },
     );
 
   const submitAnswer = async (id: string) => {
@@ -129,6 +105,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceKrw: editingPrice }),
       }),
+      { successMessage: '판매가를 변경했습니다.' },
     );
     if (ok) setEditingClassId(null);
   };
@@ -141,6 +118,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: next }),
       }),
+      { successMessage: next === 'published' ? '카탈로그에 게시했습니다.' : '초안으로 내렸습니다.' },
     );
   };
 
@@ -160,6 +138,7 @@ export default function DashboardScreen({
           priceKrw: Number(newPrice),
         }),
       }),
+      { successMessage: '새 클래스를 초안으로 등록했습니다.' },
     );
     if (!ok) return;
     setShowAddModal(false);
@@ -182,6 +161,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: refundReason.trim() || undefined }),
       }),
+      { successMessage: '환불 처리했습니다. 수강권이 회수됩니다.' },
     );
     if (!ok) return;
     setRefundTarget(null);
