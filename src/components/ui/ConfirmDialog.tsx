@@ -47,8 +47,6 @@ export default function ConfirmDialog({
           </Button>
         </>
       }
-    >
-      <p className="sr-only">{description ?? title}</p>
-    </Modal>
+    />
   );
 }

@@ -9,12 +9,25 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/**
+ * 실제로 포커스를 받을 수 있는 노드만 남긴다.
+ * `querySelectorAll`은 `display:none`인 요소도 걸러 주지 않아서, 조건부로 숨긴 버튼이
+ * 트랩의 first/last로 잡히면 Tab이 보이지 않는 곳으로 빠진다.
+ */
+function focusableNodes(panel: HTMLElement | null): HTMLElement[] {
+  if (!panel) return [];
+  return Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.offsetParent !== null || el === document.activeElement,
+  );
+}
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
   description?: string;
-  children: ReactNode;
+  /** 본문이 없는 확인 다이얼로그도 있으므로 선택값이다. */
+  children?: ReactNode;
   /** 하단 액션 영역(주로 취소 + 확인 버튼). */
   footer?: ReactNode;
   className?: string;
@@ -41,32 +54,39 @@ export default function Modal({
   const titleId = useId();
   const descId = useId();
 
-  const onKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-      if (e.key !== 'Tab') return;
+  /**
+   * onClose를 ref로 우회하는 이유 — 이 값을 effect 의존성에 넣으면 안 된다.
+   * 호출부는 전부 `onClose={() => setX(false)}` 인라인 화살표를 넘기므로 부모가 리렌더될
+   * 때마다 아이덴티티가 바뀐다. 그러면 아래 effect가 cleanup→재실행되면서
+   * cleanup의 restoreRef.focus()가 포커스를 배경으로 빼앗고 재실행이 첫 필드로 되돌려,
+   * 폼 모달에서 **한 글자 칠 때마다 포커스가 튀어** 입력이 불가능했다.
+   */
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
-      // 포커스 트랩 — 패널 안에서만 순환한다.
-      const nodes = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE);
-      if (!nodes || nodes.length === 0) return;
-      const first = nodes[0];
-      const last = nodes[nodes.length - 1];
-      const active = document.activeElement;
+  const onKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onCloseRef.current();
+      return;
+    }
+    if (e.key !== 'Tab') return;
 
-      if (e.shiftKey && active === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    },
-    [onClose],
-  );
+    // 포커스 트랩 — 패널 안에서만 순환한다.
+    const nodes = focusableNodes(panelRef.current);
+    if (nodes.length === 0) return;
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -78,8 +98,8 @@ export default function Modal({
     document.body.style.overflow = 'hidden';
 
     // 첫 인터랙티브 요소(없으면 패널 자체)로 초기 포커스
-    const nodes = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE);
-    (nodes && nodes.length > 0 ? nodes[0] : panelRef.current)?.focus();
+    const nodes = focusableNodes(panelRef.current);
+    (nodes.length > 0 ? nodes[0] : panelRef.current)?.focus();
 
     document.addEventListener('keydown', onKeyDown);
     return () => {
@@ -133,10 +153,16 @@ export default function Modal({
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-4">{children}</div>
+        {children && <div className="px-6 py-5 space-y-4">{children}</div>}
 
         {footer && (
-          <div className="px-6 pb-6 pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <div
+            className={cn(
+              'px-6 pb-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-2',
+              // 본문이 없으면 헤더 구분선과 버튼이 붙어 보여 여백을 더 준다.
+              children ? 'pt-2' : 'pt-5',
+            )}
+          >
             {footer}
           </div>
         )}
