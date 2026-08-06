@@ -319,6 +319,7 @@ export default function LoginScreen() {
               onClick={() => handleSocialLogin('google')}
               className="flex items-center justify-center gap-2 py-2 px-3 border border-brown-light rounded-lg bg-white hover:bg-cream/40 transition-colors text-xs font-medium text-brown cursor-pointer"
             >
+              {/* 구글 로고의 4색은 브랜드 가이드가 정한 고정값이라 토큰화 대상이 아니다(DC-57). */}
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
