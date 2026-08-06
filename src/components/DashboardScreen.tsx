@@ -269,13 +269,15 @@ export default function DashboardScreen({
       <div className="bg-white rounded-2xl border border-brown-light shadow-sm overflow-hidden">
         <div className="p-6 bg-cream/40 border-b border-brown-light flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-serif text-base font-bold text-brown">클래스 판매 실적 관리</h3>
+            <h3 id="hd-classes-table" className="font-serif text-base font-bold text-brown">
+              클래스 판매 실적 관리
+            </h3>
             <p className="text-[11px] text-brown-medium mt-0.5">
               단가 조정·게시 상태 전환이 실시간으로 반영됩니다.
             </p>
           </div>
           <span className="text-xs font-semibold text-brown-medium flex items-center gap-1">
-            <Filter size={13} /> 정렬: 높은 매출 순
+            <Filter size={13} aria-hidden /> 정렬: 높은 매출 순
           </span>
         </div>
 
@@ -284,20 +286,39 @@ export default function DashboardScreen({
             아직 등록된 클래스가 없습니다. “새 클래스 등록”으로 시작하세요.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: min-w-[720px]로 가로 스크롤이 생기는 영역이라 포커스를 받아야 키보드로 스크롤할 수 있다(WAI-ARIA 저작 관행)
+          <section className="overflow-x-auto" tabIndex={0} aria-labelledby="hd-classes-table">
             <table
               id="tbl-baking-classes"
               className="w-full text-left border-collapse min-w-[720px]"
             >
+              <caption className="sr-only">
+                클래스별 판매 실적 — 높은 매출 순으로 정렬됨. 각 행에서 단가 조정과 게시 상태
+                전환을 할 수 있습니다.
+              </caption>
               <thead>
                 <tr className="bg-cream/20 border-b border-brown-light text-[11px] font-bold text-brown-medium uppercase tracking-wider">
-                  <th className="py-4 px-6">강의명</th>
-                  <th className="py-4 px-6">상태</th>
-                  <th className="py-4 px-6 text-right">정가</th>
-                  <th className="py-4 px-6 text-right">판매 수량</th>
-                  <th className="py-4 px-6 text-right">정산 매출</th>
-                  <th className="py-4 px-6 text-center">완주율</th>
-                  <th className="py-4 px-6 text-right">운영</th>
+                  <th scope="col" className="py-4 px-6">
+                    강의명
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    상태
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    정가
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    판매 수량
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    정산 매출
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-center">
+                    완주율
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    운영
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brown-light/60 text-xs sm:text-sm text-brown">
@@ -398,7 +419,7 @@ export default function DashboardScreen({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </div>
 
@@ -406,31 +427,50 @@ export default function DashboardScreen({
       <div className="mt-10 bg-white rounded-2xl border border-brown-light shadow-sm overflow-hidden">
         <div className="p-6 bg-cream/40 border-b border-brown-light flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-serif text-base font-bold text-brown flex items-center gap-1.5">
-              <Receipt size={16} className="text-terracotta" /> 주문 · 환불 관리
+            <h3
+              id="hd-orders-table"
+              className="font-serif text-base font-bold text-brown flex items-center gap-1.5"
+            >
+              <Receipt size={16} className="text-terracotta" aria-hidden /> 주문 · 환불 관리
             </h3>
             <p className="text-[11px] text-brown-medium mt-0.5">
               환불 시 결제가 취소되고 수강권이 즉시 회수됩니다(이력은 보존).
             </p>
           </div>
           <span className="text-xs font-semibold text-brown-medium flex items-center gap-1">
-            <Filter size={13} /> 최근 주문 순
+            <Filter size={13} aria-hidden /> 최근 주문 순
           </span>
         </div>
 
         {orderList.length === 0 ? (
           <div className="py-16 text-center text-sm text-brown-medium">주문 내역이 없습니다.</div>
         ) : (
-          <div className="overflow-x-auto">
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: min-w-[720px]로 가로 스크롤이 생기는 영역이라 포커스를 받아야 키보드로 스크롤할 수 있다(WAI-ARIA 저작 관행)
+          <section className="overflow-x-auto" tabIndex={0} aria-labelledby="hd-orders-table">
             <table className="w-full text-left border-collapse min-w-[720px]">
+              <caption className="sr-only">
+                주문 내역 — 최근 주문 순으로 정렬됨. 각 행에서 환불을 처리할 수 있습니다.
+              </caption>
               <thead>
                 <tr className="bg-cream/20 border-b border-brown-light text-[11px] font-bold text-brown-medium uppercase tracking-wider">
-                  <th className="py-4 px-6">주문 / 구매자</th>
-                  <th className="py-4 px-6">클래스</th>
-                  <th className="py-4 px-6 text-right">결제액</th>
-                  <th className="py-4 px-6">상태</th>
-                  <th className="py-4 px-6">결제일시</th>
-                  <th className="py-4 px-6 text-right">운영</th>
+                  <th scope="col" className="py-4 px-6">
+                    주문 / 구매자
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    클래스
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    결제액
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    상태
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    결제일시
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    운영
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brown-light/60 text-xs sm:text-sm text-brown">
@@ -479,7 +519,7 @@ export default function DashboardScreen({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </div>
 
@@ -495,7 +535,7 @@ export default function DashboardScreen({
             </p>
           </div>
           <span className="text-xs font-semibold text-brown-medium flex items-center gap-1">
-            <Filter size={13} /> 미답변 우선
+            <Filter size={13} aria-hidden /> 미답변 우선
           </span>
         </div>
 
