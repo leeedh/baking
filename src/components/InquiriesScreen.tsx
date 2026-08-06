@@ -75,7 +75,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
       className="bg-ivory min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       <section className="pt-12 pb-4 px-6 sm:px-12 max-w-4xl mx-auto text-center space-y-3">
-        <p className="text-xs font-bold text-gold tracking-[0.25em] uppercase">Support</p>
+        <p className="text-xs font-bold text-gold-deep tracking-[0.25em] uppercase">Support</p>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight">
           {t('title')}
         </h1>
@@ -98,7 +98,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
             <div className="space-y-1">
               <h2 className="font-serif text-xl font-bold text-brown">{t('formTitle')}</h2>
               <p className="text-xs text-brown-medium font-light flex items-center gap-1.5">
-                <Lock size={12} className="text-gold" />
+                <Lock size={12} className="text-gold-deep" />
                 {t('privacyNote')}
               </p>
             </div>

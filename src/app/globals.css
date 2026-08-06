@@ -15,8 +15,12 @@
   /* 코어 팔레트 */
   --color-cream: #faf4ea;
   --color-ivory: #fdfbf7;
+  /* gold는 장식·배경·보더 전용이다 — cream 위 3.04:1이라 본문 텍스트로 쓰면 AA 미달.
+     텍스트에는 반드시 gold-deep을 쓸 것(DC-56, lib/color-contrast.test.ts가 잠근다). */
   --color-gold: #b0863c;
-  --color-gold-deep: #9a7432;
+  /* 기존 #9a7432는 cream 위 3.90:1로 AA(4.5:1) 미달이었다.
+     색상(38.1°)·채도는 그대로 두고 명도만 낮춰 4.70:1로 올렸다. */
+  --color-gold-deep: #89682d;
   --color-terracotta: #b65538;
   --color-terracotta-deep: #a14328;
   --color-brown: #2a211b;
@@ -204,9 +208,9 @@ body {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
+  *:not([data-motion-essential]),
+  *:not([data-motion-essential])::before,
+  *:not([data-motion-essential])::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -217,5 +221,15 @@ body {
   [data-reveal] {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /*
+   * 진행 표시는 남긴다(DC-56). 위 블록을 무조건 걸면 로딩 스피너까지 멈춰서,
+   * 모션 감소를 켠 시각 사용자에게는 "처리 중"이라는 신호가 통째로 사라진다
+   * (aria-busy는 스크린리더만 커버한다). 회전은 유지하되 충분히 느리게 돌린다.
+   */
+  [data-motion-essential] {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
   }
 }

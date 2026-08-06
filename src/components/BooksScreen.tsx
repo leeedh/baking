@@ -34,7 +34,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
         className="pt-12 pb-16 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/80"
       >
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 text-gold text-[11px] font-bold tracking-widest uppercase border border-gold/20 shadow-sm">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 text-gold-deep text-[11px] font-bold tracking-widest uppercase border border-gold/20 shadow-sm">
             <BookOpen size={12} />
             {t('badge')}
           </span>
@@ -57,7 +57,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
       >
         {/* Left Side: Books Selector & Thumbnails */}
         <div className="lg:col-span-4 space-y-6">
-          <h3 className="font-serif text-xs font-bold text-gold tracking-wider uppercase mb-2">
+          <h3 className="font-serif text-xs font-bold text-gold-deep tracking-wider uppercase mb-2">
             {t('selectEdition')}
           </h3>
 
@@ -121,7 +121,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-brown-light pb-5">
               <div>
-                <span className="text-[11px] text-gold font-bold block mb-1">
+                <span className="text-[11px] text-gold-deep font-bold block mb-1">
                   {t('selectedManual')}
                 </span>
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-brown mt-2 leading-tight">
@@ -174,7 +174,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
                     key={ch}
                     className="py-3 font-medium text-brown-medium flex items-start gap-2.5"
                   >
-                    <Check size={13} className="text-gold mt-0.5 shrink-0" />
+                    <Check size={13} className="text-gold-deep mt-0.5 shrink-0" />
                     <span>{ch}</span>
                   </div>
                 ))}
@@ -185,7 +185,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
           {/* Action area — 외부 커머스 이동 */}
           <div className="pt-4 border-t border-brown-light flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[11px] text-brown-medium font-light flex items-center gap-1.5">
-              <ShoppingBag size={13} className="text-gold" />
+              <ShoppingBag size={13} className="text-gold-deep" />
               {t('externalNotice')}
             </p>
 

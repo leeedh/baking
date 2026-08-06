@@ -33,7 +33,7 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
     >
       {/* Title */}
       <div className="mb-10 text-center sm:text-left">
-        <span className="text-xs font-bold text-gold tracking-widest uppercase block mb-1">
+        <span className="text-xs font-bold text-gold-deep tracking-widest uppercase block mb-1">
           {t('eyebrow')}
         </span>
         <h1 className="font-serif text-3xl font-bold text-brown flex flex-col sm:flex-row items-center gap-2">
@@ -53,7 +53,7 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
           id="empty-classes-card"
           className="max-w-xl mx-auto bg-white rounded-2xl border border-brown-light p-10 text-center space-y-6 shadow-md transform hover:scale-[1.01] transition-transform duration-300"
         >
-          <div className="w-16 h-16 rounded-full bg-cream text-gold flex items-center justify-center mx-auto border border-brown-light">
+          <div className="w-16 h-16 rounded-full bg-cream text-gold-deep flex items-center justify-center mx-auto border border-brown-light">
             <FolderLock size={28} />
           </div>
           <div className="space-y-2">
@@ -76,7 +76,7 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
                 className="bg-cream p-3 rounded-lg text-left border border-brown-light cursor-pointer hover:border-terracotta transition-colors"
                 onClick={onNavigateToCatalog}
               >
-                <span className="text-[10px] text-gold font-semibold block">{t('recommend1Tag')}</span>
+                <span className="text-[10px] text-gold-deep font-semibold block">{t('recommend1Tag')}</span>
                 <span className="text-xs font-bold text-brown block truncate">
                   {t('recommend1Name')}
                 </span>
@@ -175,7 +175,7 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
 
                   {/* FOOTER CTA RESUME WATCH LIST */}
                   <div className="pt-4 mt-4 border-t border-brown-light flex items-center justify-between">
-                    <span className="text-[10px] bg-gold/10 text-gold px-2 py-0.5 rounded font-semibold">
+                    <span className="text-[10px] bg-gold/10 text-gold-deep px-2 py-0.5 rounded font-semibold">
                       {t('pdfBadge')}
                     </span>
 

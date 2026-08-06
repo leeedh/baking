@@ -150,7 +150,7 @@ export default function StudentArchive() {
                     <span className="text-[11px] font-bold text-brown truncate">
                       {copy?.studentName}
                     </span>
-                    <div className="flex text-gold shrink-0" aria-label={t('ratingAria')}>
+                    <div className="flex text-gold-deep shrink-0" aria-label={t('ratingAria')}>
                       <Star size={10} className="fill-current" />
                       <Star size={10} className="fill-current" />
                       <Star size={10} className="fill-current" />
@@ -158,7 +158,7 @@ export default function StudentArchive() {
                       <Star size={10} className="fill-current" />
                     </div>
                   </div>
-                  <span className="block text-[11px] text-gold font-semibold">
+                  <span className="block text-[11px] text-gold-deep font-semibold">
                     {copy?.classTitle}
                   </span>
                   <h3 className="font-serif text-sm font-semibold text-brown line-clamp-1 pt-1">

@@ -10,10 +10,10 @@ export default function NotFound() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6 py-20">
       <div className="max-w-md w-full text-center space-y-5">
-        <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 text-gold flex items-center justify-center">
+        <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 text-gold-deep flex items-center justify-center">
           <Croissant size={26} />
         </div>
-        <p className="text-xs font-bold text-gold tracking-[0.3em] uppercase">404</p>
+        <p className="text-xs font-bold text-gold-deep tracking-[0.3em] uppercase">404</p>
         <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brown break-keep">
           찾으시는 페이지가 없습니다
         </h1>

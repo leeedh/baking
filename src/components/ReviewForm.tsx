@@ -71,7 +71,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
             aria-label={t('review.ratingAria', { star })}
             aria-pressed={star === rating}
             onClick={() => setRating(star)}
-            className="p-0.5 cursor-pointer text-gold"
+            className="p-0.5 cursor-pointer text-gold-deep"
           >
             <Star size={18} className={star <= rating ? 'fill-gold' : 'opacity-25'} />
           </button>

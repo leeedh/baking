@@ -172,7 +172,7 @@ export default function DashboardScreen({
       {/* Title block */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <span className="text-xs font-bold text-gold tracking-wider uppercase block">
+          <span className="text-xs font-bold text-gold-deep tracking-wider uppercase block">
             ADMIN SYSTEM
           </span>
           <h1 className="font-serif text-3xl font-bold text-brown flex items-center gap-2">
@@ -223,7 +223,7 @@ export default function DashboardScreen({
         <div className="bg-white rounded-xl border border-brown-light p-5 space-y-3 shadow-sm">
           <div className="flex justify-between items-center text-brown-medium">
             <span className="text-xs font-bold uppercase tracking-wider">누적 수강생</span>
-            <span className="text-gold p-1.5 bg-gold/10 rounded-lg">
+            <span className="text-gold-deep p-1.5 bg-gold/10 rounded-lg">
               <Users size={16} />
             </span>
           </div>
@@ -352,7 +352,7 @@ export default function DashboardScreen({
                       {item.salesCount.toLocaleString()}
                     </td>
 
-                    <td className="py-4 px-6 text-right font-mono font-bold text-gold">
+                    <td className="py-4 px-6 text-right font-mono font-bold text-gold-deep">
                       ₩{item.revenue.toLocaleString()}
                     </td>
 
@@ -373,7 +373,7 @@ export default function DashboardScreen({
                     <td className="py-4 px-6 text-right whitespace-nowrap space-x-1.5">
                       <Link
                         href={`/admin/courses/${item.id}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-gold bg-gold/10 hover:bg-gold hover:text-cream rounded transition-all cursor-pointer align-middle"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-gold-deep bg-gold/10 hover:bg-gold hover:text-cream rounded transition-all cursor-pointer align-middle"
                       >
                         <ListVideo size={12} /> 차시
                       </Link>

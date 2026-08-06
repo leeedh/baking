@@ -31,10 +31,10 @@ const PILLARS: Pillar[] = [
     no: '01',
     Icon: FileText,
     accent: {
-      badge: 'bg-gold/10 text-gold',
+      badge: 'bg-gold/10 text-gold-deep',
       badgeHover: 'group-hover:bg-gold group-hover:text-white',
       border: 'hover:border-gold/30',
-      text: 'text-gold',
+      text: 'text-gold-deep',
     },
   },
   {
@@ -73,7 +73,7 @@ export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillar
       <div className="max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
           {/* eyebrow는 헤딩이 아니다 — 예전에는 <h2>였고 실제 제목이 <h3>여서 순서가 역전됐다. */}
-          <p className="font-serif text-xs font-bold text-gold tracking-[0.25em] uppercase">
+          <p className="font-serif text-xs font-bold text-gold-deep tracking-[0.25em] uppercase">
             Premium Standard
           </p>
           <h2

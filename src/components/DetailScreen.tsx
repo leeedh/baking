@@ -146,7 +146,7 @@ export default function DetailScreen({
               {cls.title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-xs font-sans text-brown-medium">
-              <div className="flex items-center gap-1.5 font-bold text-gold">
+              <div className="flex items-center gap-1.5 font-bold text-gold-deep">
                 <Star size={14} className="fill-gold" />
                 <span>{t('ratingSummary', { rating: cls.rating, count: cls.reviewCount })}</span>
               </div>
@@ -156,7 +156,7 @@ export default function DetailScreen({
 
             {/* Micro card of instructor */}
             <div className="flex items-center gap-4 p-4 bg-white border border-brown-light rounded-xl mt-4">
-              <div className="w-12 h-12 rounded-full bg-gold/10 border-2 border-gold/30 flex items-center justify-center font-serif text-gold font-bold text-lg">
+              <div className="w-12 h-12 rounded-full bg-gold/10 border-2 border-gold/30 flex items-center justify-center font-serif text-gold-deep font-bold text-lg">
                 Chef
               </div>
               <div>
@@ -213,7 +213,7 @@ export default function DetailScreen({
             {activeTab === 'intro' && (
               <div className="space-y-6 text-sm text-brown leading-relaxed font-light">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-gold mb-2 flex items-center gap-2">
+                  <h3 className="font-serif text-lg font-bold text-gold-deep mb-2 flex items-center gap-2">
                     <span className="w-1.5 h-4 bg-gold rounded-full inline-block" />
                     {t('introHeading')}
                   </h3>
@@ -232,7 +232,7 @@ export default function DetailScreen({
                     </ul>
                   </div>
                   <div className="p-4 bg-cream/40 rounded-xl border border-brown-light">
-                    <h4 className="font-bold text-xs text-gold uppercase mb-2">
+                    <h4 className="font-bold text-xs text-gold-deep uppercase mb-2">
                       {t('benefitHeading')}
                     </h4>
                     <ul className="space-y-1.5 text-xs text-brown-medium">
@@ -271,7 +271,7 @@ export default function DetailScreen({
                     >
                       <div className="bg-cream/50 p-4 border-b border-brown-light flex justify-between items-center">
                         <h4 className="font-serif text-sm font-bold text-brown">{chapter.title}</h4>
-                        <span className="text-[11px] text-gold font-semibold">
+                        <span className="text-[11px] text-gold-deep font-semibold">
                           {t('chapterLessons', { count: chapter.lessons.length })}
                         </span>
                       </div>
@@ -375,7 +375,7 @@ export default function DetailScreen({
                             />
                             <div>
                               <span className="text-xs font-bold text-brown">{rev.userName}</span>
-                              <div className="flex items-center text-gold transform scale-90 -translate-x-1.5">
+                              <div className="flex items-center text-gold-deep transform scale-90 -translate-x-1.5">
                                 {[1, 2, 3, 4, 5].map((starPosition) => (
                                   <Star
                                     key={starPosition}
@@ -421,7 +421,7 @@ export default function DetailScreen({
                 <span className="text-3xl font-serif font-extrabold text-brown">
                   {formatKrw(cls.price, locale)}
                 </span>
-                <span className="text-sm font-bold text-gold">{t('vatIncluded')}</span>
+                <span className="text-sm font-bold text-gold-deep">{t('vatIncluded')}</span>
               </div>
               {discountPercent > 0 && (
                 <p className="text-[11px] text-terracotta font-bold">
@@ -496,7 +496,7 @@ export default function DetailScreen({
               {formatKrw(cls.price, locale)}
             </span>
             {discountPercent > 0 && (
-              <span className="text-[10px] text-gold font-bold">
+              <span className="text-[10px] text-gold-deep font-bold">
                 {t('discountBadge', { percent: discountPercent })}
               </span>
             )}

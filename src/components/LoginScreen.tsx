@@ -240,7 +240,7 @@ export default function LoginScreen() {
                       e.preventDefault();
                       setErrorMsg(t('notImplementedResetPw'));
                     }}
-                    className="text-[10px] text-gold hover:underline font-medium"
+                    className="text-[10px] text-gold-deep hover:underline font-medium"
                   >
                     {t('forgotPassword')}
                   </a>

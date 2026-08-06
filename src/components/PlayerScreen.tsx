@@ -212,7 +212,7 @@ export default function PlayerScreen({
           {currentLesson && (
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-brown-light gap-4 shadow-sm">
               <div>
-                <span className="text-[10px] font-bold text-gold tracking-wide uppercase">
+                <span className="text-[10px] font-bold text-gold-deep tracking-wide uppercase">
                   Lecture Playing
                 </span>
                 <h3 className="text-sm font-bold text-brown mt-0.5">{currentLesson.title}</h3>
@@ -251,7 +251,7 @@ export default function PlayerScreen({
           {currentLesson && (
             <div className="p-4 bg-white rounded-xl border border-brown-light space-y-2 shadow-sm">
               <h4 className="text-xs font-bold text-brown flex items-center gap-1">
-                <FileDown size={14} className="text-gold" />
+                <FileDown size={14} className="text-gold-deep" />
                 {t('materialsTitle')}
               </h4>
 
@@ -300,7 +300,7 @@ export default function PlayerScreen({
                 {t('summaryPoint1Body')}
               </p>
               <p>
-                <strong className="text-gold">{t('summaryPoint2Label')}</strong>{' '}
+                <strong className="text-gold-deep">{t('summaryPoint2Label')}</strong>{' '}
                 {t('summaryPoint2Body')}
               </p>
             </div>
@@ -321,7 +321,7 @@ export default function PlayerScreen({
           <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">
             {chapters.map((chapter) => (
               <div key={chapter.index} className="space-y-2">
-                <span className="text-[10.5px] font-bold text-gold block uppercase tracking-wider bg-cream p-1.5 rounded">
+                <span className="text-[10.5px] font-bold text-gold-deep block uppercase tracking-wider bg-cream p-1.5 rounded">
                   {chapter.title}
                 </span>
 
@@ -361,7 +361,7 @@ export default function PlayerScreen({
 
                         <div className="flex items-center gap-1 text-[9px] text-brown-medium/60 font-mono">
                           {locked ? (
-                            <span className="text-[8px] bg-gold/10 text-gold px-1 rounded">
+                            <span className="text-[8px] bg-gold/10 text-gold-deep px-1 rounded">
                               {t('lessonLocked')}
                             </span>
                           ) : (

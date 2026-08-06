@@ -331,7 +331,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <span className="text-xs font-bold text-gold tracking-wider uppercase block">
+          <span className="text-xs font-bold text-gold-deep tracking-wider uppercase block">
             CURRICULUM
           </span>
           <h1 className="font-serif text-2xl font-bold text-brown">{courseTitle}</h1>
@@ -510,7 +510,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                       onClick={() => patch(l.id, { isPreview: !l.isPreview })}
                       className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded transition-colors disabled:opacity-50 ${
                         l.isPreview
-                          ? 'text-gold bg-gold/10'
+                          ? 'text-gold-deep bg-gold/10'
                           : 'text-brown-medium bg-brown-medium/10'
                       }`}
                       aria-pressed={l.isPreview}
@@ -577,7 +577,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         className="flex items-center justify-between gap-2 text-[11px] text-brown-medium"
                       >
                         <span className="inline-flex items-center gap-1 min-w-0">
-                          <FileText size={11} className="shrink-0 text-gold" />
+                          <FileText size={11} className="shrink-0 text-gold-deep" />
                           <span className="truncate">{m.title}</span>
                           <span className="font-mono text-brown-medium/60 shrink-0">
                             {formatBytes(m.sizeBytes)}
@@ -625,7 +625,7 @@ export default function LessonManager({ courseId, courseTitle, initialLessons }:
                         type="button"
                         disabled={busy || materialUploading === l.id}
                         onClick={() => openMaterialForm(l.id)}
-                        className="text-[10px] font-bold text-gold hover:text-terracotta underline disabled:opacity-50"
+                        className="text-[10px] font-bold text-gold-deep hover:text-terracotta underline disabled:opacity-50"
                       >
                         {materialUploading === l.id ? '자료 업로드 중…' : '+ PDF 자료 추가'}
                       </button>

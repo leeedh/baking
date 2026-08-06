@@ -35,7 +35,7 @@ export default function SectionHeading({
     >
       <div className="space-y-2">
         {eyebrow && (
-          <p className="text-xs font-bold text-gold tracking-widest uppercase">{eyebrow}</p>
+          <p className="text-xs font-bold text-gold-deep tracking-widest uppercase">{eyebrow}</p>
         )}
         <h2 id={id} className="font-serif text-3xl sm:text-4xl font-bold text-brown break-keep">
           {title}
