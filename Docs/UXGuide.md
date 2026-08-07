@@ -34,8 +34,8 @@
 | `--color-brown-medium` / `text-[#5F4E43]` | `#5F4E43` | 보조 텍스트 |
 | `--color-brown-light` / `border-[#EFE8DC]` | `#EFE8DC` | 구분선·테두리·연한 표면 |
 | `--color-terracotta` / `text-[#B65538]` | `#B65538` | CTA·브랜드 강조(카라멜 테라코타) |
-| `--color-gold` / `text-[#B0863C]` | `#B0863C` | 액센트 — **장식·배경·보더 전용**(아래 대비 항목 참조) |
-| `--color-gold-deep` | `#89682D` | 밝은 배경 위 골드 **텍스트**는 반드시 이것 |
+| `--color-gold` | `#B0863C` | 장식·배경·보더 + **어두운 면**(`bg-brown`·히어로)의 골드 텍스트 |
+| `--color-gold-deep` | `#89682D` | **밝은 면**(cream·ivory·white)의 골드 텍스트 |
 
 **hover 색상은 토큰으로 통일 완료(DC-57).** 버튼 hover의 정본은 `src/lib/button-classes.ts`의
 `VARIANT` 맵이며, 임의값 hex(`text-[#...]`)는 `src/`에서 전부 사라졌다. 과거 실측됐던
@@ -43,9 +43,18 @@
 예외는 `LoginScreen.tsx`의 구글 로고 4색뿐이며, 이는 외부 브랜드 가이드 고정값이라 의도적이다.
 
 **색 대비는 테스트가 잠근다(DC-56).** `src/lib/color-contrast.test.ts`가 `globals.css`의
-토큰을 직접 파싱해 WCAG AA(본문 4.5:1)를 단언한다. `--color-gold`는 cream 위 **3.04:1**로
-본문 텍스트에 쓸 수 없고(이 사실 자체가 테스트로 고정돼 있다), 텍스트에는 cream 위 4.70:1인
-`--color-gold-deep`을 쓴다.
+토큰을 직접 파싱해 WCAG AA(본문 4.5:1)를 단언한다.
+
+**골드는 배경 밝기에 따라 방향이 반대다** — 한쪽만 기억하면 반드시 틀린다.
+
+| 면 | 쓸 토큰 | 대비 | 반대로 쓰면 |
+|---|---|---|---|
+| 밝은 면(cream·ivory·white) | `gold-deep` | 4.70:1 | `gold` → 3.04:1 (미달) |
+| 어두운 면(`bg-brown`·hero-ink) | `gold` | 4.75:1 | `gold-deep` → 3.07:1 (미달) |
+
+테스트가 **양방향**을 잠근다 — 밝은 면·어두운 면 각각의 통과 조합과, 반대로 쓴 조합이
+AA에 미달한다는 사실까지 단언한다. 어두운 면 검사가 처음엔 빠져 있어 실제로 회귀가
+한 번 발생했다(`RecommendationQuiz`의 `bg-brown` 컬럼).
 
 > ⚠️ **남은 잔여**: hex가 아니라 **투명도 변형 난립**이다 — `hover:bg-cream`이 bare·`/10`·`/20`·
 > `/40`·`/50`·`/70`·`/80` 7종, `hover:bg-brown-light`가 3종. 시각 회귀 위험 대비 이득이 낮아

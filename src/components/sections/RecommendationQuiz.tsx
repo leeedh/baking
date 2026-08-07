@@ -97,7 +97,8 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
           {/* Left title section */}
           <div className="md:col-span-2 bg-brown text-cream p-8 sm:p-10 flex flex-col justify-between">
             <div className="space-y-4">
-              <p className="text-[11px] font-bold text-gold-deep tracking-widest uppercase">
+              {/* 이 컬럼은 bg-brown이다 — 어두운 면에는 gold-deep이 아니라 gold를 쓴다(4.75:1). */}
+              <p className="text-[11px] font-bold text-gold tracking-widest uppercase">
                 {t('quiz.badge')}
               </p>
               <h2

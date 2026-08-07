@@ -15,8 +15,11 @@
   /* 코어 팔레트 */
   --color-cream: #faf4ea;
   --color-ivory: #fdfbf7;
-  /* gold는 장식·배경·보더 전용이다 — cream 위 3.04:1이라 본문 텍스트로 쓰면 AA 미달.
-     텍스트에는 반드시 gold-deep을 쓸 것(DC-56, lib/color-contrast.test.ts가 잠근다). */
+  /* 골드는 배경 밝기에 따라 **방향이 반대다**. 한쪽만 기억하면 반드시 틀린다.
+       · 어두운 면(bg-brown·hero-ink)의 텍스트 → gold      (brown 위 4.75:1)
+       · 밝은 면(cream·ivory·white)의 텍스트  → gold-deep  (cream 위 4.70:1)
+     반대로 쓰면 각각 3.07:1 / 3.04:1로 AA 미달이다. 장식·배경·보더에는 gold를 쓴다.
+     이 규약은 lib/color-contrast.test.ts가 양방향으로 잠근다(DC-56). */
   --color-gold: #b0863c;
   /* 기존 #9a7432는 cream 위 3.90:1로 AA(4.5:1) 미달이었다.
      색상(38.1°)·채도는 그대로 두고 명도만 낮춰 4.70:1로 올렸다. */
