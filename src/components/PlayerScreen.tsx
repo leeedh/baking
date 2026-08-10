@@ -1,6 +1,7 @@
 'use client';
 
 import SecureVideoPlayer from '@/components/player/SecureVideoPlayer';
+import { useToast } from '@/components/ui/Toast';
 import { useRouter } from '@/i18n/navigation';
 import { readError } from '@/lib/api/read-error';
 import { formatBytes } from '@/lib/format';
@@ -48,6 +49,7 @@ export default function PlayerScreen({
 }: PlayerScreenProps) {
   const router = useRouter();
   const t = useTranslations('player');
+  const toast = useToast();
   const onNavigateBack = () => router.push(`/classes/${classId}`);
   // 재생 중인 차시는 URL이 소스다(코드리뷰 M-10). 예전에는 ?lesson=을 useState 초기값으로만
   // 읽어서, 뒤로/앞으로 가면 주소는 바뀌는데 재생 차시는 그대로인 불일치가 생겼다.
@@ -78,7 +80,7 @@ export default function PlayerScreen({
 
   const handleLessonSelect = (lesson: PlayerLesson) => {
     if (isLocked(lesson)) {
-      alert(t('lockedLesson'));
+      toast({ tone: 'info', message: t('lockedLesson') });
       return;
     }
     // replace(≠push) — 차시 전환마다 히스토리가 쌓이면 뒤로가기로 강좌 상세에 못 돌아간다.
@@ -210,7 +212,7 @@ export default function PlayerScreen({
           {currentLesson && (
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-brown-light gap-4 shadow-sm">
               <div>
-                <span className="text-[10px] font-bold text-gold tracking-wide uppercase">
+                <span className="text-[10px] font-bold text-gold-deep tracking-wide uppercase">
                   Lecture Playing
                 </span>
                 <h3 className="text-sm font-bold text-brown mt-0.5">{currentLesson.title}</h3>
@@ -249,7 +251,7 @@ export default function PlayerScreen({
           {currentLesson && (
             <div className="p-4 bg-white rounded-xl border border-brown-light space-y-2 shadow-sm">
               <h4 className="text-xs font-bold text-brown flex items-center gap-1">
-                <FileDown size={14} className="text-gold" />
+                <FileDown size={14} className="text-gold-deep" />
                 {t('materialsTitle')}
               </h4>
 
@@ -298,7 +300,7 @@ export default function PlayerScreen({
                 {t('summaryPoint1Body')}
               </p>
               <p>
-                <strong className="text-gold">{t('summaryPoint2Label')}</strong>{' '}
+                <strong className="text-gold-deep">{t('summaryPoint2Label')}</strong>{' '}
                 {t('summaryPoint2Body')}
               </p>
             </div>
@@ -319,7 +321,7 @@ export default function PlayerScreen({
           <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">
             {chapters.map((chapter) => (
               <div key={chapter.index} className="space-y-2">
-                <span className="text-[10.5px] font-bold text-gold block uppercase tracking-wider bg-cream p-1.5 rounded">
+                <span className="text-[10.5px] font-bold text-gold-deep block uppercase tracking-wider bg-cream p-1.5 rounded">
                   {chapter.title}
                 </span>
 
@@ -359,7 +361,7 @@ export default function PlayerScreen({
 
                         <div className="flex items-center gap-1 text-[9px] text-brown-medium/60 font-mono">
                           {locked ? (
-                            <span className="text-[8px] bg-gold/10 text-gold px-1 rounded">
+                            <span className="text-[8px] bg-gold/10 text-gold-deep px-1 rounded">
                               {t('lessonLocked')}
                             </span>
                           ) : (

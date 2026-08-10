@@ -60,7 +60,7 @@ export default function AboutScreen() {
 
               {/* Signature badge overlay */}
               <div className="absolute -bottom-6 -right-6 bg-white p-5 rounded-xl shadow-xl border border-brown-light/80 max-w-[190px]">
-                <p className="text-[10px] text-gold font-semibold tracking-wider uppercase">
+                <p className="text-[10px] text-gold-deep font-semibold tracking-wider uppercase">
                   Directing Chef
                 </p>
                 <h4 className="font-serif text-base font-bold text-brown mt-0.5">
@@ -101,7 +101,7 @@ export default function AboutScreen() {
                 <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat1')}</p>
               </div>
               <div>
-                <p className="text-2xl font-serif font-extrabold text-gold">100%</p>
+                <p className="text-2xl font-serif font-extrabold text-gold-deep">100%</p>
                 <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat2')}</p>
               </div>
               <div>
@@ -129,7 +129,7 @@ export default function AboutScreen() {
         className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/70"
       >
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-          <p className="text-xs font-serif font-bold text-gold tracking-[0.2em] uppercase">
+          <p className="text-xs font-serif font-bold text-gold-deep tracking-[0.2em] uppercase">
             THE Core Values
           </p>
           <h2
@@ -163,7 +163,7 @@ export default function AboutScreen() {
       <section aria-labelledby="about-timeline-heading" className="py-20 px-6 sm:px-12 bg-white/60">
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-3 mb-16">
-            <Award className="mx-auto text-gold animate-pulse" size={28} />
+            <Award className="mx-auto text-gold-deep animate-pulse" size={28} />
             <h2
               id="about-timeline-heading"
               className="font-serif text-2xl sm:text-3xl font-bold text-brown"
@@ -180,7 +180,7 @@ export default function AboutScreen() {
                 <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-gold border-4 border-white shadow-md group-hover:bg-terracotta transition-colors" />
 
                 <div className="space-y-1">
-                  <span className="font-mono text-sm font-bold text-gold block">{ms.year}</span>
+                  <span className="font-mono text-sm font-bold text-gold-deep block">{ms.year}</span>
                   <p className="text-sm font-serif font-medium text-brown sm:text-base leading-relaxed">
                     {ms.event}
                   </p>

@@ -111,17 +111,17 @@ export default function Header() {
           admin
             ? active
               ? cn(
-                  'text-gold bg-gold/5 font-bold',
+                  'text-gold-deep bg-gold/5 font-bold',
                   mobile ? 'border-l-4' : 'border-b-2',
                   'border-gold',
                 )
-              : 'text-brown-medium hover:text-gold hover:bg-gold/5'
+              : 'text-brown-medium hover:text-gold-deep hover:bg-gold/5'
             : active
               ? cn('text-terracotta bg-terracotta/5 font-bold', !mobile && 'shadow-sm')
               : 'text-brown-medium hover:text-terracotta hover:bg-terracotta/5',
         )}
       >
-        {admin && <ShieldAlert size={14} className="text-gold shrink-0" />}
+        {admin && <ShieldAlert size={14} className="text-gold-deep shrink-0" />}
         {t(item.labelKey)}
       </Link>
     );
@@ -202,7 +202,7 @@ export default function Header() {
                 <span className="text-[11px] text-brown-medium">{t('nav.student')}</span>
                 <span className="text-xs font-semibold text-brown">{userEmail}</span>
               </div>
-              <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
+              <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold-deep">
                 <User size={16} />
               </div>
               <button
@@ -234,7 +234,7 @@ export default function Header() {
               href="/my-classes"
               onClick={() => setIsOpen(false)}
               aria-label={t('nav.myclasses')}
-              className="md:hidden w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="md:hidden w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <User size={14} />
             </Link>

@@ -102,6 +102,7 @@ const I18N_DONE: string[] = [
   'sections/BestClasses.tsx',
   'ui/ConfirmDialog.tsx',
   'ui/Modal.tsx',
+  'ui/Toast.tsx', // DC-55 — 문구는 호출부가 넘기고, 자체 문자열은 common.close뿐이다
   // Phase 5b-1 — 기능성 UI(히어로 슬로건·푸터·카드·카탈로그 필터)
   'MeringueHero.tsx',
   'Footer.tsx',

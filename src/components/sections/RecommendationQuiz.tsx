@@ -97,6 +97,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
           {/* Left title section */}
           <div className="md:col-span-2 bg-brown text-cream p-8 sm:p-10 flex flex-col justify-between">
             <div className="space-y-4">
+              {/* 이 컬럼은 bg-brown이다 — 어두운 면에는 gold-deep이 아니라 gold를 쓴다(4.75:1). */}
               <p className="text-[11px] font-bold text-gold tracking-widest uppercase">
                 {t('quiz.badge')}
               </p>
@@ -167,7 +168,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
 
             {quizStep === 3 && quizResult && (
               <div className="space-y-6">
-                <div className="flex items-center gap-1.5 text-gold">
+                <div className="flex items-center gap-1.5 text-gold-deep">
                   <span className="text-xs font-bold bg-gold/10 px-2 py-0.5 rounded">
                     MATCH COMPLETE
                   </span>
@@ -201,7 +202,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                     </p>
 
                     <div className="flex items-center gap-1 pt-1">
-                      <Star size={11} className="text-gold fill-gold" />
+                      <Star size={11} className="text-gold-deep fill-gold" />
                       <span className="text-[11px] text-brown-medium font-bold">
                         {quizResult.rating.toFixed(1)}
                       </span>

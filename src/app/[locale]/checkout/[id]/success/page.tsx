@@ -65,7 +65,7 @@ export default function CheckoutSuccessPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-brown-light p-10 text-center space-y-5">
         {phase === 'confirming' && (
           <>
-            <span className="mx-auto block w-10 h-10 border-4 border-t-transparent border-terracotta rounded-full animate-spin" />
+            <span className="mx-auto block w-10 h-10 border-4 border-t-transparent border-terracotta rounded-full animate-spin" data-motion-essential />
             <h1 className="font-serif text-xl font-bold text-brown">
               결제 승인 및 수강권 발급 중...
             </h1>

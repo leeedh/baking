@@ -33,7 +33,7 @@ export default function Button({
       className={buttonClasses(variant, size, className)}
       {...rest}
     >
-      {loading && <Loader2 size={size === 'sm' ? 12 : 14} className="animate-spin" aria-hidden />}
+      {loading && <Loader2 size={size === 'sm' ? 12 : 14} className="animate-spin" data-motion-essential aria-hidden />}
       {children}
     </button>
   );

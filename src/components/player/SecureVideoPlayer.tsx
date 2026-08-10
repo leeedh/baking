@@ -83,7 +83,7 @@ export default function SecureVideoPlayer({
   if (state.status === 'loading') {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black text-white/70">
-        <Loader2 size={28} className="animate-spin" />
+        <Loader2 size={28} className="animate-spin" data-motion-essential />
       </div>
     );
   }

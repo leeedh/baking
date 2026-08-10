@@ -149,9 +149,13 @@
 - 주문 취소 → `orders.status` 전이 + `enrollments.status='refunded'`(하드삭제 X) → `has_course_access` 자동 차단.
 - **참조**: PRD-F-12, DB-T-06 비고
 
-### EPIC-I · Cross-cutting 품질 (P0~P1)
-- **접근성(P1)**: 포커스 관리/트랩, 플레이어 키보드 단축키, `aria-live`/`th scope`, 색 대비, `prefers-reduced-motion`, `alert()` → 토스트. (UXGuide §6.2 과제)
-- **성능(P0)**: 카탈로그 SSG/ISR, TanStack Query 캐싱, DB 인덱스/RLS 최적화.
+### EPIC-I · Cross-cutting 품질 (P0~P1) — 🔄 **접근성 축 완료**(2026-08-06, = Jira DC-54·55·56·57)
+- ✅ **DC-54 모달·표 접근성**: `Modal`의 keydown effect가 `onClose` 아이덴티티에 묶여 있어 부모 리렌더마다 cleanup→재실행되며 포커스를 빼앗던 **실제 버그**를 수정(폼 모달에서 한 글자마다 포커스가 첫 필드로 튀어 입력이 불가능했다). 포커스 트랩이 `display:none` 노드를 잡던 문제, `ConfirmDialog`의 description 중복 낭독도 함께 정리. 운영자 표 2개에 sr-only `<caption>`·`th scope`·키보드 스크롤 가능한 `<section tabIndex={0}>` 적용.
+- ✅ **DC-55 `alert()` 제거**: `ui/Toast.tsx` 신설(오류=assertive·나머지=polite로 라이브 리전 분리, hover/focus 시 타이머 정지). 레이아웃에 마운트해 내비게이션을 넘어 살아남는다. `DashboardScreen`·`LessonManager`에 복제돼 있던 `runMutation`을 `hooks/useAdminMutation`으로 통합하고 없던 성공 채널을 추가.
+- ✅ **DC-56 색 대비**: `lib/color-contrast.ts` + 테스트가 `globals.css` 토큰을 직접 파싱해 WCAG AA를 잠근다. `gold-deep`이 cream 위 3.90:1로 미달이던 것을 `#89682d`(4.70:1)로 조정하고 밝은 배경의 `text-gold` 66줄을 전환. 모션 감소에서 로딩 스피너가 얼어붙던 문제는 `data-motion-essential` 예외로 해결. **모션 감소 자체는 이전에 이미 완료**(전역 CSS + JS 가드 2곳).
+- ✅ **DC-57 hover 토큰**: 재확인 결과 오타 `#B1863C`와 임의값 hex는 `src/`에서 이미 사라졌고 hover 정본은 `lib/button-classes.ts`다. UXGuide §1.2의 낡은 서술을 정정. 남은 투명도 변형 난립(`hover:bg-cream` 7종)은 시각 회귀 대비 이득이 낮아 **의도적 제외**.
+- 🔲 **잔여 접근성**: 플레이어 키보드 단축키, 모달 배경 `inert`(레이아웃 구조 변경 필요 — `aria-modal`로 스크린리더 요구는 충족), 표 인터랙티브 정렬(`aria-sort`).
+- **성능(P0)**: 카탈로그 SSG/ISR, TanStack Query 캐싱, DB 인덱스/RLS 최적화. → **Jira DC-51**
 - **에러(P0)**: RFC 7807 응답, Error Boundary, 결제 실패 사유별 다국어 메시지.
 - **보안(P0)**: Zod 입력검증(모든 Route Handler), 시크릿 서버 전용 분리.
 - **관측성(P1)**: Sentry, Supabase Logs, 분석 이벤트(PRD-M-01~05).
@@ -249,7 +253,7 @@
 
 *EPIC-A·B·C·D·E·F·G·L·M·N 완료. **EPIC-K(i18n) 화면 문구 완료**(2026-08-05) — 잔여는 강좌 DB 콘텐츠 영문화(Jira **DC-108**)뿐이며 코드가 아니라 데이터 작업이다.*
 
-*다음 착수 권장: **EPIC-I 품질(Jira DC-8)** — DC-53 Sentry(코드리뷰 L-2에서 넣은 `console.error`를 제대로 대체할 자리), DC-55 잔여 `alert()` 2곳(`DetailScreen:59`·`PlayerScreen:79`), DC-54 운영자 표 접근성(`th scope`·`caption` 0건), DC-56 모션·색 대비, DC-57 hover 토큰. 그다음은 **EPIC-J 인프라(DC-12)** — DC-69 Husky, DC-71/72 Playwright, DC-73 CI.*
+*다음 착수 권장: EPIC-I의 접근성 축(DC-54·55·56·57)은 2026-08-06 완료. 남은 것은 **DC-53 Sentry**(외부 DSN 발급 필요 — 코드리뷰 L-2에서 넣은 `console.error`를 제대로 대체할 자리)와 **DC-51 카탈로그 ISR**이다. 그다음은 **EPIC-J 인프라(DC-12)** — DC-69 Husky, DC-71/72 Playwright, DC-73 CI. DC-71/72는 `CodeReview §12`의 수동 검증 18건 중 학습 화면 9건을 영구 자동화하므로 레버리지가 가장 크다.*
 
 *외부 입력 대기: EPIC-D 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 도서 판매 URL(§5-5), DC-95 Supabase 대시보드 설정.*
 

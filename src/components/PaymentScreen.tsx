@@ -264,7 +264,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
 
             {!widgetReady && !payError && (
               <div className="flex items-center gap-2 text-xs text-brown-medium py-8 justify-center">
-                <span className="w-4 h-4 border-2 border-t-transparent border-terracotta rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-t-transparent border-terracotta rounded-full animate-spin" data-motion-essential />
                 {t('loadingMethods')}
               </div>
             )}
@@ -272,7 +272,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
             <div id="toss-agreement" />
 
             <div className="bg-cream p-3 rounded-lg border border-brown-light space-y-1.5 text-xs text-brown-medium">
-              <span className="font-bold text-gold block flex items-center gap-1">
+              <span className="font-bold text-gold-deep block flex items-center gap-1">
                 <AlertCircle size={14} /> {t('guideTitle')}
               </span>
               <p>{t('guideBody')}</p>
@@ -285,7 +285,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
             className="bg-white rounded-xl border border-brown-light p-6 space-y-3"
           >
             <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
-              <BadgePercent size={16} className="text-gold" /> {t('couponTitle')}
+              <BadgePercent size={16} className="text-gold-deep" /> {t('couponTitle')}
             </h3>
 
             <div className="flex gap-2">
@@ -329,7 +329,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 className="w-16 h-12 object-cover rounded-md"
               />
               <div>
-                <span className="text-[9px] font-bold text-gold">{course.category}</span>
+                <span className="text-[9px] font-bold text-gold-deep">{course.category}</span>
                 <h4 className="text-xs font-bold text-brown line-clamp-1">{course.title}</h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-brown-medium mt-1">
                   <span>{t('instructorLabel', { name: course.instructor })}</span>
@@ -353,7 +353,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
               )}
 
               {coupon && (
-                <div className="flex justify-between items-center text-gold font-semibold">
+                <div className="flex justify-between items-center text-gold-deep font-semibold">
                   <span>{t('rowCoupon', { code: coupon.code })}</span>
                   <span>- {formatKrw(coupon.discount_krw, locale)}</span>
                 </div>
@@ -416,7 +416,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
             >
               {isProcessing ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-t-transparent border-cream rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-t-transparent border-cream rounded-full animate-spin" data-motion-essential />
                   {t('processing')}
                 </>
               ) : (

@@ -4,8 +4,8 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
 import Modal from '@/components/ui/Modal';
+import { useAdminMutation } from '@/hooks/useAdminMutation';
 import { Link } from '@/i18n/navigation';
-import { readError } from '@/lib/api/read-error';
 import { ADMIN_INQUIRY_STATUS, ORDER_STATUS } from '@/lib/status-badges';
 import type { AdminClassRow, AdminKpi, AdminOrderRow, InquiryRow } from '@/types';
 import {
@@ -53,8 +53,7 @@ export default function DashboardScreen({
   const classList = initialClasses;
   const orderList = initialOrders;
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy, error, setError, runMutation } = useAdminMutation();
 
   // DC-97 문의 답변
   const [answeringId, setAnsweringId] = useState<string | null>(null);
@@ -74,30 +73,6 @@ export default function DashboardScreen({
   const [newInstructor, setNewInstructor] = useState('');
   const [newPrice, setNewPrice] = useState<number>(0);
 
-  /**
-   * 운영 액션 공통 실행기 — fetch가 throw해도 finally에서 busy를 반드시 푼다.
-   * 예전에는 액션마다 setBusy(false)를 수동으로 불러서, 네트워크 예외가 나면
-   * 화면이 "처리 중"으로 고착돼 다음 작업을 못 했다(코드리뷰 X-3).
-   */
-  const runMutation = async (request: () => Promise<Response>): Promise<boolean> => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await request();
-      if (!res.ok) {
-        setError(await readError(res));
-        return false;
-      }
-      router.refresh();
-      return true;
-    } catch {
-      setError('요청을 처리하지 못했습니다. 네트워크 상태를 확인해 주세요.');
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  };
-
   /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
   const patchInquiry = (id: string, patch: { answerBody?: string; status?: string }) =>
     runMutation(() =>
@@ -106,6 +81,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch),
       }),
+      { successMessage: '문의 답변을 등록했습니다.' },
     );
 
   const submitAnswer = async (id: string) => {
@@ -129,6 +105,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceKrw: editingPrice }),
       }),
+      { successMessage: '판매가를 변경했습니다.' },
     );
     if (ok) setEditingClassId(null);
   };
@@ -141,6 +118,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: next }),
       }),
+      { successMessage: next === 'published' ? '카탈로그에 게시했습니다.' : '초안으로 내렸습니다.' },
     );
   };
 
@@ -160,6 +138,7 @@ export default function DashboardScreen({
           priceKrw: Number(newPrice),
         }),
       }),
+      { successMessage: '새 클래스를 초안으로 등록했습니다.' },
     );
     if (!ok) return;
     setShowAddModal(false);
@@ -182,6 +161,7 @@ export default function DashboardScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: refundReason.trim() || undefined }),
       }),
+      { successMessage: '환불 처리했습니다. 수강권이 회수됩니다.' },
     );
     if (!ok) return;
     setRefundTarget(null);
@@ -192,7 +172,7 @@ export default function DashboardScreen({
       {/* Title block */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <span className="text-xs font-bold text-gold tracking-wider uppercase block">
+          <span className="text-xs font-bold text-gold-deep tracking-wider uppercase block">
             ADMIN SYSTEM
           </span>
           <h1 className="font-serif text-3xl font-bold text-brown flex items-center gap-2">
@@ -243,7 +223,7 @@ export default function DashboardScreen({
         <div className="bg-white rounded-xl border border-brown-light p-5 space-y-3 shadow-sm">
           <div className="flex justify-between items-center text-brown-medium">
             <span className="text-xs font-bold uppercase tracking-wider">누적 수강생</span>
-            <span className="text-gold p-1.5 bg-gold/10 rounded-lg">
+            <span className="text-gold-deep p-1.5 bg-gold/10 rounded-lg">
               <Users size={16} />
             </span>
           </div>
@@ -269,13 +249,15 @@ export default function DashboardScreen({
       <div className="bg-white rounded-2xl border border-brown-light shadow-sm overflow-hidden">
         <div className="p-6 bg-cream/40 border-b border-brown-light flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-serif text-base font-bold text-brown">클래스 판매 실적 관리</h3>
+            <h3 id="hd-classes-table" className="font-serif text-base font-bold text-brown">
+              클래스 판매 실적 관리
+            </h3>
             <p className="text-[11px] text-brown-medium mt-0.5">
               단가 조정·게시 상태 전환이 실시간으로 반영됩니다.
             </p>
           </div>
           <span className="text-xs font-semibold text-brown-medium flex items-center gap-1">
-            <Filter size={13} /> 정렬: 높은 매출 순
+            <Filter size={13} aria-hidden /> 정렬: 높은 매출 순
           </span>
         </div>
 
@@ -284,20 +266,39 @@ export default function DashboardScreen({
             아직 등록된 클래스가 없습니다. “새 클래스 등록”으로 시작하세요.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: min-w-[720px]로 가로 스크롤이 생기는 영역이라 포커스를 받아야 키보드로 스크롤할 수 있다(WAI-ARIA 저작 관행)
+          <section className="overflow-x-auto" tabIndex={0} aria-labelledby="hd-classes-table">
             <table
               id="tbl-baking-classes"
               className="w-full text-left border-collapse min-w-[720px]"
             >
+              <caption className="sr-only">
+                클래스별 판매 실적 — 높은 매출 순으로 정렬됨. 각 행에서 단가 조정과 게시 상태
+                전환을 할 수 있습니다.
+              </caption>
               <thead>
                 <tr className="bg-cream/20 border-b border-brown-light text-[11px] font-bold text-brown-medium uppercase tracking-wider">
-                  <th className="py-4 px-6">강의명</th>
-                  <th className="py-4 px-6">상태</th>
-                  <th className="py-4 px-6 text-right">정가</th>
-                  <th className="py-4 px-6 text-right">판매 수량</th>
-                  <th className="py-4 px-6 text-right">정산 매출</th>
-                  <th className="py-4 px-6 text-center">완주율</th>
-                  <th className="py-4 px-6 text-right">운영</th>
+                  <th scope="col" className="py-4 px-6">
+                    강의명
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    상태
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    정가
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    판매 수량
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    정산 매출
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-center">
+                    완주율
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    운영
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brown-light/60 text-xs sm:text-sm text-brown">
@@ -351,7 +352,7 @@ export default function DashboardScreen({
                       {item.salesCount.toLocaleString()}
                     </td>
 
-                    <td className="py-4 px-6 text-right font-mono font-bold text-gold">
+                    <td className="py-4 px-6 text-right font-mono font-bold text-gold-deep">
                       ₩{item.revenue.toLocaleString()}
                     </td>
 
@@ -372,7 +373,7 @@ export default function DashboardScreen({
                     <td className="py-4 px-6 text-right whitespace-nowrap space-x-1.5">
                       <Link
                         href={`/admin/courses/${item.id}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-gold bg-gold/10 hover:bg-gold hover:text-cream rounded transition-all cursor-pointer align-middle"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-gold-deep bg-gold/10 hover:bg-gold hover:text-cream rounded transition-all cursor-pointer align-middle"
                       >
                         <ListVideo size={12} /> 차시
                       </Link>
@@ -398,7 +399,7 @@ export default function DashboardScreen({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </div>
 
@@ -406,31 +407,50 @@ export default function DashboardScreen({
       <div className="mt-10 bg-white rounded-2xl border border-brown-light shadow-sm overflow-hidden">
         <div className="p-6 bg-cream/40 border-b border-brown-light flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-serif text-base font-bold text-brown flex items-center gap-1.5">
-              <Receipt size={16} className="text-terracotta" /> 주문 · 환불 관리
+            <h3
+              id="hd-orders-table"
+              className="font-serif text-base font-bold text-brown flex items-center gap-1.5"
+            >
+              <Receipt size={16} className="text-terracotta" aria-hidden /> 주문 · 환불 관리
             </h3>
             <p className="text-[11px] text-brown-medium mt-0.5">
               환불 시 결제가 취소되고 수강권이 즉시 회수됩니다(이력은 보존).
             </p>
           </div>
           <span className="text-xs font-semibold text-brown-medium flex items-center gap-1">
-            <Filter size={13} /> 최근 주문 순
+            <Filter size={13} aria-hidden /> 최근 주문 순
           </span>
         </div>
 
         {orderList.length === 0 ? (
           <div className="py-16 text-center text-sm text-brown-medium">주문 내역이 없습니다.</div>
         ) : (
-          <div className="overflow-x-auto">
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: min-w-[720px]로 가로 스크롤이 생기는 영역이라 포커스를 받아야 키보드로 스크롤할 수 있다(WAI-ARIA 저작 관행)
+          <section className="overflow-x-auto" tabIndex={0} aria-labelledby="hd-orders-table">
             <table className="w-full text-left border-collapse min-w-[720px]">
+              <caption className="sr-only">
+                주문 내역 — 최근 주문 순으로 정렬됨. 각 행에서 환불을 처리할 수 있습니다.
+              </caption>
               <thead>
                 <tr className="bg-cream/20 border-b border-brown-light text-[11px] font-bold text-brown-medium uppercase tracking-wider">
-                  <th className="py-4 px-6">주문 / 구매자</th>
-                  <th className="py-4 px-6">클래스</th>
-                  <th className="py-4 px-6 text-right">결제액</th>
-                  <th className="py-4 px-6">상태</th>
-                  <th className="py-4 px-6">결제일시</th>
-                  <th className="py-4 px-6 text-right">운영</th>
+                  <th scope="col" className="py-4 px-6">
+                    주문 / 구매자
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    클래스
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    결제액
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    상태
+                  </th>
+                  <th scope="col" className="py-4 px-6">
+                    결제일시
+                  </th>
+                  <th scope="col" className="py-4 px-6 text-right">
+                    운영
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brown-light/60 text-xs sm:text-sm text-brown">
@@ -479,7 +499,7 @@ export default function DashboardScreen({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </div>
 
@@ -495,7 +515,7 @@ export default function DashboardScreen({
             </p>
           </div>
           <span className="text-xs font-semibold text-brown-medium flex items-center gap-1">
-            <Filter size={13} /> 미답변 우선
+            <Filter size={13} aria-hidden /> 미답변 우선
           </span>
         </div>
 

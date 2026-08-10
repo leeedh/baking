@@ -86,7 +86,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
         <div className="space-y-3">
           {/* Instructor detailed profile header */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold text-gold shrink-0">{cls.instructor}</span>
+            <span className="text-xs font-bold text-gold-deep shrink-0">{cls.instructor}</span>
             <span className="text-[11px] text-brown-medium/50" aria-hidden>
               |
             </span>
@@ -108,7 +108,7 @@ export default function ClassCard({ cls }: ClassCardProps) {
 
           {/* Multi metrics badges bar */}
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <div className="flex items-center gap-1 text-[11px] font-bold text-gold bg-gold/10 px-2 py-1 rounded-md">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-gold-deep bg-gold/10 px-2 py-1 rounded-md">
               <Star size={11} className="fill-gold" />
               <span>{cls.rating.toFixed(1)}</span>
               <span className="text-[11px] text-brown-medium/80 font-medium">
@@ -156,9 +156,9 @@ export default function ClassCard({ cls }: ClassCardProps) {
                 {t('sections.card.oneTime')}
               </span>
             </div>
-            <span className="text-[11px] text-gold block font-light">
+            <span className="text-[11px] text-gold-deep block font-light">
               {t('sections.card.installment')}{' '}
-              <strong className="font-bold text-gold">
+              <strong className="font-bold text-gold-deep">
                 {t('sections.card.installmentAmount', {
                   amount: formatKrw(monthlyInstallment, locale),
                 })}

@@ -15,7 +15,7 @@ export default function ChefBanner() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left: Chef Narrative Intro */}
         <div className="lg:col-span-7 space-y-6">
-          <span className="text-[10px] font-bold text-gold tracking-widest uppercase block">
+          <span className="text-[10px] font-bold text-gold-deep tracking-widest uppercase block">
             {t('eyebrow')}
           </span>
           <h2
@@ -73,7 +73,7 @@ export default function ChefBanner() {
               </div>
 
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-gold-deep bg-gold/10 px-2 py-0.5 rounded">
                   SOLE MASTER PIECE
                 </span>
                 <h3 className="font-serif text-xl font-bold text-brown">{t('cardName')}</h3>
