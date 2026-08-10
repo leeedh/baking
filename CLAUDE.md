@@ -25,7 +25,9 @@ Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `
 
 **Windows quirk**: Bash 툴에서 Python/echo로 한글을 stdout에 출력하면 `UnicodeEncodeError: 'cp949'`가 난다. Python은 `sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`로 감쌀 것.
 
-**Bash 툴 heredoc 한계**: 따옴표·중괄호가 많은 Python을 `python - <<'PY'`로 넘기면 bash가 `unexpected EOF`로 깨진다. 여러 줄 스크립트는 **스크래치패드에 `.py`로 쓴 뒤 `python <path>`로 실행**할 것. 반대로 git 커밋 메시지는 heredoc(`git commit -F - <<'EOF'`)이 안전하다 — **PowerShell here-string(`@'...'@`)을 Bash 툴에 쓰면 `@`가 본문에 그대로 들어간다.**
+**Bash 툴 heredoc 한계**: 따옴표·중괄호가 많은 Python을 `python - <<'PY'`로 넘기면 bash가 `unexpected EOF`로 깨진다. 여러 줄 스크립트는 **스크래치패드에 `.py`로 쓴 뒤 `python <path>`로 실행**할 것. 반대로 git 커밋 메시지는 heredoc(`git commit -F - <<'EOF'`)이 안전하다 — **단 `git merge`는 `-F -`(stdin)를 못 읽는다**(`could not read file '-'`). 병합 메시지는 스크래치패드에 파일로 쓴 뒤 `-F <path>`로 넘길 것. **PowerShell here-string(`@'...'@`)을 Bash 툴에 쓰면 `@`가 본문에 그대로 들어간다.**
+
+**CRLF 보존**: 리포 전역이 CRLF다. Python으로 파일을 고칠 때는 `open(p, encoding='utf-8', newline='')`로 읽고 쓸 것 — `Path.read_text()`에는 `newline` 인자가 아예 없고, 기본 모드로 열면 개행이 통째로 뒤바뀌어 무관한 diff가 대량 발생한다.
 
 ## Architecture — the parts that span files
 
@@ -54,6 +56,16 @@ The webhook (`payments/webhook/route.ts`, `TS-API-11`) is the completion path fo
 
 ### Video playback (`src/app/api/playback/token`, `lib/mux`)
 Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`). Token TTL scales with lesson duration so one token covers full playback. Returns `503 mux-unconfigured` when Mux keys aren't provisioned — the code ships before keys exist.
+
+### 공용 UI 프리미티브
+`src/components/ui/`에 `Button`·`Card`·`Field`·`Badge`·`Modal`·`ConfirmDialog`·`SectionHeading`·`Reveal`·**`Toast`**가 있다. **`alert()`/`confirm()`을 새로 쓰지 말 것** — 안내는 `useToast()`(레이아웃에 마운트돼 내비게이션을 넘어 살아남고, 오류는 assertive·나머지는 polite 라이브 리전으로 분리), 확인은 `ConfirmDialog`다. 운영자 콘솔의 쓰기 액션은 **`hooks/useAdminMutation`**(`{busy, error, setError, runMutation}`)을 재사용할 것 — 예전에 `DashboardScreen`·`LessonManager`에 같은 코드가 복제돼 있었다. 실패는 인라인 오류 박스, 성공은 토스트(`runMutation`의 `successMessage`)가 규약이다.
+
+### 색 토큰과 대비 (DC-56)
+**골드는 배경 밝기에 따라 방향이 반대다** — 밝은 면(cream·ivory·white)은 `gold-deep`, 어두운 면(`bg-brown`·`hero-ink`)은 `gold`. 반대로 쓰면 각각 3.0:1대로 AA 미달이다. `src/lib/color-contrast.test.ts`가 `globals.css` 토큰을 파싱해 **양방향**을 잠근다. hover 정본은 `src/lib/button-classes.ts`이며 임의값 hex(`text-[#...]`)는 쓰지 않는다(예외: `LoginScreen`의 구글 로고 4색 — 외부 브랜드 고정값).
+
+**색 클래스를 파일 전역으로 일괄 치환하지 말 것** — 파일 단위 grep으로 `text-gold`를 바꿨다가 `bg-brown` 컬럼 안의 한 줄을 놓쳐 대비가 반토막 났다(Codex 리뷰가 잡았다). 조상 배경을 줄 단위로 확인할 것.
+
+모션 감소(`globals.css`의 전역 `prefers-reduced-motion` 블록)는 애니메이션을 전부 죽이므로, 로딩 스피너처럼 **멈추면 정보가 사라지는 요소**에는 `data-motion-essential`을 붙여 예외 처리한다.
 
 ### 테스트 규약
 로컬 Docker가 없어 DB 통합 테스트를 못 돌린다. 그래서 **판정 로직만 순수 모듈로 분리하고 콜로케이트 테스트를 붙이는 것**이 이 리포의 규약이다 — `lib/mux/ttl.ts` · `lib/payments/policy.ts` · `lib/progress/policy.ts` · `lib/api/origin.ts`. 라우트는 Supabase 클라이언트에 묶여 import할 수 없으므로 **라우트에 직접 테스트를 붙이려 하지 말 것**. 결제 상태 전이·RLS 같은 불변식은 DB 제약과 RPC가 대신 강제한다.
@@ -103,3 +115,8 @@ Design docs are in `Docs/` (`PRD.md`, `TechSpec.md`, `DBSchema.md`, `UXGuide.md`
 **주의**: `searchJiraIssuesUsingJql`를 프로젝트 전체에 돌리면 토큰 한도를 초과한다. **`fields`를 명시해도 초과한다**(실측) — 결과가 파일로 저장되므로 그 **JSON을 Python으로 파싱하는 것이 유일하게 확실한 방법**이다. 상태 전이 ID(DC 워크플로): **할일=11 · 진행중=21 · 검토중=31 · 완료=41**.
 
 **완료 전이 전에 `getJiraIssue`로 `description`의 완료 기준을 읽을 것.** 요약(summary)만 보고 판단하면 오판한다 — DC-70·DC-54를 "완료"로 잘못 보고했다가 정정한 전례가 있다(하네스만 있고 요구된 테스트 커버리지가 없었고, 모달만 됐고 표 접근성은 미비했다).
+
+**완료 기준에 키보드·스크린리더·시각 확인이나 실결제가 걸려 있으면 완료(41)가 아니라 검토중(31)**으로 올리고, 남은 검증을 체크리스트 코멘트로 남길 것. 범위에서 제외한 항목도 사유와 함께 코멘트에 적는다.
+
+## Notion
+진행 현황은 `아틀리에 크렘 — 프로젝트 진행 현황` 페이지와 그 하위 영역 페이지들이며 **비개발자 대상 서술**이라 코드 식별자·전문용어를 쓰지 않는다(코드 변경을 반영할 때 톤을 맞출 것). `notion-update-page`에 **긴 한글 본문을 `content_updates`로 넘기면 JSON 파싱이 깨진다** — 큰 블록은 `insert_content`, 기존 문장 교체는 짧은 `content_updates` 여러 건으로 나눌 것.
