@@ -32,9 +32,10 @@ Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `
 ## Architecture — the parts that span files
 
 ### Auth & trust boundary (read before touching anything under `src/app/api` or `src/lib/supabase`)
-Two Supabase clients, deliberately separate:
+Three Supabase clients, deliberately separate:
 - `lib/supabase/server.ts` `createClient()` — request-scoped, reads the user session from cookies, **subject to RLS**. Use for all normal reads. `getUser()` / `getProfile()` (role) are helpers here. `getUser()`는 **React `cache()`로 요청 스코프 메모이즈** — 같은 요청 내 여러 호출도 Supabase Auth 왕복 1회. 내부에서 `supabase.auth.getUser()`를 직접 부르지 말고 이 헬퍼를 재사용할 것.
 - `lib/supabase/admin.ts` `createAdminClient()` — `service_role`, **bypasses RLS**. Guarded by `import 'server-only'`. Use *only* for server-authoritative writes (order completion, enrollment grants, admin console mutations).
+- `lib/supabase/public.ts` `createPublicClient()` — anon 키, **쿠키를 읽지 않는다**(세션 없음). 권한은 `createClient()`와 동일한 anon RLS이므로 신뢰 경계는 넓어지지 않는다. 존재 이유는 오직 하나 — 쿠키 접근은 렌더를 동적으로 만들고 `unstable_cache` 안에서는 아예 호출할 수 없다. **캐시되는 공개 조회 전용**이며, 세션이 없어 owner 기반 RLS(enrollments·progress·inquiries)는 아무 행도 돌려주지 않으니 사용자별 데이터에 쓰지 말 것.
 
 Because `service_role` bypasses RLS, **RLS is never the sole gate**. Admin API routes must call `requireAdmin()` (`lib/auth/require-admin.ts`) at the app layer; the DB `is_admin()` RLS is only a backstop. Sensitive reads use **double defense**: RLS gates the row (e.g. `lessons_select_guarded`) *and* the route re-checks access (e.g. `has_course_access()` RPC in the playback route).
 
@@ -56,6 +57,13 @@ The webhook (`payments/webhook/route.ts`, `TS-API-11`) is the completion path fo
 
 ### Video playback (`src/app/api/playback/token`, `lib/mux`)
 Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`). Token TTL scales with lesson duration so one token covers full playback. Returns `503 mux-unconfigured` when Mux keys aren't provisioned — the code ships before keys exist.
+
+### 캐시와 재검증 (DC-51)
+공개 카탈로그 조회(`lib/catalog.ts`의 `getCatalog`·`getCourseSummary`·`getPublicCourseDetail`)는 `unstable_cache`에 태그 **`CATALOG_TAG`**(`lib/cache-tags.ts`)로 얹혀 있다. **정확성은 TTL이 아니라 태그 무효화가 책임진다** — `courses`·`lessons`·`reviews`에 쓰는 라우트는 성공 응답 직전에 `revalidateTag(CATALOG_TAG)`를 불러야 하고, 빠뜨리면 운영자가 고친 가격이 최대 1시간 낡은 채로 팔린다. `src/lib/cache-tags.test.ts`가 소스 스캔으로 이걸 잠근다(새 쓰기 라우트는 자동으로 감시 대상이 된다).
+
+**`unstable_cache` 안에서 `getUser()`·`createClient()`·`cookies()`를 절대 부르지 말 것** — 한 사용자의 세션 판정이 캐시에 얼어붙어 다른 사용자에게 나간다. 그래서 캐시 대상은 `createPublicClient()`만 쓰고, 상세 페이지는 공개부(캐시)와 세션부(`canReview`·`myReview`, 요청 시점 조회)를 갈라 뒀다. 같은 이유로 **캐시에는 매핑을 거친 결과만 넣는다** — lessons 원시 행을 그대로 캐시하면 `mux_playback_id`가 디스크 캐시에 남는다.
+
+**빌드 표의 `●`(SSG)를 믿지 말 것** — 실제 프리렌더 여부는 `.next/server/app`에 `.html`이 생겼는지로 확인한다. `setRequestLocale`을 레이아웃에 넣기 전까지 이 리포에서 프리렌더된 페이지는 `_not-found` 하나뿐이었는데도 표에는 `●`로 찍혀 있었다. next-intl은 `setRequestLocale` 없이 `getMessages()`를 부르면 렌더를 동적으로 만든다.
 
 ### 공용 UI 프리미티브
 `src/components/ui/`에 `Button`·`Card`·`Field`·`Badge`·`Modal`·`ConfirmDialog`·`SectionHeading`·`Reveal`·**`Toast`**가 있다. **`alert()`/`confirm()`을 새로 쓰지 말 것** — 안내는 `useToast()`(레이아웃에 마운트돼 내비게이션을 넘어 살아남고, 오류는 assertive·나머지는 polite 라이브 리전으로 분리), 확인은 `ConfirmDialog`다. 운영자 콘솔의 쓰기 액션은 **`hooks/useAdminMutation`**(`{busy, error, setError, runMutation}`)을 재사용할 것 — 예전에 `DashboardScreen`·`LessonManager`에 같은 코드가 복제돼 있었다. 실패는 인라인 오류 박스, 성공은 토스트(`runMutation`의 `successMessage`)가 규약이다.

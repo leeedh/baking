@@ -1,7 +1,9 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -75,5 +77,8 @@ export async function POST(request: Request) {
     );
   }
 
+  // DC-51 · 차시 수·총 재생시간이 course_catalog 집계에 반영된다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json({ id: lesson.id, orderIndex: nextOrder }, { status: 201 });
 }

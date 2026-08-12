@@ -1,7 +1,9 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import type { TablesUpdate } from '../../../../../../supabase/database.types';
@@ -54,6 +56,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       '클래스를 찾을 수 없습니다.',
     );
   }
+
+  // DC-51 · 게시 상태·가격이 카탈로그 캐시의 정확성 그 자체다. 이 호출이 빠지면
+  // 최대 1시간 동안 옛 가격이 노출된다.
+  revalidateTag(CATALOG_TAG);
 
   return NextResponse.json(course);
 }

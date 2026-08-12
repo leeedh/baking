@@ -1,8 +1,10 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { getUploadResult } from '@/lib/mux/client';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -58,6 +60,8 @@ export async function POST(request: Request) {
         error,
       );
     }
+    // DC-51 · 영상이 붙으면 상세 커리큘럼의 hasVideo가 바뀐다.
+    revalidateTag(CATALOG_TAG);
   }
 
   return NextResponse.json({ state: result.state });

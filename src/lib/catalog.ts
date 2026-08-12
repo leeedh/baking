@@ -1,10 +1,23 @@
 import 'server-only';
 
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { pickLocale } from '@/lib/i18n-json';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { unwrap } from '@/lib/supabase/query';
 import { createClient, getUser } from '@/lib/supabase/server';
 import type { ClassItem, CourseDetail, DetailChapter, ReviewItem } from '@/types';
+import { unstable_cache } from 'next/cache';
+
+/**
+ * 공개 카탈로그 캐시 수명 (DC-51). 태그 무효화가 정확성을 책임지므로 이 값은
+ * "무효화 훅을 빠뜨렸을 때의 최대 낡음"을 정하는 안전망이다.
+ *
+ * ⚠️ 아래 `unstable_cache` 블록 안에서는 `cookies()`·`getUser()`를 절대 호출하지 말 것.
+ * 한 사용자의 세션 판정이 캐시에 얼어붙어 다른 사용자에게 그대로 나간다.
+ * 그래서 캐시 대상 조회는 전부 쿠키 없는 `createPublicClient()`를 쓴다.
+ */
+const CATALOG_REVALIDATE_SEC = 3600;
 
 // 단일 브랜드(1인 파티시에) — courses에 강사명 컬럼이 없어 상수로 표기. 직함만 i18n(instructor_title).
 const BRAND_INSTRUCTOR = '민소희 (Sohee Min)';
@@ -84,40 +97,51 @@ function toClassItem(row: CatalogRow, locale: string): ClassItem {
 }
 
 /**
- * 카탈로그 목록 — published 클래스만 노출하는 course_catalog 뷰를 anon(쿠키) 클라이언트로
+ * 카탈로그 목록 — published 클래스만 노출하는 course_catalog 뷰를 세션 없는 anon 클라이언트로
  * 조회한다. 뷰가 WHERE status='published'로 한정하므로 초안은 노출되지 않는다.
+ *
+ * 세션 무관 공개 데이터라 Data Cache에 얹는다(DC-51) — 운영자가 게시·가격을 바꾸면
+ * 쓰기 라우트의 `revalidateTag(CATALOG_TAG)`가 즉시 무효화하므로 낡은 가격은 나가지 않는다.
  */
-export async function getCatalog(locale: string): Promise<ClassItem[]> {
-  const supabase = await createClient();
-  const data = unwrap(
-    await supabase.from('course_catalog').select(CATALOG_COLUMNS).order('created_at', {
-      ascending: true,
-    }),
-    '클래스 카탈로그',
-  );
-  return ((data ?? []) as CatalogRow[]).map((row) => toClassItem(row, locale));
-}
+export const getCatalog = unstable_cache(
+  async (locale: string): Promise<ClassItem[]> => {
+    const supabase = createPublicClient();
+    const data = unwrap(
+      await supabase.from('course_catalog').select(CATALOG_COLUMNS).order('created_at', {
+        ascending: true,
+      }),
+      '클래스 카탈로그',
+    );
+    return ((data ?? []) as CatalogRow[]).map((row) => toClassItem(row, locale));
+  },
+  ['catalog-list'],
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE_SEC },
+);
 
 /**
  * 판매 코스 단건 요약 — slug로 course_catalog를 조회해 화면용 ClassItem과 DB UUID를 함께 반환.
  * 미게시·부재면 null → 호출부에서 notFound()로 처리한다. **폴백 금지**: 예전 목업 스토어가
  * 없는 slug를 첫 번째 클래스로 대체하는 바람에 결제 화면이 다른 클래스를 표시했다.
  */
-export async function getCourseSummary(
-  slug: string,
-  locale: string,
-): Promise<{ course: ClassItem; courseId: string } | null> {
-  const supabase = await createClient();
-  const row = unwrap(
-    await supabase.from('course_catalog').select(CATALOG_COLUMNS).eq('slug', slug).maybeSingle(),
-    '클래스 상세',
-  );
-  if (!row) return null;
+export const getCourseSummary = unstable_cache(
+  async (
+    slug: string,
+    locale: string,
+  ): Promise<{ course: ClassItem; courseId: string } | null> => {
+    const supabase = createPublicClient();
+    const row = unwrap(
+      await supabase.from('course_catalog').select(CATALOG_COLUMNS).eq('slug', slug).maybeSingle(),
+      '클래스 상세',
+    );
+    if (!row) return null;
 
-  const courseId = (row as CatalogRow).id;
-  if (!courseId) return null;
-  return { course: toClassItem(row as CatalogRow, locale), courseId };
-}
+    const courseId = (row as CatalogRow).id;
+    if (!courseId) return null;
+    return { course: toClassItem(row as CatalogRow, locale), courseId };
+  },
+  ['course-summary'],
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE_SEC },
+);
 
 /** 보관함 카드용 — 카탈로그 메타에 완료 차시 기준 진도율을 얹은 형태. */
 export interface EnrolledCourse extends ClassItem {
@@ -223,82 +247,112 @@ function buildDetailChapters(lessons: DetailLessonRow[], locale: string): Detail
 }
 
 /**
- * 상세 페이지 데이터 — course_catalog 단건 + 커리큘럼(잠긴 차시 포함) + 후기를 묶어 반환.
+ * 상세 페이지 데이터 — course_catalog 단건 + 커리큘럼(잠긴 차시 포함) + 후기 + 세션 판정.
  * 존재하지 않거나 미게시(뷰에서 제외)면 null → 호출부에서 notFound() 처리.
  *
  * 커리큘럼은 잠긴 차시까지 노출해야 하므로 service_role(admin)로 RLS를 우회해 전부 읽되,
  * mux_playback_id는 반환하지 않고 hasVideo로만 노출한다(실제 재생 권한은 재생 토큰 API가
  * has_course_access + RLS 이중 방어로 계속 검증). 후기는 공개 RLS(anon)로 조회.
+ *
+ * DC-51로 공개 부분(getPublicCourseDetail)과 세션 부분(canReview·myReview)을 갈랐다.
+ * 페이지는 계속 동적 렌더지만 DB 왕복은 공개 부분만큼 사라진다.
  */
+type PublicCourseDetail = Pick<CourseDetail, 'course' | 'courseId' | 'chapters' | 'reviews'>;
+
+/**
+ * 상세 페이지의 **세션 무관** 부분 — 코스 요약 + 커리큘럼 + 후기. Data Cache 대상(DC-51).
+ *
+ * ⚠️ 캐시에 넣는 것은 반드시 `buildDetailChapters` 매핑을 **거친 뒤**의 DetailChapter[]다.
+ * lessons 원시 행에는 `mux_playback_id`가 들어 있어, 그대로 캐시하면 재생 ID가 디스크
+ * 캐시에 남는다. 매핑 후에는 hasVideo 불리언만 남는다.
+ *
+ * 상단 getCourseSummary와 쿼리가 겹치지만 일부러 인라인했다 — `unstable_cache` 중첩은
+ * 보장되지 않는다.
+ */
+const getPublicCourseDetail = unstable_cache(
+  async (slug: string, locale: string): Promise<PublicCourseDetail | null> => {
+    const supabase = createPublicClient();
+
+    const row = unwrap(
+      await supabase.from('course_catalog').select(CATALOG_COLUMNS).eq('slug', slug).maybeSingle(),
+      '클래스 상세',
+    );
+    if (!row) return null;
+    const courseId = (row as CatalogRow).id;
+    if (!courseId) return null;
+
+    const admin = createAdminClient();
+    const [lessonsRes, reviewsRes] = await Promise.all([
+      admin
+        .from('lessons')
+        .select(
+          'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id',
+        )
+        .eq('course_id', courseId)
+        .order('order_index', { ascending: true }),
+      supabase
+        .from('reviews')
+        .select('id, rating, content, created_at, profiles(display_name, avatar_url)')
+        .eq('course_id', courseId)
+        .order('created_at', { ascending: false })
+        // 무한 증가 방지용 상한 — UI 페이지네이션이 아니라 응답 크기 백스톱이다(코드리뷰 M-13).
+        // 평균 평점·후기 수는 course_catalog 뷰가 집계하므로 이 상한에 영향받지 않는다.
+        .limit(50),
+    ]);
+
+    const chapters = buildDetailChapters(
+      (unwrap(lessonsRes, '차시 목록') ?? []) as DetailLessonRow[],
+      locale,
+    );
+
+    const reviews: ReviewItem[] = (
+      (unwrap(reviewsRes, '후기') ?? []) as unknown as Array<{
+        id: string;
+        rating: number;
+        content: string | null;
+        created_at: string | null;
+        profiles: { display_name: string | null; avatar_url: string | null } | null;
+      }>
+    ).map((r) => ({
+      id: r.id,
+      userName: r.profiles?.display_name ?? '수강생',
+      avatar: r.profiles?.avatar_url ?? DEFAULT_AVATAR,
+      rating: r.rating,
+      date: formatReviewDate(r.created_at),
+      content: r.content ?? '',
+    }));
+
+    return { course: toClassItem(row as CatalogRow, locale), courseId, chapters, reviews };
+  },
+  ['course-detail-public'],
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE_SEC },
+);
+
 export async function getCourseDetail(slug: string, locale: string): Promise<CourseDetail | null> {
-  const summary = await getCourseSummary(slug, locale);
-  if (!summary) return null;
-  const { course, courseId } = summary;
+  const publicPart = await getPublicCourseDetail(slug, locale);
+  if (!publicPart) return null;
+  const { courseId } = publicPart;
+
+  // 여기부터는 요청마다 실제 세션으로 판정한다 — 캐시에 섞이면 다른 사용자에게 샌다.
+  const user = await getUser();
+  if (!user) return { ...publicPart, canReview: false, myReview: null };
 
   const supabase = await createClient();
-  const admin = createAdminClient();
-
-  const user = await getUser();
-
-  const [lessonsRes, reviewsRes, accessRes, myReviewRes] = await Promise.all([
-    admin
-      .from('lessons')
-      .select(
-        'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id',
-      )
-      .eq('course_id', courseId)
-      .order('order_index', { ascending: true }),
+  const [accessRes, myReviewRes] = await Promise.all([
+    // 후기 작성 자격 = 활성 수강권(환불 시 자동으로 false). RLS insert 정책과 동일한 판정식.
+    supabase.rpc('has_course_access', { p_course_id: courseId }),
     supabase
       .from('reviews')
-      .select('id, rating, content, created_at, profiles(display_name, avatar_url)')
+      .select('id, rating, content')
       .eq('course_id', courseId)
-      .order('created_at', { ascending: false })
-      // 무한 증가 방지용 상한 — UI 페이지네이션이 아니라 응답 크기 백스톱이다(코드리뷰 M-13).
-      // 평균 평점·후기 수는 course_catalog 뷰가 집계하므로 이 상한에 영향받지 않는다.
-      .limit(50),
-    // 후기 작성 자격 = 활성 수강권(환불 시 자동으로 false). RLS insert 정책과 동일한 판정식.
-    user
-      ? supabase.rpc('has_course_access', { p_course_id: courseId })
-      : Promise.resolve({ data: false }),
-    user
-      ? supabase
-          .from('reviews')
-          .select('id, rating, content')
-          .eq('course_id', courseId)
-          .eq('user_id', user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
+      .eq('user_id', user.id)
+      .maybeSingle(),
   ]);
-
-  const chapters = buildDetailChapters(
-    (unwrap(lessonsRes, '차시 목록') ?? []) as DetailLessonRow[],
-    locale,
-  );
-
-  const reviews: ReviewItem[] = (
-    (unwrap(reviewsRes, '후기') ?? []) as unknown as Array<{
-      id: string;
-      rating: number;
-      content: string | null;
-      created_at: string | null;
-      profiles: { display_name: string | null; avatar_url: string | null } | null;
-    }>
-  ).map((r) => ({
-    id: r.id,
-    userName: r.profiles?.display_name ?? '수강생',
-    avatar: r.profiles?.avatar_url ?? DEFAULT_AVATAR,
-    rating: r.rating,
-    date: formatReviewDate(r.created_at),
-    content: r.content ?? '',
-  }));
 
   const my = myReviewRes.data as { id: string; rating: number; content: string | null } | null;
 
   return {
-    course,
-    courseId,
-    chapters,
-    reviews,
+    ...publicPart,
     canReview: !!accessRes.data,
     myReview: my ? { id: my.id, rating: my.rating, content: my.content ?? '' } : null,
   };

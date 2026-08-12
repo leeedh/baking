@@ -472,12 +472,44 @@ export interface Progress {
 ### 6.2 Performance
 | ID | 항목 | 전략 | 측정 | PRD 참조 |
 |----|------|------|------|---------|
-| TS-PERF-01 | 카탈로그 로딩 | SSG/ISR + Vercel Edge 캐싱 | LCP < 2.5s | PRD-NF-01 |
-| TS-PERF-02 | 데이터 페칭 | TanStack Query 캐싱 (stale-while-revalidate) | TTI < 3s | PRD-NF-01 |
+| TS-PERF-01 | 카탈로그 로딩 | **as-built(DC-51)**: `unstable_cache` + 태그 무효화. §6.2.1 참조 | 홈 575ms→40ms(실측) | PRD-NF-01 |
+| TS-PERF-02 | 데이터 페칭 | ~~TanStack Query~~ → **미도입**. 서버 상태를 전부 RSC로 가져와 클라이언트 캐시 계층의 소비처가 없다(DC-51에서 범위 제외) | — | PRD-NF-01 |
 | TS-PERF-03 | 영상 시작 | Mux 적응형 HLS + 토큰 사전 발급 | 시작 지연 < 3s | PRD-NF-02 |
 | TS-PERF-04 | 진도 저장 | `timeupdate` 디바운스(예: 10초마다 upsert) | WS/요청 부하 최소 | PRD-F-07 |
 | TS-PERF-05 | DB 쿼리 | enrollment·progress 인덱스, RLS 정책 최적화 | p95 < 200ms | PRD-NF-01 |
 | TS-PERF-06 | 동시 시청 | 초기 **~30명** 기준. Mux 자동 스케일, Supabase 커넥션 풀링; 확장 시 Pro 티어 상향 | 30명 동시 안정, 확장 여지 확보 | PRD-NF-09 |
+
+#### 6.2.1 카탈로그 캐시와 재검증 경로 (DC-51, as-built)
+
+공개 카탈로그는 세션과 무관하므로 Next Data Cache에 얹혀 있다. **정확성은 TTL이 아니라 태그 무효화가 책임진다** — TTL(1시간)은 무효화 훅을 빠뜨렸을 때의 최대 낡음을 제한하는 안전망일 뿐이다.
+
+**캐시되는 것** (`src/lib/catalog.ts`, 태그 `catalog` = `CATALOG_TAG` in `src/lib/cache-tags.ts`)
+
+| 함수 | 내용 |
+|------|------|
+| `getCatalog(locale)` | `course_catalog` 뷰 전체 (홈·`/classes`) |
+| `getCourseSummary(slug, locale)` | 단건 요약 (결제 화면) |
+| `getPublicCourseDetail(slug, locale)` | 코스 + 커리큘럼 + 후기 (상세의 공개부) |
+
+**캐시되지 않는 것**: `getEnrolledCourses`, 상세의 `canReview`·`myReview`, `hasEnrollmentBySlug`. 전부 세션 의존이라 요청 시점에 쿠키 클라이언트로 조회한다.
+
+**재검증 경로 — 클래스를 게시하면 무엇이 일어나는가**
+
+1. 운영자가 콘솔에서 게시 → `PATCH /api/admin/courses/[id]` (`status: 'published'`)
+2. 라우트가 `courses`를 갱신한 뒤 성공 응답 **직전에** `revalidateTag(CATALOG_TAG)` 호출
+3. 태그가 달린 캐시 엔트리(목록 ko/en·요약·상세)가 전부 무효화
+4. 다음 요청이 DB를 새로 읽고 캐시를 다시 채운다 → **게시 즉시 반영**
+
+같은 훅을 가진 라우트: `admin/courses`(POST) · `admin/courses/[id]`(PATCH) · `admin/lessons`(POST) · `admin/lessons/[id]`(PATCH·DELETE) · `admin/lessons/reorder`(POST) · `admin/mux/upload/status`(영상 ready) · `reviews`(POST·PATCH·DELETE). 차시·후기까지 무효화하는 이유는 `course_catalog` 뷰가 차시 수·총 재생시간·평균 평점·후기 수를 **집계**하기 때문이다.
+
+**두 가지 불변식** (`src/lib/cache-tags.test.ts`가 소스 스캔으로 잠근다)
+
+- 카탈로그 반영 테이블(`courses`·`lessons`·`reviews`)에 쓰는 라우트는 반드시 `revalidateTag(CATALOG_TAG)`를 호출한다.
+- `unstable_cache` 블록 안에서 `getUser()`·`createClient()`·`cookies()`를 부르지 않는다 — 한 사용자의 세션 판정이 캐시에 얼어붙어 다른 사용자에게 나간다. 그래서 캐시 대상은 쿠키를 읽지 않는 `lib/supabase/public.ts`의 `createPublicClient()`만 쓴다.
+
+**⚠️ 캐시에 넣기 전에 매핑할 것**: 커리큘럼은 `service_role`로 `mux_playback_id`까지 읽지만, 캐시에 저장되는 값은 `buildDetailChapters`를 거쳐 `hasVideo` 불리언만 남은 뒤다. 원시 행을 캐시하면 재생 ID가 디스크 캐시에 남는다(검증: `.next/cache/fetch-cache`에 재생 ID 없음).
+
+**알려진 낡음**: `students_count`(수강생 수)는 결제 완료 시 무효화하지 않아 최대 1시간 낡을 수 있다. 표시용 수치이고 가격·게시 상태와 달리 거래에 영향이 없어 의도적으로 남겨 뒀다.
 
 ### 6.3 Error Handling
 | ID | 카테고리 | 전략 |

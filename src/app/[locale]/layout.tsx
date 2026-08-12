@@ -6,7 +6,7 @@ import { AuthProvider } from '@/lib/auth/AuthProvider';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { Fraunces } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import '../globals.css';
@@ -39,6 +39,9 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
+  // 이게 없으면 getMessages()/getTranslations()가 요청 헤더를 읽어 **모든 페이지가 동적**이 된다
+  // (DC-51 이전 실측: 프리렌더된 HTML이 _not-found 하나뿐이었다). 정적화의 전제 조건.
+  setRequestLocale(locale);
   const messages = await getMessages();
   const t = await getTranslations('common');
 

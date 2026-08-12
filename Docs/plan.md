@@ -15,6 +15,7 @@
 > - 2026-07-24 **EPIC-E/F/G 완료** — 보안 영상(Mux 서명 재생·워터마크·진도, 커밋 `1eae935`), 운영자 콘솔 실연동(클래스·차시·업로드·KPI, `91ea246`), 학습 자료·후기(서명 URL 다운로드·후기 CRUD, `e6bea9a`). 카탈로그·상세·미리보기 실데이터도 연동(`31fc866`).
 > - 2026-07-25 **EPIC-D 환불** — 운영자 환불(PG 취소·수강권 회수·접근 차단, 커밋 `0a9a9f6`). = Jira DC-34/35, 스토리 DC-15 완료.
 > - 2026-07-27 **EPIC-L 착수** — 도서 외부 커머스 CTA 전환 + `books` 데이터 연동(`src/lib/books.ts`), 강사 소개 i18n화(`instructor.*` 메시지). = Jira DC-66/68 구현. DC-67은 실제 판매 URL 확보 대기(플레이스홀더 게이팅으로 CTA 비활성).
+> - 2026-08-12 **EPIC-I 성능 축 완료** — 카탈로그 캐싱(DC-51). 공개 조회를 `unstable_cache`+태그 `catalog`으로 감싸고 쓰기 라우트 6곳이 `revalidateTag`로 무효화. 쿠키 없는 `lib/supabase/public.ts` 신설, 상세는 공개부/세션부 분리. 홈 575ms→40ms. 회귀 방지 게이트 `lib/cache-tags.test.ts`(무효화 누락·캐시 내 쿠키 클라이언트 사용을 소스 스캔으로 차단).
 
 ---
 
@@ -155,7 +156,10 @@
 - ✅ **DC-56 색 대비**: `lib/color-contrast.ts` + 테스트가 `globals.css` 토큰을 직접 파싱해 WCAG AA를 잠근다. `gold-deep`이 cream 위 3.90:1로 미달이던 것을 `#89682d`(4.70:1)로 조정하고 밝은 배경의 `text-gold` 66줄을 전환. 모션 감소에서 로딩 스피너가 얼어붙던 문제는 `data-motion-essential` 예외로 해결. **모션 감소 자체는 이전에 이미 완료**(전역 CSS + JS 가드 2곳).
 - ✅ **DC-57 hover 토큰**: 재확인 결과 오타 `#B1863C`와 임의값 hex는 `src/`에서 이미 사라졌고 hover 정본은 `lib/button-classes.ts`다. UXGuide §1.2의 낡은 서술을 정정. 남은 투명도 변형 난립(`hover:bg-cream` 7종)은 시각 회귀 대비 이득이 낮아 **의도적 제외**.
 - 🔲 **잔여 접근성**: 플레이어 키보드 단축키, 모달 배경 `inert`(레이아웃 구조 변경 필요 — `aria-modal`로 스크린리더 요구는 충족), 표 인터랙티브 정렬(`aria-sort`).
-- **성능(P0)**: 카탈로그 SSG/ISR, TanStack Query 캐싱, DB 인덱스/RLS 최적화. → **Jira DC-51**
+- ✅ **DC-51 카탈로그 캐싱**(2026-08-12): `getCatalog`·`getCourseSummary`·상세 공개부를 `unstable_cache`(태그 `catalog`, 1시간)로 감싸고, 카탈로그 반영 테이블(courses·lessons·reviews)에 쓰는 6개 라우트가 `revalidateTag`로 무효화한다. 캐시 대상은 쿠키를 읽지 않는 신규 `lib/supabase/public.ts`를 쓴다 — 쿠키 접근이 있으면 `unstable_cache` 안에서 쓸 수 없고 세션이 캐시에 섞인다. 상세는 공개부(코스·커리큘럼·후기)와 세션부(`canReview`·`myReview`)를 갈라 후자만 요청 시점에 조회한다. **실측: 홈 575ms→40ms, 목록 225ms→30ms, 상세 410ms→20ms.**
+  - ⚠️ **TanStack Query는 의도적 제외** — 이 앱은 서버 상태를 전부 RSC로 가져오고 전역 클라이언트 스토어가 없다(TechSpec의 TanStack/Zustand는 to-be 표기이며 둘 다 미설치). 도입해도 캐싱을 맡길 소비처가 없어 ISR+태그로 대체했다.
+  - ⚠️ **프리렌더는 별개 문제** — `setRequestLocale`을 레이아웃에 넣어 `/login`·`/instructor`가 처음으로 정적 생성됐지만, 홈·`/about`·`/books`는 여전히 빌드 산출물에 HTML이 없다(원인 미규명, DC-51 이전부터 그랬다). 위 수치의 출처는 정적 셸이 아니라 Data Cache다.
+- **성능 잔여**: DB 인덱스/RLS 최적화, 홈·소개 페이지 프리렌더 미달 원인 규명.
 - **에러(P0)**: RFC 7807 응답, Error Boundary, 결제 실패 사유별 다국어 메시지.
 - **보안(P0)**: Zod 입력검증(모든 Route Handler), 시크릿 서버 전용 분리.
 - **관측성(P1)**: Sentry, Supabase Logs, 분석 이벤트(PRD-M-01~05).
@@ -253,7 +257,7 @@
 
 *EPIC-A·B·C·D·E·F·G·L·M·N 완료. **EPIC-K(i18n) 화면 문구 완료**(2026-08-05) — 잔여는 강좌 DB 콘텐츠 영문화(Jira **DC-108**)뿐이며 코드가 아니라 데이터 작업이다.*
 
-*다음 착수 권장: EPIC-I의 접근성 축(DC-54·55·56·57)은 2026-08-06 완료. 남은 것은 **DC-53 Sentry**(외부 DSN 발급 필요 — 코드리뷰 L-2에서 넣은 `console.error`를 제대로 대체할 자리)와 **DC-51 카탈로그 ISR**이다. 그다음은 **EPIC-J 인프라(DC-12)** — DC-69 Husky, DC-71/72 Playwright, DC-73 CI. DC-71/72는 `CodeReview §12`의 수동 검증 18건 중 학습 화면 9건을 영구 자동화하므로 레버리지가 가장 크다.*
+*다음 착수 권장: EPIC-I의 접근성 축(DC-54·55·56·57)은 2026-08-06 완료, **성능 축(DC-51)은 2026-08-12 완료**. 남은 것은 **DC-53 Sentry**(외부 DSN 발급 필요 — 코드리뷰 L-2에서 넣은 `console.error`를 제대로 대체할 자리)다. 그다음은 **EPIC-J 인프라(DC-12)** — DC-69 Husky, DC-71/72 Playwright, DC-73 CI. DC-71/72는 `CodeReview §12`의 수동 검증 18건 중 학습 화면 9건을 영구 자동화하므로 레버리지가 가장 크다.*
 
 *외부 입력 대기: EPIC-D 결제 e2e(service_role 키)·실 가맹 키(§5-3/7), EPIC-L 도서 판매 URL(§5-5), DC-95 Supabase 대시보드 설정.*
 
