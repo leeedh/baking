@@ -1,6 +1,7 @@
 import 'server-only';
 
 import Mux from '@mux/mux-node';
+import { muxDurationToSec } from './duration';
 import { getMuxEnv } from './env';
 import { PLAYBACK_TOKEN_FALLBACK_TTL_SEC } from './ttl';
 
@@ -46,23 +47,33 @@ export type MuxUploadState = 'waiting' | 'preparing' | 'ready' | 'errored';
 
 /**
  * Direct Upload → Asset 진행 상태를 조회한다. 인코딩이 끝나 재생 준비되면
- * assetId·(signed) playbackId를 반환한다. 아직이면 playbackId는 null.
+ * assetId·(signed) playbackId·durationSec을 반환한다. 아직이면 playbackId는 null.
+ *
+ * durationSec은 Mux가 인코딩 중 측정한 실제 길이다 — 운영자 수기 입력을 대체한다
+ * (산정 규칙과 방어는 './duration'의 muxDurationToSec).
  */
-export async function getUploadResult(
-  uploadId: string,
-): Promise<{ state: MuxUploadState; assetId: string | null; playbackId: string | null }> {
+export async function getUploadResult(uploadId: string): Promise<{
+  state: MuxUploadState;
+  assetId: string | null;
+  playbackId: string | null;
+  durationSec: number | null;
+}> {
   const mux = getMuxClient();
   const upload = await mux.video.uploads.retrieve(uploadId);
 
-  if (upload.status === 'errored') return { state: 'errored', assetId: null, playbackId: null };
-  if (!upload.asset_id) return { state: 'waiting', assetId: null, playbackId: null };
+  if (upload.status === 'errored') {
+    return { state: 'errored', assetId: null, playbackId: null, durationSec: null };
+  }
+  if (!upload.asset_id) {
+    return { state: 'waiting', assetId: null, playbackId: null, durationSec: null };
+  }
 
   const asset = await mux.video.assets.retrieve(upload.asset_id);
   if (asset.status === 'errored') {
-    return { state: 'errored', assetId: upload.asset_id, playbackId: null };
+    return { state: 'errored', assetId: upload.asset_id, playbackId: null, durationSec: null };
   }
   if (asset.status !== 'ready') {
-    return { state: 'preparing', assetId: upload.asset_id, playbackId: null };
+    return { state: 'preparing', assetId: upload.asset_id, playbackId: null, durationSec: null };
   }
 
   // signed 정책 ID만 받는다(코드리뷰 M-5). 예전엔 없으면 첫 playback ID로 폴백했는데,
@@ -75,9 +86,14 @@ export async function getUploadResult(
     console.error(
       `[mux] asset ${upload.asset_id} is ready but has no signed playback ID — 저장을 거부한다.`,
     );
-    return { state: 'errored', assetId: upload.asset_id, playbackId: null };
+    return { state: 'errored', assetId: upload.asset_id, playbackId: null, durationSec: null };
   }
-  return { state: 'ready', assetId: upload.asset_id, playbackId: signed.id };
+  return {
+    state: 'ready',
+    assetId: upload.asset_id,
+    playbackId: signed.id,
+    durationSec: muxDurationToSec(asset.duration),
+  };
 }
 
 /**

@@ -2,10 +2,12 @@
 
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Input, Textarea } from '@/components/ui/Field';
 import Modal from '@/components/ui/Modal';
 import { useAdminMutation } from '@/hooks/useAdminMutation';
 import { Link } from '@/i18n/navigation';
+import { readError } from '@/lib/api/read-error';
 import { ADMIN_INQUIRY_STATUS, ORDER_STATUS } from '@/lib/status-badges';
 import type { AdminClassRow, AdminKpi, AdminOrderRow, InquiryRow } from '@/types';
 import {
@@ -17,6 +19,7 @@ import {
   Plus,
   Receipt,
   RotateCcw,
+  Trash2,
   Users,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -67,11 +70,9 @@ export default function DashboardScreen({
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
 
-  // 새 클래스 등록 모달
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newInstructor, setNewInstructor] = useState('');
-  const [newPrice, setNewPrice] = useState<number>(0);
+  // 클래스 삭제 확인(초안 정리용)
+  const [pendingClassDelete, setPendingClassDelete] = useState<AdminClassRow | null>(null);
+  const [creating, setCreating] = useState(false);
 
   /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
   const patchInquiry = (id: string, patch: { answerBody?: string; status?: string }) =>
@@ -122,29 +123,40 @@ export default function DashboardScreen({
     );
   };
 
-  const handleCreateClass = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newPrice) {
-      setError('강의 명칭과 가격을 입력해 주세요.');
-      return;
-    }
-    const ok = await runMutation(() =>
-      fetch('/api/admin/courses', {
+  /**
+   * "새 클래스 등록" — 폼을 띄우지 않고 빈 초안을 만든 뒤 곧바로 편집기로 보낸다.
+   * 등록과 관리가 같은 화면(CourseEditor)으로 수렴해, 제목·가격만 받아두고 커리큘럼은
+   * 다른 페이지에서 다시 시작하던 두 단계 흐름이 사라진다.
+   */
+  const createClass = async () => {
+    setError(null);
+    setCreating(true);
+    try {
+      const res = await fetch('/api/admin/courses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          titleKo: newTitle,
-          instructorTitleKo: newInstructor,
-          priceKrw: Number(newPrice),
-        }),
-      }),
-      { successMessage: '새 클래스를 초안으로 등록했습니다.' },
-    );
-    if (!ok) return;
-    setShowAddModal(false);
-    setNewTitle('');
-    setNewInstructor('');
-    setNewPrice(0);
+        body: JSON.stringify({ titleKo: '제목 없는 클래스', priceKrw: 0 }),
+      });
+      if (!res.ok) {
+        setError(await readError(res));
+        return;
+      }
+      const { id } = (await res.json()) as { id: string };
+      router.push(`/admin/courses/${id}`);
+    } catch {
+      setError('클래스를 만들지 못했습니다. 네트워크 상태를 확인해 주세요.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const deleteClass = async () => {
+    if (!pendingClassDelete) return;
+    const target = pendingClassDelete;
+    setPendingClassDelete(null);
+    await runMutation(() => fetch(`/api/admin/courses/${target.id}`, { method: 'DELETE' }), {
+      successMessage: '클래스를 삭제했습니다.',
+    });
   };
 
   const openRefund = (order: AdminOrderRow) => {
@@ -189,10 +201,11 @@ export default function DashboardScreen({
         <div className="flex items-center gap-2 self-stretch sm:self-auto">
           <button
             type="button"
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+            disabled={creating}
+            onClick={createClass}
+            className="px-4 py-2 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
           >
-            <Plus size={14} /> 새 클래스 등록
+            <Plus size={14} /> {creating ? '준비 중…' : '새 클래스 등록'}
           </button>
         </div>
       </div>
@@ -375,8 +388,19 @@ export default function DashboardScreen({
                         href={`/admin/courses/${item.id}`}
                         className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-gold-deep bg-gold/10 hover:bg-gold hover:text-cream rounded transition-all cursor-pointer align-middle"
                       >
-                        <ListVideo size={12} /> 차시
+                        <ListVideo size={12} /> 편집
                       </Link>
+                      {item.status === 'draft' && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => setPendingClassDelete(item)}
+                          aria-label={`클래스 ${item.title} 삭제`}
+                          className="inline-flex items-center px-2 py-1 text-[11px] font-bold text-brown-medium/70 hover:text-terracotta rounded transition-all cursor-pointer align-middle disabled:opacity-50"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                       {editingClassId !== item.id && (
                         <button
                           type="button"
@@ -656,48 +680,16 @@ export default function DashboardScreen({
         )}
       </Modal>
 
-      {/* ADD CLASS MODAL */}
-      <Modal
-        open={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="새 클래스 등록"
-        description="초안(draft)으로 생성됩니다. 차시 구성 후 “게시”하면 카탈로그에 노출됩니다."
-        className="max-w-md"
-      >
-        <form onSubmit={handleCreateClass} className="space-y-3.5">
-          <Input
-            label="강의 명칭 (한국어)"
-            type="text"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            required
-          />
-          <Input
-            label="강사 직함 (선택)"
-            type="text"
-            value={newInstructor}
-            onChange={(e) => setNewInstructor(e.target.value)}
-          />
-          <Input
-            label="판매가 (KRW ₩)"
-            type="number"
-            value={newPrice}
-            onChange={(e) => setNewPrice(Number(e.target.value))}
-            min={0}
-            className="font-mono"
-            required
-          />
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setShowAddModal(false)} disabled={busy}>
-              취소
-            </Button>
-            <Button type="submit" variant="secondary" loading={busy}>
-              등록
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <ConfirmDialog
+        open={pendingClassDelete !== null}
+        title="클래스를 삭제할까요?"
+        description="차시·영상 연결과 자료가 함께 사라집니다. 주문·수강 이력이 있으면 삭제되지 않습니다."
+        confirmLabel="삭제"
+        destructive
+        busy={busy}
+        onConfirm={deleteClass}
+        onCancel={() => setPendingClassDelete(null)}
+      />
     </div>
   );
 }

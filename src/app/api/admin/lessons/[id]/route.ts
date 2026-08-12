@@ -13,7 +13,8 @@ const BodySchema = z
   .object({
     titleKo: z.string().trim().min(1).max(200).optional(),
     titleEn: z.string().trim().max(200).optional(),
-    chapterIndex: z.number().int().min(1).max(99).optional(),
+    // 0 = 미분류 보관함(arrange 라우트 주석 참조).
+    chapterIndex: z.number().int().min(0).max(99).optional(),
     chapterTitleKo: z.string().trim().max(200).optional(),
     chapterTitleEn: z.string().trim().max(200).optional(),
     durationSec: z.number().int().min(0).nullable().optional(),
@@ -83,6 +84,16 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   }
 
   const admin = createAdminClient();
+
+  // materials 행은 FK cascade로 사라지지만 Storage 객체는 남는다 — 키를 미리 모아둔다.
+  const { data: materialRows } = await admin
+    .from('materials')
+    .select('storage_path')
+    .eq('lesson_id', id);
+  const materialPaths = (materialRows ?? [])
+    .map((m) => m.storage_path)
+    .filter((p): p is string => !!p);
+
   const { error } = await admin.from('lessons').delete().eq('id', id);
   if (error) {
     return problemWithCause(
@@ -92,6 +103,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       '차시를 삭제하지 못했습니다.',
       error,
     );
+  }
+
+  // 행 삭제가 확정된 뒤에만 파일을 치운다(실패해도 고아 파일이 남을 뿐 데이터는 일관적).
+  if (materialPaths.length > 0) {
+    await admin.storage.from('course-materials').remove(materialPaths);
   }
 
   // DC-51 · 차시 삭제 — 집계와 커리큘럼이 함께 바뀐다.

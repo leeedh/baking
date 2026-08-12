@@ -175,13 +175,34 @@ export interface AdminLesson {
   isPreview: boolean;
   /** Mux 영상 준비 여부(재생 ID는 노출하지 않음). */
   hasVideo: boolean;
+  /**
+   * 아직 인코딩 중인 Mux Direct Upload ID. 편집기가 재진입 시 이 값으로 폴링을 이어간다
+   * (완료·실패 시 서버가 null로 지운다). 업로드 ID는 재생 권한과 무관하다.
+   */
+  pendingUploadId: string | null;
   /** 차시에 등록된 레시피 자료(DC-58). */
   materials: AdminMaterial[];
 }
 
-/** 차시 관리 페이지 서버 로드 결과. */
-export interface AdminCourseLessons {
-  courseId: string;
-  courseTitle: string;
+/** 편집기의 클래스 정보 폼 값(i18n 텍스트는 ko/en 분리 노출). */
+export interface AdminCourseInfo {
+  id: string;
+  titleKo: string;
+  titleEn: string;
+  descriptionKo: string;
+  descriptionEn: string;
+  instructorTitleKo: string;
+  instructorTitleEn: string;
+  category: string;
+  level: string;
+  priceKrw: number;
+  listPriceKrw: number | null;
+  thumbnailUrl: string;
+  status: 'draft' | 'published';
+}
+
+/** 클래스 통합 편집기 서버 로드 결과(클래스 정보 + 커리큘럼). */
+export interface AdminCourseEditorData {
+  course: AdminCourseInfo;
   lessons: AdminLesson[];
 }
