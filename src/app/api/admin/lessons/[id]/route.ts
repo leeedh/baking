@@ -1,7 +1,9 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import type { TablesUpdate } from '../../../../../../supabase/database.types';
@@ -61,6 +63,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     );
   }
 
+  // DC-51 · 차시 수정 — 제목·재생시간이 상세 커리큘럼에 반영된다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json(lesson);
 }
 
@@ -89,5 +94,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     );
   }
 
+  // DC-51 · 차시 삭제 — 집계와 커리큘럼이 함께 바뀐다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json({ ok: true });
 }

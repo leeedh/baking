@@ -1,6 +1,8 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem } from '@/lib/api/problem';
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { createClient } from '@/lib/supabase/server';
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -78,6 +80,9 @@ export async function POST(request: Request) {
     return reviewError(error?.code, error?.message ?? '후기를 저장하지 못했습니다.');
   }
 
+  // DC-51 · 후기 작성 — 평균 평점·후기 수가 바뀐다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json(data, { status: 201 });
 }
 
@@ -116,6 +121,9 @@ export async function PATCH(request: Request) {
     return problem(404, 'review-not-found', 'Review not found', '수정할 후기가 없습니다.');
   }
 
+  // DC-51 · 후기 수정 — 평균 평점이 바뀐다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json(data);
 }
 
@@ -145,5 +153,8 @@ export async function DELETE(request: Request) {
     return reviewError(error.code, error.message);
   }
 
+  // DC-51 · 후기 삭제 — 평균 평점·후기 수가 뷰 집계에 들어간다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json({ ok: true });
 }

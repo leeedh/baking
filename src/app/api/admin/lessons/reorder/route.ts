@@ -1,7 +1,9 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { CATALOG_TAG } from '@/lib/cache-tags';
 import { createClient } from '@/lib/supabase/server';
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -44,5 +46,8 @@ export async function POST(request: Request) {
     );
   }
 
+  // DC-51 · 차시 순서가 상세 커리큘럼 표시 순서다.
+  revalidateTag(CATALOG_TAG);
+  
   return NextResponse.json({ ok: true });
 }
