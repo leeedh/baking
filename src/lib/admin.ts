@@ -196,7 +196,9 @@ export async function getCourseEditor(courseId: string): Promise<AdminCourseEdit
     durationSec: l.duration_sec,
     isPreview: l.is_preview,
     hasVideo: !!l.mux_playback_id,
-    pendingUploadId: l.mux_playback_id ? null : l.mux_upload_id,
+    // 완료·실패 시 status 라우트가 null로 지우므로, 남아 있으면 곧 진행 중이라는 뜻이다.
+    // 재생 ID 유무로 거르면 안 된다 — 영상 "교체" 업로드는 이미 재생 ID가 있는 차시에서 시작한다.
+    pendingUploadId: l.mux_upload_id,
     materials: materialsByLesson[l.id] ?? [],
   }));
 

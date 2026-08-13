@@ -85,7 +85,13 @@ export default function CurriculumBoard({
   onError: (message: string) => void;
 }) {
   const router = useRouter();
-  const { busy, runMutation } = useAdminMutation();
+  const { busy, error: mutationError, runMutation } = useAdminMutation();
+
+  // 이 보드의 쓰기(배치 저장·삭제)는 훅의 인라인 오류 자리가 없다 — 오류 표시는 편집기 상단
+  // 한 곳뿐이므로 위로 올린다. 안 올리면 배치 저장이 실패해도 낙관적 화면만 남아 조용히 어긋난다.
+  useEffect(() => {
+    if (mutationError) onError(mutationError);
+  }, [mutationError, onError]);
 
   const byId = useMemo(() => new Map(lessons.map((l) => [l.id, l])), [lessons]);
   const [chapters, setChapters] = useState<Chapter[]>(() => derive(lessons));
@@ -206,6 +212,9 @@ export default function CurriculumBoard({
     // 챕터 경계 — 이웃 챕터의 끝(위로) 또는 앞(아래로)으로 넘어간다.
     const neighbor = ci + dir;
     if (neighbor < 0 || neighbor >= next.length) return;
+    // 단, 보관함(0번)으로는 버튼으로 넘기지 않는다 — "위로 한 칸"이 배치 해제로 이어지면
+    // 커리큘럼에서 조용히 빠진다. 되돌리려면 드래그로 명시하게 둔다.
+    if (next[neighbor].key === INBOX) return;
     next[ci].lessonIds.splice(li, 1);
     if (dir === -1) next[neighbor].lessonIds.push(lessonId);
     else next[neighbor].lessonIds.unshift(lessonId);
@@ -272,14 +281,13 @@ export default function CurriculumBoard({
   };
 
   const addEmptyLesson = async () => {
-    const ok = await runMutation(() =>
+    await runMutation(() =>
       fetch('/api/admin/lessons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ courseId, titleKo: '새 차시', chapterIndex: 0 }),
       }),
     );
-    if (!ok) return;
   };
 
   const addChapter = () => {

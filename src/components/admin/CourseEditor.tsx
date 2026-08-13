@@ -4,7 +4,7 @@ import { useAdminMutation } from '@/hooks/useAdminMutation';
 import { Link } from '@/i18n/navigation';
 import type { AdminCourseInfo, AdminLesson } from '@/types';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import CourseInfoForm from './CourseInfoForm';
 import CurriculumBoard from './CurriculumBoard';
 import ThumbnailPanel from './ThumbnailPanel';
@@ -26,9 +26,11 @@ export default function CourseEditor({
   initialLessons: AdminLesson[];
 }) {
   const lessons = initialLessons;
-  const { busy, error, setError, runMutation } = useAdminMutation();
+  const { busy, error, runMutation } = useAdminMutation();
 
   const [boardError, setBoardError] = useState<string | null>(null);
+  // 보드가 effect에서 부르므로 신원이 고정돼야 한다(매 렌더 새 함수면 effect가 매번 돈다).
+  const handleBoardError = useCallback((message: string) => setBoardError(message), []);
 
   const inboxCount = lessons.filter((l) => l.chapterIndex === 0).length;
   const missingVideo = lessons.filter((l) => !l.hasVideo).length;
@@ -95,9 +97,11 @@ export default function CourseEditor({
       {(error || boardError) && (
         <div
           role="alert"
-          className="mb-6 rounded-lg border border-terracotta/30 bg-terracotta/10 px-4 py-3 text-xs font-semibold text-terracotta-deep"
+          className="mb-6 rounded-lg border border-terracotta/30 bg-terracotta/10 px-4 py-3 text-xs font-semibold text-terracotta-deep space-y-1"
         >
-          {error ?? boardError}
+          {/* 정보 저장 실패와 커리큘럼 저장 실패는 원인이 달라 하나로 덮으면 안 된다. */}
+          {error && <p>{error}</p>}
+          {boardError && <p>{boardError}</p>}
         </div>
       )}
 
@@ -136,10 +140,7 @@ export default function CourseEditor({
         <CurriculumBoard
           courseId={course.id}
           lessons={lessons}
-          onError={(message) => {
-            setError(null);
-            setBoardError(message);
-          }}
+          onError={handleBoardError}
         />
       </section>
     </div>
