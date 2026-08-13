@@ -7,7 +7,7 @@ import { unwrap } from '@/lib/supabase/query';
 import { createClient } from '@/lib/supabase/server';
 import type {
   AdminClassRow,
-  AdminCourseLessons,
+  AdminCourseEditorData,
   AdminDashboard,
   AdminLesson,
   AdminMaterial,
@@ -139,14 +139,20 @@ function pickRaw(value: unknown, key: 'ko' | 'en'): string {
 }
 
 /**
- * 차시 관리 페이지 데이터 — 특정 course의 lessons 전체를 순서대로. service_role로 조회하되
+ * 클래스 통합 편집기 데이터 — 클래스 정보 + lessons 전체를 순서대로. service_role로 조회하되
  * 호출부(admin 페이지)가 role 가드로 보호한다. mux_playback_id는 hasVideo로만 노출.
  */
-export async function getCourseLessons(courseId: string): Promise<AdminCourseLessons | null> {
+export async function getCourseEditor(courseId: string): Promise<AdminCourseEditorData | null> {
   const admin = createAdminClient();
 
   const course = unwrap(
-    await admin.from('courses').select('id, title').eq('id', courseId).maybeSingle(),
+    await admin
+      .from('courses')
+      .select(
+        'id, title, description, instructor_title, category, level, price_krw, list_price_krw, thumbnail_url, status',
+      )
+      .eq('id', courseId)
+      .maybeSingle(),
     '클래스',
   );
   if (!course) return null;
@@ -155,7 +161,7 @@ export async function getCourseLessons(courseId: string): Promise<AdminCourseLes
     admin
       .from('lessons')
       .select(
-        'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id',
+        'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id, mux_upload_id',
       )
       .eq('course_id', courseId)
       .order('order_index', { ascending: true }),
@@ -190,12 +196,28 @@ export async function getCourseLessons(courseId: string): Promise<AdminCourseLes
     durationSec: l.duration_sec,
     isPreview: l.is_preview,
     hasVideo: !!l.mux_playback_id,
+    // 완료·실패 시 status 라우트가 null로 지우므로, 남아 있으면 곧 진행 중이라는 뜻이다.
+    // 재생 ID 유무로 거르면 안 된다 — 영상 "교체" 업로드는 이미 재생 ID가 있는 차시에서 시작한다.
+    pendingUploadId: l.mux_upload_id,
     materials: materialsByLesson[l.id] ?? [],
   }));
 
   return {
-    courseId: course.id,
-    courseTitle: pickLocale(course.title, 'ko'),
+    course: {
+      id: course.id,
+      titleKo: pickRaw(course.title, 'ko'),
+      titleEn: pickRaw(course.title, 'en'),
+      descriptionKo: pickRaw(course.description, 'ko'),
+      descriptionEn: pickRaw(course.description, 'en'),
+      instructorTitleKo: pickRaw(course.instructor_title, 'ko'),
+      instructorTitleEn: pickRaw(course.instructor_title, 'en'),
+      category: course.category ?? '',
+      level: course.level ?? '',
+      priceKrw: course.price_krw ?? 0,
+      listPriceKrw: course.list_price_krw,
+      thumbnailUrl: course.thumbnail_url ?? '',
+      status: course.status === 'published' ? 'published' : 'draft',
+    },
     lessons,
   };
 }

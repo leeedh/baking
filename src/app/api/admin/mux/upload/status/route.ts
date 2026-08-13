@@ -43,11 +43,16 @@ export async function POST(request: Request) {
 
   if (result.state === 'ready' && result.assetId && result.playbackId) {
     const admin = createAdminClient();
+    // 재생시간은 Mux가 측정한 실제 길이로 자동 기록한다(운영자 수기 입력 대체).
+    // durationSec이 null이면 기존 값을 덮지 않는다 — 영상 없이 손으로 넣어둔 값이 있을 수 있다.
     const { error } = await admin
       .from('lessons')
       .update({
         mux_asset_id: result.assetId,
         mux_playback_id: result.playbackId,
+        // 완료된 업로드는 "진행 중" 표시를 지운다(편집기 재진입 시 폴링 재개 판정 기준).
+        mux_upload_id: null,
+        ...(result.durationSec !== null ? { duration_sec: result.durationSec } : {}),
         updated_at: new Date().toISOString(),
       })
       .eq('id', lessonId);
@@ -62,6 +67,14 @@ export async function POST(request: Request) {
     }
     // DC-51 · 영상이 붙으면 상세 커리큘럼의 hasVideo가 바뀐다.
     revalidateTag(CATALOG_TAG);
+  } else if (result.state === 'errored') {
+    // 실패한 업로드를 남겨두면 편집기가 재진입할 때마다 끝나지 않을 폴링을 되살린다.
+    const admin = createAdminClient();
+    await admin
+      .from('lessons')
+      .update({ mux_upload_id: null, updated_at: new Date().toISOString() })
+      .eq('id', lessonId)
+      .eq('mux_upload_id', uploadId);
   }
 
   return NextResponse.json({ state: result.state });

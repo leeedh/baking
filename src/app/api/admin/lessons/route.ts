@@ -12,7 +12,8 @@ const BodySchema = z.object({
   courseId: z.guid(),
   titleKo: z.string().trim().min(1).max(200),
   titleEn: z.string().trim().max(200).optional().default(''),
-  chapterIndex: z.number().int().min(1).max(99).optional().default(1),
+  // 0 = 미분류 보관함(영상만 올려두고 아직 챕터에 배치하지 않은 차시). arrange 라우트 주석 참조.
+  chapterIndex: z.number().int().min(0).max(99).optional().default(1),
   chapterTitleKo: z.string().trim().max(200).optional().default(''),
   chapterTitleEn: z.string().trim().max(200).optional().default(''),
   durationSec: z.number().int().min(0).nullable().optional(),

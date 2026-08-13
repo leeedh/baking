@@ -306,6 +306,7 @@ export type Database = {
           is_preview: boolean
           mux_asset_id: string | null
           mux_playback_id: string | null
+          mux_upload_id: string | null
           order_index: number
           title: Json
           updated_at: string
@@ -320,6 +321,7 @@ export type Database = {
           is_preview?: boolean
           mux_asset_id?: string | null
           mux_playback_id?: string | null
+          mux_upload_id?: string | null
           order_index?: number
           title?: Json
           updated_at?: string
@@ -334,6 +336,7 @@ export type Database = {
           is_preview?: boolean
           mux_asset_id?: string | null
           mux_playback_id?: string | null
+          mux_upload_id?: string | null
           order_index?: number
           title?: Json
           updated_at?: string
