@@ -1,6 +1,7 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { safeStorageName } from '@/lib/storage/safe-name';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -15,12 +16,6 @@ const FieldsSchema = z.object({
   titleKo: z.string().trim().min(1).max(200),
   titleEn: z.string().trim().max(200).optional(),
 });
-
-/** Storage 키로 안전한 파일명 — 한글·공백·경로 문자를 제거한다. */
-function safeName(name: string) {
-  const base = name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '-');
-  return `${base.slice(0, 60) || 'material'}.pdf`;
-}
 
 export async function POST(request: Request) {
   // multipart는 CORS-simple이라 프리플라이트가 없다 — SameSite 쿠키 외에 방어를 한 겹 더 둔다.
@@ -71,7 +66,7 @@ export async function POST(request: Request) {
     return problem(404, 'lesson-not-found', 'Lesson not found', '차시를 찾을 수 없습니다.');
   }
 
-  const path = `${lesson.course_id}/${lesson.id}/${crypto.randomUUID()}-${safeName(file.name)}`;
+  const path = `${lesson.course_id}/${lesson.id}/${crypto.randomUUID()}-${safeStorageName(file.name, 'pdf', 'material')}`;
   const { error: uploadError } = await admin.storage
     .from('course-materials')
     .upload(path, file, { contentType: ALLOWED_MIME, upsert: false });

@@ -2,6 +2,7 @@ import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { CATALOG_TAG } from '@/lib/cache-tags';
+import { safeStorageName } from '@/lib/storage/safe-name';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
@@ -18,12 +19,6 @@ const EXT: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
-
-/** Storage 키로 안전한 파일명 — 한글·공백·경로 문자를 제거한다. */
-function safeName(name: string, mime: string): string {
-  const base = name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '-');
-  return `${base.slice(0, 60) || 'cover'}.${EXT[mime]}`;
-}
 
 /**
  * 매직바이트로 실제 이미지 형식을 확인한다. file.type은 클라이언트가 보낸 값이고
@@ -95,7 +90,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return problem(404, 'course-not-found', 'Course not found', '클래스를 찾을 수 없습니다.');
   }
 
-  const path = `${course.id}/${crypto.randomUUID()}-${safeName(file.name, mime)}`;
+  const path = `${course.id}/${crypto.randomUUID()}-${safeStorageName(file.name, EXT[mime], 'cover')}`;
   const { error: uploadError } = await admin.storage
     .from(BUCKET)
     .upload(path, file, { contentType: mime, upsert: false });
