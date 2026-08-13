@@ -1,5 +1,8 @@
 import { BOOKS, type BookSource } from '@/lib/books-data';
+import { BOOKS_TAG } from '@/lib/cache-tags';
 import { pickLocale } from '@/lib/i18n-json';
+import { createPublicClient } from '@/lib/supabase/public';
+import { unstable_cache } from 'next/cache';
 
 /**
  * 도서는 **외부 커머스(쿠팡)에서 판매**한다 — 자체 주문·결제·배송이 없다. 데이터는 정적
@@ -22,11 +25,11 @@ export interface BookView {
   isPurchaseUrlReady: boolean;
 }
 
-function toBookView(book: BookSource, locale: string): BookView {
+function toBookView(book: BookSource, locale: string, overrideUrl?: string): BookView {
   const { price, listPrice } = book;
   const discountPercent =
     listPrice > price && listPrice > 0 ? Math.round((1 - price / listPrice) * 100) : 0;
-  const url = book.externalPurchaseUrl ?? '';
+  const url = overrideUrl ?? book.externalPurchaseUrl ?? '';
   return {
     slug: book.slug,
     title: pickLocale(book.title, locale),
@@ -43,9 +46,36 @@ function toBookView(book: BookSource, locale: string): BookView {
 }
 
 /**
- * 추천 도서 목록 — 정적 큐레이션 상수를 현재 로케일로 매핑해 반환한다.
- * (async 시그니처 유지: 서버 컴포넌트 페이지가 그대로 await 하도록.)
+ * 운영자가 화면에서 고친 판매 링크(slug → URL).
+ *
+ * 도서의 소개 문구·표지·가격은 계속 정적 상수다(큐레이션이라 코드로 관리하는 편이 낫다).
+ * **판매 링크만** DB에 둔다 — 쿠팡 파트너스 링크는 가장 자주 끊기고 파라미터가 바뀌는데,
+ * 그때마다 배포를 기다릴 수는 없기 때문이다.
+ *
+ * 캐시 안에서는 쿠키를 읽으면 안 되므로 `createPublicClient()`만 쓴다(CLAUDE.md).
+ */
+const getPurchaseUrlOverrides = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from('books')
+      .select('slug, external_purchase_url')
+      .eq('status', 'published');
+    // 오버라이드는 부가 기능이다 — 조회가 실패해도 상점을 비우지 않고 정적 링크로 돌아간다.
+    if (error || !data) return {};
+    return Object.fromEntries(
+      data.filter((row) => !!row.external_purchase_url).map((row) => [row.slug, row.external_purchase_url]),
+    );
+  },
+  ['book-purchase-urls'],
+  { tags: [BOOKS_TAG], revalidate: 3600 },
+);
+
+/**
+ * 추천 도서 목록 — 정적 큐레이션 상수를 현재 로케일로 매핑하고, 운영자가 고친 판매 링크가
+ * 있으면 그 URL로 갈아 끼워 반환한다.
  */
 export async function getBooks(locale: string): Promise<BookView[]> {
-  return BOOKS.map((book) => toBookView(book, locale));
+  const overrides = await getPurchaseUrlOverrides();
+  return BOOKS.map((book) => toBookView(book, locale, overrides[book.slug]));
 }

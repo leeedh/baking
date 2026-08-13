@@ -77,5 +77,11 @@ export async function POST(request: Request) {
       .eq('mux_upload_id', uploadId);
   }
 
-  return NextResponse.json({ state: result.state });
+  // 사유·재생시간 유무를 함께 내려보낸다 — 클라이언트가 실패를 한 문장으로 뭉개지 않도록,
+  // 그리고 재생시간만 빠진 경우(재생은 되는데 --:--)를 운영자가 알아채고 복구할 수 있도록.
+  return NextResponse.json({
+    state: result.state,
+    reason: result.reason,
+    durationMissing: result.state === 'ready' && result.durationSec === null,
+  });
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import BookLinkEditor from '@/components/admin/BookLinkEditor';
 import type { BookView } from '@/lib/books';
 import { BookOpen, Check, ExternalLink, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -184,10 +185,18 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
 
           {/* Action area — 외부 커머스 이동 */}
           <div className="pt-4 border-t border-brown-light flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[11px] text-brown-medium font-light flex items-center gap-1.5">
-              <ShoppingBag size={13} className="text-gold-deep" />
-              {t('externalNotice')}
-            </p>
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              <p className="text-[11px] text-brown-medium font-light flex items-center gap-1.5">
+                <ShoppingBag size={13} className="text-gold-deep" />
+                {t('externalNotice')}
+              </p>
+              {/* 운영자에게만 보인다 — 링크가 끊겼을 때 배포 없이 갈아 끼우기 위한 통로. */}
+              <BookLinkEditor
+                key={selectedBook.slug}
+                slug={selectedBook.slug}
+                currentUrl={selectedBook.externalPurchaseUrl}
+              />
+            </div>
 
             <div className="w-full sm:w-auto">
               {selectedBook.isPurchaseUrlReady ? (

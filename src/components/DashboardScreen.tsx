@@ -16,13 +16,11 @@ import {
   GraduationCap,
   ListVideo,
   MessagesSquare,
-  Plus,
   Receipt,
   RotateCcw,
   Trash2,
   Users,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useState } from 'react';
 
@@ -51,7 +49,6 @@ export default function DashboardScreen({
   initialOrders,
   initialInquiries,
 }: Props) {
-  const router = useRouter();
   const kpi = initialKpi;
   const classList = initialClasses;
   const orderList = initialOrders;
@@ -72,7 +69,6 @@ export default function DashboardScreen({
 
   // 클래스 삭제 확인(초안 정리용)
   const [pendingClassDelete, setPendingClassDelete] = useState<AdminClassRow | null>(null);
-  const [creating, setCreating] = useState(false);
 
   /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
   const patchInquiry = (id: string, patch: { answerBody?: string; status?: string }) =>
@@ -123,32 +119,8 @@ export default function DashboardScreen({
     );
   };
 
-  /**
-   * "새 클래스 등록" — 폼을 띄우지 않고 빈 초안을 만든 뒤 곧바로 편집기로 보낸다.
-   * 등록과 관리가 같은 화면(CourseEditor)으로 수렴해, 제목·가격만 받아두고 커리큘럼은
-   * 다른 페이지에서 다시 시작하던 두 단계 흐름이 사라진다.
-   */
-  const createClass = async () => {
-    setError(null);
-    setCreating(true);
-    try {
-      const res = await fetch('/api/admin/courses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titleKo: '제목 없는 클래스', priceKrw: 0 }),
-      });
-      if (!res.ok) {
-        setError(await readError(res));
-        return;
-      }
-      const { id } = (await res.json()) as { id: string };
-      router.push(`/admin/courses/${id}`);
-    } catch {
-      setError('클래스를 만들지 못했습니다. 네트워크 상태를 확인해 주세요.');
-    } finally {
-      setCreating(false);
-    }
-  };
+  // 클래스 생성은 온라인 클래스 화면의 AddClassButton으로 옮겼다 — 운영자가 클래스를 만들고
+  // 싶어지는 순간은 목록을 보고 있을 때라, 대시보드로 건너오는 왕복이 낭비였다.
 
   const deleteClass = async () => {
     if (!pendingClassDelete) return;
@@ -196,17 +168,6 @@ export default function DashboardScreen({
           <p className="text-xs text-brown-medium mt-1">
             결제 완료(paid) 주문과 유효(active) 수강권 기준 실집계입니다.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2 self-stretch sm:self-auto">
-          <button
-            type="button"
-            disabled={creating}
-            onClick={createClass}
-            className="px-4 py-2 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
-          >
-            <Plus size={14} /> {creating ? '준비 중…' : '새 클래스 등록'}
-          </button>
         </div>
       </div>
 
@@ -276,7 +237,7 @@ export default function DashboardScreen({
 
         {classList.length === 0 ? (
           <div className="py-16 text-center text-sm text-brown-medium">
-            아직 등록된 클래스가 없습니다. “새 클래스 등록”으로 시작하세요.
+            아직 등록된 클래스가 없습니다. 온라인 클래스 화면의 “새 클래스 등록”으로 시작하세요.
           </div>
         ) : (
           // biome-ignore lint/a11y/noNoninteractiveTabindex: min-w-[720px]로 가로 스크롤이 생기는 영역이라 포커스를 받아야 키보드로 스크롤할 수 있다(WAI-ARIA 저작 관행)

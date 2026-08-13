@@ -58,6 +58,11 @@ export default function CourseEditor({
   if (lessons.length === 0) blockers.push('차시가 하나도 없습니다.');
   if (inboxCount > 0) blockers.push(`보관함에 배치되지 않은 영상이 ${inboxCount}개 있습니다.`);
   if (missingVideo > 0) blockers.push(`영상이 없는 차시가 ${missingVideo}개 있습니다.`);
+  // 미리보기가 없으면 상세 화면에서 "무료 미리보기" 안내가 통째로 사라진다 — 구매 전에
+  // 확인할 방법이 없는 클래스가 된다(배치를 저장하면 첫 차시가 자동으로 지정된다).
+  if (lessons.length > 0 && !lessons.some((l) => l.isPreview)) {
+    blockers.push('미리보기로 공개된 차시가 없습니다.');
+  }
 
   return (
     <div className="bg-cream py-10 px-4 sm:px-8 max-w-5xl mx-auto min-h-screen">

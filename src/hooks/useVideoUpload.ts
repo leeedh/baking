@@ -5,7 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** 차시별 영상 업로드 진행 상태. */
 export type UploadState = {
-  phase: 'queued' | 'uploading' | 'encoding' | 'error';
+  /**
+   * 'warning'은 실패가 아니다 — 영상은 올라갔는데 재생시간만 못 받은 상태다. 실패로 칠하면
+   * 운영자가 다시 올리게 되고, 조용히 넘기면 --:--인 이유를 알 수 없다.
+   */
+  phase: 'queued' | 'uploading' | 'encoding' | 'error' | 'warning';
   progress: number;
   message?: string;
 };
@@ -97,18 +101,32 @@ export function useVideoUpload(onLessonReady: () => void) {
           setUpload(lessonId, { phase: 'error', progress: 100, message: await readError(res) });
           return;
         }
-        const { state } = (await res.json()) as { state: string };
+        const { state, reason, durationMissing } = (await res.json()) as {
+          state: string;
+          reason?: string;
+          durationMissing?: boolean;
+        };
         if (unmountedRef.current) return;
         if (state === 'ready') {
-          setUpload(lessonId, null);
+          setUpload(
+            lessonId,
+            durationMissing
+              ? {
+                  phase: 'warning',
+                  progress: 100,
+                  message: '재생시간을 가져오지 못했습니다. "다시 가져오기"를 눌러 주세요.',
+                }
+              : null,
+          );
           onLessonReady();
           return;
         }
         if (state === 'errored') {
+          // 사유는 서버가 구분해 내려준다(업로드 취소·시간 초과·인코딩 실패·재생 정책 이상).
           setUpload(lessonId, {
             phase: 'error',
             progress: 100,
-            message: 'Mux 인코딩에 실패했습니다. 다시 시도해 주세요.',
+            message: reason ?? 'Mux 인코딩에 실패했습니다. 다시 시도해 주세요.',
           });
           return;
         }

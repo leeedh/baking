@@ -2,6 +2,7 @@ import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { CATALOG_TAG } from '@/lib/cache-tags';
+import { pickAutoPreviewLessonId } from '@/lib/lessons/preview';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { revalidateTag } from 'next/cache';
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
   // reorder_lessons가 나머지를 어떻게 다룰지 정의되지 않아 순서가 조용히 깨진다.
   const { data: existing, error: readError } = await admin
     .from('lessons')
-    .select('id')
+    .select('id, is_preview')
     .eq('course_id', courseId);
   if (readError) {
     return problemWithCause(
@@ -114,6 +115,29 @@ export async function POST(request: Request) {
         'chapter-update-failed',
         'Chapter update failed',
         '챕터 배치를 저장하지 못했습니다. 새로고침 후 다시 시도해 주세요.',
+        error,
+      );
+    }
+  }
+
+  // 3) 미리보기 — 상세 화면이 "1차시 무료 미리보기"를 약속하는데 업로드로 만든 차시는
+  //    기본이 잠금이라, 손대지 않으면 아무도 못 보는 클래스가 팔린다. 배치가 확정된 지금이
+  //    "커리큘럼의 첫 차시"가 정해지는 유일한 지점이다(운영자의 선택은 덮지 않는다 —
+  //    판정은 lib/lessons/preview.ts).
+  const arrangedIds = chapters.filter((c) => c.index !== 0).flatMap((c) => c.lessonIds);
+  const currentPreviewIds = (existing ?? []).filter((l) => l.is_preview).map((l) => l.id);
+  const autoPreviewId = pickAutoPreviewLessonId(arrangedIds, currentPreviewIds);
+  if (autoPreviewId) {
+    const { error } = await admin
+      .from('lessons')
+      .update({ is_preview: true, updated_at: now })
+      .eq('id', autoPreviewId);
+    if (error) {
+      return problemWithCause(
+        500,
+        'preview-update-failed',
+        'Preview update failed',
+        '첫 차시를 미리보기로 지정하지 못했습니다.',
         error,
       );
     }

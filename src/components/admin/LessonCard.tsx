@@ -75,6 +75,37 @@ export default function LessonCard({
 
   const materialInputRef = useRef<HTMLInputElement>(null);
   const [materialUploading, setMaterialUploading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Mux에서 재생 ID·재생시간을 다시 가져온다.
+   *
+   * 완료 감지가 브라우저 폴링뿐이라(웹훅 미도입) 화면을 떠나거나 저장이 한 번 어긋나면
+   * 파일은 Mux에 멀쩡한데 차시만 비는 일이 생긴다. 그때 재업로드 말고 되살릴 유일한 수단이다.
+   */
+  const refreshVideo = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch(`/api/admin/lessons/${lesson.id}/refresh-video`, { method: 'POST' });
+      if (!res.ok) {
+        onError(await readError(res));
+        return;
+      }
+      const { durationMissing } = (await res.json()) as { durationMissing?: boolean };
+      if (durationMissing) {
+        onError('영상은 연결했지만 Mux가 재생시간을 주지 않았습니다. 재생시간을 확인해 주세요.');
+      }
+      router.refresh();
+    } catch {
+      onError('영상 정보를 가져오지 못했습니다. 네트워크 상태를 확인해 주세요.');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // 영상은 붙었는데 재생시간이 없거나, 업로드 기록만 남고 완료 저장이 안 된 상태 —
+  // 둘 다 사람이 손댈 수 없던 막다른 길이었다.
+  const needsRefresh = (lesson.hasVideo && !lesson.durationSec) || !!lesson.pendingUploadId;
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -209,7 +240,18 @@ export default function LessonCard({
         ) : (
           <span className="font-mono text-[11px] text-brown-medium shrink-0">
             {clock(lesson.durationSec)}
-            {!lesson.hasVideo && (
+            {needsRefresh && (
+              <button
+                type="button"
+                disabled={busy || refreshing || !!upload}
+                onClick={refreshVideo}
+                title="Mux에서 재생 정보와 재생시간을 다시 가져옵니다"
+                className="ml-1 text-[10px] text-gold-deep underline hover:text-terracotta disabled:opacity-50"
+              >
+                {refreshing ? '가져오는 중…' : '다시 가져오기'}
+              </button>
+            )}
+            {!lesson.hasVideo && !needsRefresh && (
               <button
                 type="button"
                 onClick={() => setEditingDuration(true)}
@@ -265,18 +307,35 @@ export default function LessonCard({
 
       {upload && (
         <div className="mt-3 pl-8">
-          {upload.phase === 'error' ? (
+          {upload.phase === 'error' || upload.phase === 'warning' ? (
+            // 'warning'은 영상은 올라갔고 재생시간만 못 받은 상태다 — 다시 올릴 일이 아니라
+            // 정보만 다시 가져오면 된다. 실패와 같은 색·같은 행동을 주면 재업로드를 유도한다.
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-semibold text-terracotta-deep">
+              <span
+                className={`text-[11px] font-semibold ${
+                  upload.phase === 'warning' ? 'text-gold-deep' : 'text-terracotta-deep'
+                }`}
+              >
                 {upload.message ?? '업로드에 실패했습니다.'}
               </span>
-              <button
-                type="button"
-                onClick={() => onPickVideo(lesson.id)}
-                className="text-[10px] font-bold text-terracotta underline shrink-0"
-              >
-                다시 시도
-              </button>
+              {upload.phase === 'warning' ? (
+                <button
+                  type="button"
+                  disabled={refreshing}
+                  onClick={refreshVideo}
+                  className="text-[10px] font-bold text-gold-deep underline shrink-0 disabled:opacity-50"
+                >
+                  {refreshing ? '가져오는 중…' : '다시 가져오기'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onPickVideo(lesson.id)}
+                  className="text-[10px] font-bold text-terracotta underline shrink-0"
+                >
+                  다시 시도
+                </button>
+              )}
             </div>
           ) : (
             <>
