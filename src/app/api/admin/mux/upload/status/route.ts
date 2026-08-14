@@ -67,7 +67,13 @@ export async function POST(request: Request) {
     }
     // DC-51 · 영상이 붙으면 상세 커리큘럼의 hasVideo가 바뀐다.
     revalidateTag(CATALOG_TAG);
+    // 완료 기록은 이 한 줄이 유일한 흔적이다 — 없으면 "왜 DB가 비었나"를 사후에 추적할
+    // 방법이 없다(실제로 그 상황을 겪었다).
+    console.info(
+      `[mux] lesson ${lessonId} linked: asset=${result.assetId} duration=${result.durationSec ?? 'none'}`,
+    );
   } else if (result.state === 'errored') {
+    console.warn(`[mux] lesson ${lessonId} upload ${uploadId} errored: ${result.reason ?? '사유 없음'}`);
     // 실패한 업로드를 남겨두면 편집기가 재진입할 때마다 끝나지 않을 폴링을 되살린다.
     const admin = createAdminClient();
     await admin

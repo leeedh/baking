@@ -1,11 +1,13 @@
 import 'server-only';
 
 import Mux from '@mux/mux-node';
+import { type MuxAssetLink, pickAssetLinks } from './asset-links';
 import { muxDurationToSec } from './duration';
 import { getMuxEnv } from './env';
 import { PLAYBACK_TOKEN_FALLBACK_TTL_SEC } from './ttl';
 
 // 재생 토큰 만료 산정은 './ttl'로 분리했다(단위 테스트 대상 — 이 모듈은 server-only).
+export type { MuxAssetLink };
 export {
   PLAYBACK_TOKEN_FALLBACK_TTL_SEC,
   PLAYBACK_TOKEN_MAX_TTL_SEC,
@@ -31,16 +33,34 @@ function getMuxClient(): Mux {
 /**
  * 브라우저 직접 업로드용 Direct Upload를 생성한다(운영자 전용, 관리 API 키 사용).
  * 자산은 signed 재생 정책으로 생성 → 재생은 계속 서명 토큰(signPlaybackToken)으로만 가능.
+ *
+ * `passthrough`에 차시 id를 새겨 둔다. 예전에는 자산과 차시를 잇는 끈이 **DB에만** 있어서,
+ * 완료를 받아 적는 한 번의 기회를 놓치면 Mux에 멀쩡한 영상이 있는데도 어느 차시 것인지
+ * 알 길이 없어 되살릴 수 없었다(재업로드 말고는 방법이 없는 상태가 실제로 나왔다).
+ * 표식이 자산에 함께 있으면 서버가 언제든 다시 이어 붙일 수 있다.
  */
 export async function createDirectUpload(
   corsOrigin: string,
+  lessonId: string,
 ): Promise<{ uploadId: string; uploadUrl: string }> {
   const mux = getMuxClient();
   const upload = await mux.video.uploads.create({
     cors_origin: corsOrigin,
-    new_asset_settings: { playback_policy: ['signed'] },
+    new_asset_settings: { playback_policy: ['signed'], passthrough: lessonId },
   });
   return { uploadId: upload.id, uploadUrl: upload.url };
+}
+
+/**
+ * 최근 Mux 자산을 훑어 `passthrough`(=차시 id)로 되짚는다.
+ *
+ * 브라우저 폴링이 유일한 완료 경로인 구조에서, 폴링이 끊긴 자산을 서버가 스스로 찾아오는
+ * 통로다. 저장할 값을 고르는 판정(ready·signed만)은 `pickAssetLinks`에 분리해 테스트한다.
+ */
+export async function listAssetLinks(limit = 100): Promise<MuxAssetLink[]> {
+  const mux = getMuxClient();
+  const page = await mux.video.assets.list({ limit });
+  return pickAssetLinks(page.data ?? []);
 }
 
 export type MuxUploadState = 'waiting' | 'preparing' | 'ready' | 'errored';

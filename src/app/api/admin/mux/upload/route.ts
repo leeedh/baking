@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   const origin = request.headers.get('origin') ?? new URL(request.url).origin;
 
   try {
-    const { uploadId, uploadUrl } = await createDirectUpload(origin);
+    const { uploadId, uploadUrl } = await createDirectUpload(origin, lesson.id);
     // 진행 중인 업로드를 차시에 남긴다 — 운영자가 인코딩 도중 화면을 떠나도 편집기가
     // 재진입 시 폴링을 이어갈 수 있다(완료 시 status 라우트가 null로 지운다).
     // 기록에 실패하면 재진입 폴링이 죽어 인코딩 결과를 영영 못 받는다 — 조용히 넘기지 않는다.

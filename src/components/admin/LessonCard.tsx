@@ -267,6 +267,12 @@ export default function LessonCard({
           <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded shrink-0">
             <Video size={11} aria-hidden /> 영상
           </span>
+        ) : lesson.pendingUploadId ? (
+          // 업로드 기록은 남았는데 재생 ID가 안 붙은 상태 — "한 번도 안 올림"과 구분해야
+          // 운영자가 "다시 가져오기"를 눌러볼 생각을 할 수 있다.
+          <span className="hidden sm:inline text-[10px] font-bold text-gold-deep bg-gold/10 px-2 py-0.5 rounded shrink-0">
+            연결 대기
+          </span>
         ) : (
           <span className="hidden sm:inline text-[10px] font-bold text-brown-medium/50 bg-brown-medium/5 px-2 py-0.5 rounded shrink-0">
             영상 없음

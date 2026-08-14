@@ -33,16 +33,24 @@ export function useVideoUpload(onLessonReady: () => void) {
   const [uploads, setUploads] = useState<Record<string, UploadState>>({});
 
   // 언마운트 후 setState·요청을 막는다(코드리뷰 M-8). 업로드는 최대 수 분간 돈다.
+  //
+  // ⚠️ 플래그를 되돌리고 컨트롤러를 effect **안에서** 만드는 것이 핵심이다. 예전에는 정리
+  // 함수만 있고(본문 없음) 컨트롤러는 렌더 중에 한 번 만들었는데, StrictMode(개발 기본값)가
+  // 마운트 → 정리 → 재마운트를 돌리면서 **플래그가 true로 굳고 컨트롤러도 abort된 채로**
+  // 남았다. 그 뒤로는 setUpload가 전부 무시돼 진행률이 화면에 아예 안 뜨고, 폴링 fetch는
+  // 즉시 abort로 실패해 조용히 끝났다 — 파일은 Mux에 올라갔는데 결과를 받아 적을 사람이
+  // 없어져, 재생 ID도 재생시간도 DB에 안 남았다(실제로 그 상태의 차시가 나왔다).
   const unmountedRef = useRef(false);
-  const abortRef = useRef<AbortController | null>(null);
+  const abortRef = useRef<AbortController>(new AbortController());
   useEffect(() => {
+    unmountedRef.current = false;
+    abortRef.current = new AbortController();
+    const controller = abortRef.current;
     return () => {
       unmountedRef.current = true;
-      abortRef.current?.abort();
+      controller.abort();
     };
   }, []);
-  // AbortController는 훅 수명 동안 하나면 충분하다(모든 폴링을 함께 끊는다).
-  if (!abortRef.current) abortRef.current = new AbortController();
 
   const activeRef = useRef(0);
   const queueRef = useRef<Array<() => Promise<void>>>([]);
@@ -84,7 +92,7 @@ export function useVideoUpload(onLessonReady: () => void) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ lessonId, uploadId }),
-            signal: abortRef.current?.signal,
+            signal: abortRef.current.signal,
           });
         } catch {
           // abort(화면 이탈)면 조용히 끝낸다 — 서버 쪽 인코딩은 그대로 진행된다.
