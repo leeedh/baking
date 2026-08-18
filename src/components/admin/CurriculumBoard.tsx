@@ -20,7 +20,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { FolderPlus, Plus, Trash2, Upload } from 'lucide-react';
+import { FolderPlus, Plus, RefreshCw, Trash2, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -116,6 +116,43 @@ export default function CurriculumBoard({
       }
     }
   }, [lessons, resume]);
+
+  /**
+   * Mux에 올라가 있는데 차시에 연결되지 않은 영상을 되찾는다(자산의 passthrough 표식 기준).
+   *
+   * 폴링이 끊기면 DB에 단서가 하나도 안 남을 수 있어, 재진입 폴링만으로는 못 되살리는 차시가
+   * 생긴다. 그래서 **영상 없는 차시가 있을 때만** 진입 시 한 번 조용히 맞춰 본다.
+   */
+  const [syncing, setSyncing] = useState(false);
+  const syncVideos = useCallback(
+    async (silent: boolean) => {
+      setSyncing(true);
+      try {
+        const res = await fetch(`/api/admin/courses/${courseId}/sync-videos`, { method: 'POST' });
+        if (!res.ok) {
+          if (!silent) onError(await readError(res));
+          return;
+        }
+        const { linked } = (await res.json()) as { linked: number };
+        if (linked > 0) router.refresh();
+        else if (!silent) onError('Mux에서 이 클래스에 연결할 새 영상을 찾지 못했습니다.');
+      } catch {
+        if (!silent) onError('영상을 동기화하지 못했습니다. 네트워크 상태를 확인해 주세요.');
+      } finally {
+        setSyncing(false);
+      }
+    },
+    [courseId, onError, router],
+  );
+
+  const autoSyncedRef = useRef(false);
+  useEffect(() => {
+    if (autoSyncedRef.current) return;
+    // 업로드가 도는 중에는 건드리지 않는다 — 폴링이 정상 경로다.
+    if (!lessons.some((l) => !l.hasVideo && !l.pendingUploadId)) return;
+    autoSyncedRef.current = true;
+    void syncVideos(true);
+  }, [lessons, syncVideos]);
 
   const [pendingLessonDelete, setPendingLessonDelete] = useState<string | null>(null);
   const [pendingMaterialDelete, setPendingMaterialDelete] = useState<string | null>(null);
@@ -376,6 +413,15 @@ export default function CurriculumBoard({
             className="inline-flex items-center gap-1 px-3 py-2 bg-cream border border-brown-light text-brown-medium text-[11px] font-bold rounded-lg hover:border-terracotta cursor-pointer"
           >
             <FolderPlus size={12} aria-hidden /> 챕터 추가
+          </button>
+          <button
+            type="button"
+            disabled={syncing}
+            onClick={() => syncVideos(false)}
+            title="Mux에 올라갔지만 차시에 연결되지 않은 영상을 되찾습니다"
+            className="inline-flex items-center gap-1 px-3 py-2 bg-cream border border-brown-light text-brown-medium text-[11px] font-bold rounded-lg hover:border-terracotta disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw size={12} aria-hidden /> {syncing ? '동기화 중…' : '영상 동기화'}
           </button>
         </div>
       </div>

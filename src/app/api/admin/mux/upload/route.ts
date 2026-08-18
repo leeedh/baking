@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { CATALOG_TAG } from '@/lib/cache-tags';
 import { createDirectUpload } from '@/lib/mux/client';
@@ -37,13 +37,23 @@ export async function POST(request: Request) {
   const origin = request.headers.get('origin') ?? new URL(request.url).origin;
 
   try {
-    const { uploadId, uploadUrl } = await createDirectUpload(origin);
+    const { uploadId, uploadUrl } = await createDirectUpload(origin, lesson.id);
     // 진행 중인 업로드를 차시에 남긴다 — 운영자가 인코딩 도중 화면을 떠나도 편집기가
     // 재진입 시 폴링을 이어갈 수 있다(완료 시 status 라우트가 null로 지운다).
-    await admin
+    // 기록에 실패하면 재진입 폴링이 죽어 인코딩 결과를 영영 못 받는다 — 조용히 넘기지 않는다.
+    const { error: markError } = await admin
       .from('lessons')
       .update({ mux_upload_id: uploadId, updated_at: new Date().toISOString() })
       .eq('id', lesson.id);
+    if (markError) {
+      return problemWithCause(
+        500,
+        'lesson-update-failed',
+        'Lesson update failed',
+        '업로드 상태를 차시에 기록하지 못했습니다.',
+        markError,
+      );
+    }
     // DC-51 · mux_upload_id 자체는 카탈로그에 안 나가지만, lessons에 쓰는 라우트는 예외 없이
     // 무효화한다(cache-tags.test의 규약). 운영자 업로드 시작은 드물어 비용도 무시할 만하다.
     revalidateTag(CATALOG_TAG);

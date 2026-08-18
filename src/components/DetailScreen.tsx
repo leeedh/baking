@@ -85,6 +85,10 @@ export default function DetailScreen({
   // 차시로 보내지 않는다).
   const allLessons = curriculum.flatMap((ch) => ch.lessons);
   const firstPreviewLessonId = allLessons.find((l) => l.isPreview)?.id ?? '';
+  // 미리보기 차시가 하나도 없으면 미리보기를 **광고하지 않는다**. 예전에는 버튼만 disabled로
+  // 두고 "1차시 무료 미리보기" 문구와 맛보기 버튼은 그대로 떠서, 볼 수 없는 것을 볼 수 있는
+  // 것처럼 약속했다(운영자가 올린 차시는 기본이 잠금이라 이게 기본 상태였다).
+  const hasPreview = firstPreviewLessonId !== '';
   const firstLessonId = allLessons[0]?.id ?? '';
 
   // 정가(list_price)가 판매가보다 클 때만 할인/취소선 노출 — 정가 미설정 시 0%·NaN% 표기 방지.
@@ -120,19 +124,20 @@ export default function DetailScreen({
               alt={cls.title}
               className="w-full h-full object-cover brightness-75 group-hover:scale-101 transition-transform duration-500"
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/30">
-              {/* 미리보기 재생은 서버 게이팅되는 학습 페이지(재생 토큰 API가 is_preview 검증)로 이동. */}
-              <button
-                onClick={() => onStartPreview(cls.id, firstPreviewLessonId)}
-                disabled={!firstPreviewLessonId}
-                className="w-16 h-16 rounded-full bg-terracotta/90 hover:bg-terracotta text-cream flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Play size={26} className="ml-1 fill-white" />
-              </button>
-              <span className="mt-3 text-xs bg-black/60 backdrop-blur-md text-cream px-3 py-1 rounded-full font-medium tracking-wide">
-                {t('previewCta')}
-              </span>
-            </div>
+            {hasPreview && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/30">
+                {/* 미리보기 재생은 서버 게이팅되는 학습 페이지(재생 토큰 API가 is_preview 검증)로 이동. */}
+                <button
+                  onClick={() => onStartPreview(cls.id, firstPreviewLessonId)}
+                  className="w-16 h-16 rounded-full bg-terracotta/90 hover:bg-terracotta text-cream flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
+                >
+                  <Play size={26} className="ml-1 fill-white" />
+                </button>
+                <span className="mt-3 text-xs bg-black/60 backdrop-blur-md text-cream px-3 py-1 rounded-full font-medium tracking-wide">
+                  {t('previewCta')}
+                </span>
+              </div>
+            )}
 
             {/* Corner Badge */}
             <span className="absolute top-4 left-4 bg-gold text-white text-xs font-bold px-3 py-1 rounded-md shadow-md uppercase tracking-wider">
@@ -257,11 +262,13 @@ export default function DetailScreen({
             {/* TAB 2: CURRICULUM */}
             {activeTab === 'curriculum' && (
               <div className="space-y-6">
-                <div className="flex justify-between items-center bg-cream p-3 rounded-lg border border-brown-light mb-2">
-                  <span className="text-xs font-semibold text-terracotta">
-                    {t('previewNotice')}
-                  </span>
-                </div>
+                {hasPreview && (
+                  <div className="flex justify-between items-center bg-cream p-3 rounded-lg border border-brown-light mb-2">
+                    <span className="text-xs font-semibold text-terracotta">
+                      {t('previewNotice')}
+                    </span>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   {curriculum.map((chapter) => (
@@ -278,7 +285,11 @@ export default function DetailScreen({
 
                       <div className="divide-y divide-brown-light">
                         {chapter.lessons.map((lesson) => {
+                          // 무료 배지는 미리보기 차시만, 열림 여부는 구매 여부까지 본다.
+                          // 예전엔 구매 여부를 무시해 **수강 중인 학생에게도 전부 잠금**으로
+                          // 보였다(플레이어는 옳게 판정하고 있어 화면끼리 어긋났다).
                           const isFreePreview = lesson.isPreview;
+                          const unlocked = lesson.isPreview || purchased;
                           return (
                             <div
                               key={lesson.id}
@@ -287,7 +298,7 @@ export default function DetailScreen({
                               }`}
                             >
                               <div className="flex items-center gap-3">
-                                {isFreePreview ? (
+                                {unlocked ? (
                                   <span className="text-terracotta animate-pulse">
                                     <CirclePlay size={18} />
                                   </span>
@@ -311,7 +322,7 @@ export default function DetailScreen({
                                   <Clock size={11} className="inline mr-0.5" />
                                   {lesson.duration}
                                 </span>
-                                {isFreePreview ? (
+                                {unlocked ? (
                                   <button
                                     id={`preview-btn-${lesson.id}`}
                                     onClick={() => onStartPreview(cls.id, lesson.id)}
@@ -465,18 +476,20 @@ export default function DetailScreen({
               </button>
             )}
 
-            <button
-              onClick={() => {
-                setActiveTab('curriculum');
-                const element = document.getElementById('detail-tab-curriculum');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="w-full py-2 bg-transparent hover:bg-cream text-brown-medium font-semibold text-xs rounded-lg border border-brown-light transition-colors cursor-pointer text-center block"
-            >
-              {t('previewFirst')}
-            </button>
+            {hasPreview && (
+              <button
+                onClick={() => {
+                  setActiveTab('curriculum');
+                  const element = document.getElementById('detail-tab-curriculum');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="w-full py-2 bg-transparent hover:bg-cream text-brown-medium font-semibold text-xs rounded-lg border border-brown-light transition-colors cursor-pointer text-center block"
+              >
+                {t('previewFirst')}
+              </button>
+            )}
 
             <p className="text-[10px] text-center text-brown-medium/60 leading-normal">
               {t('refundNote')}

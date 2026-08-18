@@ -10,3 +10,11 @@
  * 클래스 수가 늘어 무효화 비용이 문제되면 그때 `course:${id}` 단위로 세분화한다.
  */
 export const CATALOG_TAG = 'catalog';
+
+/**
+ * 도서 판매 링크 오버라이드(`lib/books.ts`) 전용 태그.
+ *
+ * 카탈로그 태그와 섞지 않는다 — 도서는 `course_catalog` 뷰와 아무 관계가 없고, 링크 하나를
+ * 고쳤다고 클래스 목록 캐시까지 버릴 이유가 없다.
+ */
+export const BOOKS_TAG = 'books';

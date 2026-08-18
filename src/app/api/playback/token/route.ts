@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { playbackTokenTtlSec, signPlaybackToken } from '@/lib/mux/client';
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
@@ -30,11 +30,22 @@ export async function POST(request: Request) {
   // RLS(lessons_select_guarded): 미리보기 OR 활성 수강권 OR 관리자만 행이 조회된다.
   // 비로그인도 미리보기 차시는 조회·재생 가능(학습 페이지의 무료 미리보기 정책과 일치).
   // 조회 실패 = 접근 불가 → 존재 여부를 숨긴 채 403.
-  const { data: lesson } = await supabase
+  // 조회 오류(DB 장애 등)를 "행이 없다"와 같이 다루면, 수강생은 권한이 있는데도 403을 받고
+  // 서버에는 아무 흔적이 남지 않는다. 원인이 다르면 응답도 갈라야 추적이 된다.
+  const { data: lesson, error: lessonError } = await supabase
     .from('lessons')
     .select('id, course_id, mux_playback_id, is_preview, duration_sec')
     .eq('id', lessonId)
     .maybeSingle();
+  if (lessonError) {
+    return problemWithCause(
+      500,
+      'lesson-read-failed',
+      'Lesson read failed',
+      '차시를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+      lessonError,
+    );
+  }
   if (!lesson) {
     return problem(403, 'no-access', 'No access to lesson', '이 차시를 재생할 권한이 없습니다.');
   }
@@ -44,9 +55,18 @@ export async function POST(request: Request) {
     if (!user) {
       return problem(401, 'unauthorized', 'Login required', '로그인이 필요합니다.');
     }
-    const { data: hasAccess } = await supabase.rpc('has_course_access', {
+    const { data: hasAccess, error: accessError } = await supabase.rpc('has_course_access', {
       p_course_id: lesson.course_id,
     });
+    if (accessError) {
+      return problemWithCause(
+        500,
+        'access-check-failed',
+        'Access check failed',
+        '수강 여부를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        accessError,
+      );
+    }
     if (!hasAccess) {
       return problem(403, 'no-access', 'No access to lesson', '이 차시를 재생할 권한이 없습니다.');
     }

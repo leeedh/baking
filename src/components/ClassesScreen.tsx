@@ -4,6 +4,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import type { ClassItem } from '../types';
+import AddClassButton from './admin/AddClassButton';
 import ClassCatalogGrid from './sections/ClassCatalogGrid';
 import FaqAccordion from './sections/FaqAccordion';
 import NewsletterCTA from './sections/NewsletterCTA';
@@ -50,6 +51,9 @@ export default function ClassesScreen({ classes, initialSearchQuery }: ClassesSc
           {t('classes.subtitle')}
         </p>
       </section>
+
+      {/* 운영자에게만 보인다(클라이언트 판정 — 캐시된 목록에 세션을 섞지 않는다). */}
+      <AddClassButton />
 
       <RecommendationQuiz classes={classes} />
       <ClassCatalogGrid classes={classes} initialSearchQuery={initialSearchQuery} />
