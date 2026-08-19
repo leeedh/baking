@@ -70,8 +70,6 @@ export default function LessonCard({
   });
 
   const [title, setTitle] = useState(lesson.titleKo);
-  const [editingDuration, setEditingDuration] = useState(false);
-  const [durationMin, setDurationMin] = useState(Math.round((lesson.durationSec ?? 0) / 60));
 
   const materialInputRef = useRef<HTMLInputElement>(null);
   const [materialUploading, setMaterialUploading] = useState(false);
@@ -120,13 +118,6 @@ export default function LessonCard({
       return;
     }
     await onPatch(lesson.id, { titleKo: next });
-  };
-
-  const commitDuration = async () => {
-    setEditingDuration(false);
-    const sec = durationMin > 0 ? durationMin * 60 : null;
-    if (sec === lesson.durationSec) return;
-    await onPatch(lesson.id, { durationSec: sec });
   };
 
   // 자료(PDF)는 비공개 버킷이라 클라이언트 직접 업로드 경로가 없다 — 서버 라우트로 multipart 전송.
@@ -219,49 +210,21 @@ export default function LessonCard({
           className="min-w-0 flex-1 px-2 py-1 text-sm font-bold text-brown bg-transparent border border-transparent hover:border-brown-light rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
 
-        {editingDuration ? (
-          <span className="inline-flex items-center gap-1 shrink-0">
-            <input
-              type="number"
-              min={0}
-              value={durationMin}
-              onChange={(e) => setDurationMin(Number(e.target.value))}
-              aria-label="재생시간 (분)"
-              className="w-16 px-2 py-1 border border-brown-light rounded text-[11px]"
-            />
+        {/* 재생시간은 업로드 시 Mux 메타데이터에서 자동으로 들어온다 — 수동 입력란은 두지 않는다. */}
+        <span className="font-mono text-[11px] text-brown-medium shrink-0">
+          {clock(lesson.durationSec)}
+          {needsRefresh && (
             <button
               type="button"
-              onClick={commitDuration}
-              className="text-[10px] font-bold text-terracotta underline"
+              disabled={busy || refreshing || !!upload}
+              onClick={refreshVideo}
+              title="Mux에서 재생 정보와 재생시간을 다시 가져옵니다"
+              className="ml-1 text-[10px] text-gold-deep underline hover:text-terracotta disabled:opacity-50"
             >
-              저장
+              {refreshing ? '가져오는 중…' : '다시 가져오기'}
             </button>
-          </span>
-        ) : (
-          <span className="font-mono text-[11px] text-brown-medium shrink-0">
-            {clock(lesson.durationSec)}
-            {needsRefresh && (
-              <button
-                type="button"
-                disabled={busy || refreshing || !!upload}
-                onClick={refreshVideo}
-                title="Mux에서 재생 정보와 재생시간을 다시 가져옵니다"
-                className="ml-1 text-[10px] text-gold-deep underline hover:text-terracotta disabled:opacity-50"
-              >
-                {refreshing ? '가져오는 중…' : '다시 가져오기'}
-              </button>
-            )}
-            {!lesson.hasVideo && !needsRefresh && (
-              <button
-                type="button"
-                onClick={() => setEditingDuration(true)}
-                className="ml-1 text-[10px] text-brown-medium/70 underline hover:text-terracotta"
-              >
-                직접 입력
-              </button>
-            )}
-          </span>
-        )}
+          )}
+        </span>
 
         {lesson.hasVideo ? (
           <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded shrink-0">

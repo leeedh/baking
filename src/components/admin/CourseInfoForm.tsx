@@ -31,8 +31,10 @@ export default function CourseInfoForm({ course }: { course: AdminCourseInfo }) 
     instructorTitleKo: course.instructorTitleKo,
     category: course.category,
     level: course.level,
-    priceKrw: course.priceKrw,
-    listPriceKrw: course.listPriceKrw ?? 0,
+    // 가격은 문자열로 들고 있는다 — number state면 Number('')가 0이 되어 필드를 비울 수
+    // 없고, 화면에 남은 0 뒤로 타이핑하게 된다(500 입력이 0500이 되던 결함).
+    priceKrw: String(course.priceKrw),
+    listPriceKrw: course.listPriceKrw ? String(course.listPriceKrw) : '',
   });
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
@@ -44,6 +46,21 @@ export default function CourseInfoForm({ course }: { course: AdminCourseInfo }) 
       setError('클래스 명칭을 입력해 주세요.');
       return;
     }
+
+    const priceKrw = Number(form.priceKrw);
+    if (form.priceKrw.trim() === '' || !Number.isInteger(priceKrw) || priceKrw < 0) {
+      setError('판매가를 0 이상의 정수로 입력해 주세요.');
+      return;
+    }
+
+    // 빈 값 = 정가 표시 안 함. 값이 있으면 숫자여야 한다.
+    const hasListPrice = form.listPriceKrw.trim() !== '';
+    const listPriceKrw = hasListPrice ? Number(form.listPriceKrw) : null;
+    if (listPriceKrw !== null && (!Number.isInteger(listPriceKrw) || listPriceKrw < 0)) {
+      setError('정가를 0 이상의 정수로 입력해 주세요.');
+      return;
+    }
+
     await runMutation(
       () =>
         fetch(`/api/admin/courses/${course.id}`, {
@@ -58,8 +75,8 @@ export default function CourseInfoForm({ course }: { course: AdminCourseInfo }) 
             // 빈 문자열은 "선택 안 함" → null로 저장해야 카탈로그 필터에 걸리지 않는다.
             category: form.category || null,
             level: form.level || null,
-            priceKrw: form.priceKrw,
-            listPriceKrw: form.listPriceKrw > 0 ? form.listPriceKrw : null,
+            priceKrw,
+            listPriceKrw: listPriceKrw && listPriceKrw > 0 ? listPriceKrw : null,
           }),
         }),
       { successMessage: '클래스 정보를 저장했습니다.' },
@@ -165,18 +182,18 @@ export default function CourseInfoForm({ course }: { course: AdminCourseInfo }) 
             type="number"
             min={0}
             value={form.priceKrw}
-            onChange={(e) => set('priceKrw', Number(e.target.value))}
+            onChange={(e) => set('priceKrw', e.target.value)}
             className={INPUT}
           />
         </label>
 
         <label className="block">
-          <span className={LABEL}>정가 (0이면 표시 안 함)</span>
+          <span className={LABEL}>정가 (비워두면 표시 안 함)</span>
           <input
             type="number"
             min={0}
             value={form.listPriceKrw}
-            onChange={(e) => set('listPriceKrw', Number(e.target.value))}
+            onChange={(e) => set('listPriceKrw', e.target.value)}
             className={INPUT}
           />
         </label>

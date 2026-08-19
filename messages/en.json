@@ -47,12 +47,12 @@
     "supportHours": "• Weekdays 10:00 - 18:00 (excluding holidays)",
     "supportPartnership": "• Partnership inquiries",
     "rights": "© 2026 Atelier Crème Inc. All rights reserved.",
-    "chef": "Head Artisan Chef: Sohee Min"
+    "chef": "Head Artisan Chef: Sowoo Kim"
   },
   "books": {
     "listAria": "Recommended books",
     "badge": "CURATED RECIPE BOOKS",
-    "title1": "Chef Sohee Min's Recommended",
+    "title1": "Chef Sowoo Kim's Recommended",
     "titleEm": "Hands-On Recipe Books",
     "subtitle": "A curated pick of hands-on recipe books that pair well with the classes and are great for practicing at home. Purchases are made on Coupang.",
     "selectEdition": "Select Book",
@@ -69,12 +69,12 @@
     "empty": "No books are currently featured."
   },
   "instructor": {
-    "chefName": "Sohee Min",
+    "chefName": "Sowoo Kim",
     "chefRole": "Director & Head Patissier, Atelier Crème",
     "heroBadge": "ATELIER OWNER CHEF PHILOSOPHY",
     "heroTitle": "Turning a flavor few can taste into everyone's",
     "heroTitleEm": "textbook",
-    "bio1": "Hello, I'm Sohee Min, head owner chef of Atelier Crème.",
+    "bio1": "Hello, I'm Sowoo Kim, head owner chef of Atelier Crème.",
     "bio2": "Running the studio, I was deeply moved to meet students who flew round-trip from across Korea and from abroad — Taiwan, Singapore. Offline sessions, limited by venue, could only share that depth with a small handful of bookings.",
     "bio3": "To fully pass on everything from Parisian classic French technique to real commercial cost-ratio know-how that drives store sales, I compiled the entire recipe foundation myself into archived VODs and books. Once you can control it precisely, your oven becomes the smartest patisserie of all.",
     "stat1": "Students taught to date",
@@ -82,7 +82,7 @@
     "stat3": "Master's exclusive feedback",
     "ctaClasses": "Watch the Chef's Classes",
     "ctaBooks": "Browse the Books",
-    "philosophyTitle": "Master Sohee Min's Three Writing Principles",
+    "philosophyTitle": "Master Sowoo Kim's Three Writing Principles",
     "philosophyDesc": "To distill five hours of an offline class into a single book or a single lecture session, I insist on uncompromising depth alone.",
     "philosophies": [
       {
@@ -377,14 +377,14 @@
     "chef": {
       "eyebrow": "The Mastermind & Owner",
       "headingPrefix": "I am the sole artisan pâtissier behind Atelier Crème,",
-      "headingName": "Sohee Min",
+      "headingName": "Sowoo Kim",
       "headingSuffix": ".",
       "body1": "Atelier Crème is not a factory-style education platform filled with outsourced instructors or duplicated plans made by assistants.",
       "body2": "Since graduating from <strong>Ritz Escoffier</strong> in Paris — every measurement in the recipes that sold out the Hannam-dong dessert stand, the meringue moisture control design, the cost-calculation spreadsheets, and every 1:1 student question — <em>I run all of it under a single-master system, staking my own name and owner's responsibility on it.</em>",
-      "ctaAbout": "Learn more about Chef Sohee Min's philosophy & history",
+      "ctaAbout": "Learn more about Chef Sowoo Kim's philosophy & history",
       "ctaBooks": "Browse the published secret recipe books",
       "cardBadge": "Taught solely by the owner",
-      "cardName": "Sohee Min",
+      "cardName": "Sowoo Kim",
       "cardRole": "Head Pâtissier, Atelier Crème",
       "quote": "“Under one person's complete control, I deliver only recipes whose quality is guaranteed — straight to your kitchen.”",
       "stat1": "3 VOD master courses",

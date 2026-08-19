@@ -21,7 +21,7 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password,
 values
   ('00000000-0000-0000-0000-000000000000', 'a0000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'admin@ateliercreme.com',        extensions.crypt('password123', extensions.gen_salt('bf')),
-   now(), '{"provider":"email","providers":["email"]}', '{"name":"민소희","locale":"ko"}', now(), now()),
+   now(), '{"provider":"email","providers":["email"]}', '{"name":"김소우","locale":"ko"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', 'a0000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated',
    'eunji.kim@example.com',         extensions.crypt('password123', extensions.gen_salt('bf')),
    now(), '{"provider":"email","providers":["email"]}', '{"name":"김은지 (Eunji Kim)","locale":"ko"}', now(), now()),
