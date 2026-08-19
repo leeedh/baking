@@ -2,7 +2,8 @@ import { problem } from '@/lib/api/problem';
 import { getAssetResult, verifyWebhookSignature } from '@/lib/mux/client';
 import { getMuxWebhookSecret } from '@/lib/mux/env';
 import { linkLessonVideo, markLessonVideoFailed } from '@/lib/mux/link-lesson';
-import { decideWebhookAction } from '@/lib/mux/webhook-events';
+import { decideWebhookAction, shouldApplyAssetEvent } from '@/lib/mux/webhook-events';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 
 /**
@@ -66,8 +67,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ignored: true });
   }
 
+  // 차시가 지금 무엇을 기다리는지 읽어 늦게 도착한 옛 자산의 통보를 걸러낸다.
+  // 이 조회가 없으면 교체 업로드 중 옛 자산의 통보가 새 영상을 덮어쓰거나(ready),
+  // 진행 중인 새 업로드의 표식을 지운다(errored).
+  const admin = createAdminClient();
+  const { data: lesson, error: readError } = await admin
+    .from('lessons')
+    .select('id, mux_upload_id, mux_asset_id')
+    .eq('id', action.lessonId)
+    .maybeSingle();
+  if (readError) {
+    console.error(`[mux-webhook] 차시 조회 실패 (${action.lessonId}):`, readError.message);
+    return problem(500, 'lesson-read-failed', 'Lesson read failed', '차시를 불러오지 못했습니다.');
+  }
+  if (!lesson) {
+    // 차시가 지워졌는데 자산 통보만 남은 경우 — 재시도해도 달라지지 않으니 200으로 닫는다.
+    console.info(`[mux-webhook-no-action] lesson-not-found:${action.lessonId}`);
+    return NextResponse.json({ ok: true, ignored: true });
+  }
+
+  const gate = shouldApplyAssetEvent({
+    eventAssetId: action.assetId,
+    eventUploadId: action.uploadId,
+    lessonUploadId: lesson.mux_upload_id,
+    lessonAssetId: lesson.mux_asset_id,
+  });
+  if (!gate.apply) {
+    console.info(`[mux-webhook-no-action] ${gate.why} (lesson ${action.lessonId})`);
+    return NextResponse.json({ ok: true, ignored: true });
+  }
+
   if (action.kind === 'error') {
-    const { error } = await markLessonVideoFailed(action.lessonId, action.reason);
+    // DB 수준에서도 한 번 더 조인다 — 조회와 쓰기 사이에 새 업로드가 시작됐을 수 있다.
+    const { error } = await markLessonVideoFailed(action.lessonId, action.reason, {
+      onlyUploadId: lesson.mux_upload_id ?? undefined,
+    });
     if (error) {
       // 저장 실패는 Mux가 다시 보내 주면 풀릴 수 있다.
       console.error(`[mux-webhook] 실패 사유 저장 실패 (lesson ${action.lessonId}):`, error.message);
@@ -91,7 +125,9 @@ export async function POST(request: Request) {
   if (result.state !== 'ready' || !result.assetId || !result.playbackId) {
     const reason = result.reason ?? `자산이 아직 ${result.state} 상태입니다.`;
     if (result.state === 'errored') {
-      await markLessonVideoFailed(action.lessonId, reason);
+      await markLessonVideoFailed(action.lessonId, reason, {
+        onlyUploadId: lesson.mux_upload_id ?? undefined,
+      });
       return NextResponse.json({ ok: true, lessonId: action.lessonId, state: 'errored' });
     }
     // ready 통보를 받았는데 재조회는 아직 준비 중 — 드물지만 전파 지연으로 가능하다.
