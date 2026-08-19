@@ -31,6 +31,16 @@ function getMuxClient(): Mux {
 }
 
 /**
+ * Mux 웹훅 서명 검증 (DC-111). 서명이 맞지 않으면 throw 한다.
+ *
+ * body는 반드시 **원문 문자열**이어야 한다 — JSON으로 파싱했다가 다시 직렬화하면
+ * 바이트가 달라져 검증이 깨진다. 그래서 라우트가 request.text()를 먼저 부른다.
+ */
+export function verifyWebhookSignature(body: string, headers: Headers, secret: string): void {
+  getMuxClient().webhooks.verifySignature(body, headers, secret);
+}
+
+/**
  * 브라우저 직접 업로드용 Direct Upload를 생성한다(운영자 전용, 관리 API 키 사용).
  * 자산은 signed 재생 정책으로 생성 → 재생은 계속 서명 토큰(signPlaybackToken)으로만 가능.
  *

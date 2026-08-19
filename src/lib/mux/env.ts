@@ -16,3 +16,14 @@ export function getMuxEnv(): {
   if (!tokenId || !tokenSecret || !signingKeyId || !signingPrivateKey) return null;
   return { tokenId, tokenSecret, signingKeyId, signingPrivateKey };
 }
+
+/**
+ * 웹훅 서명 검증용 시크릿 (DC-111).
+ *
+ * getMuxEnv()와 **일부러 분리한다.** 그쪽은 하나라도 없으면 통째로 null을 반환하는
+ * all-or-nothing 구조라, 여기에 끼워 넣으면 웹훅 시크릿이 비어 있는 순간 재생 토큰
+ * 서명까지 죽는다 — 웹훅은 안 받아도 재생은 되어야 한다.
+ */
+export function getMuxWebhookSecret(): string | null {
+  return process.env.MUX_WEBHOOK_SECRET || null;
+}

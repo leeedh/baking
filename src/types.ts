@@ -180,6 +180,8 @@ export interface AdminLesson {
    * (완료·실패 시 서버가 null로 지운다). 업로드 ID는 재생 권한과 무관하다.
    */
   pendingUploadId: string | null;
+  /** Mux 인코딩 실패 사유(DC-111). 영상이 정상 연결되면 지워진다. */
+  muxError: string | null;
   /** 차시에 등록된 레시피 자료(DC-58). */
   materials: AdminMaterial[];
 }

@@ -1,10 +1,8 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
-import { CATALOG_TAG } from '@/lib/cache-tags';
 import { getUploadResult } from '@/lib/mux/client';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { revalidateTag } from 'next/cache';
+import { linkLessonVideo, markLessonVideoFailed } from '@/lib/mux/link-lesson';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -42,20 +40,13 @@ export async function POST(request: Request) {
   }
 
   if (result.state === 'ready' && result.assetId && result.playbackId) {
-    const admin = createAdminClient();
-    // 재생시간은 Mux가 측정한 실제 길이로 자동 기록한다(운영자 수기 입력 대체).
-    // durationSec이 null이면 기존 값을 덮지 않는다 — 영상 없이 손으로 넣어둔 값이 있을 수 있다.
-    const { error } = await admin
-      .from('lessons')
-      .update({
-        mux_asset_id: result.assetId,
-        mux_playback_id: result.playbackId,
-        // 완료된 업로드는 "진행 중" 표시를 지운다(편집기 재진입 시 폴링 재개 판정 기준).
-        mux_upload_id: null,
-        ...(result.durationSec !== null ? { duration_sec: result.durationSec } : {}),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', lessonId);
+    // 저장은 세 경로(폴링·수동 복구·웹훅)가 공유하는 linkLessonVideo가 전담한다 — 캐시
+    // 무효화와 완료 로그도 그 안에 있다.
+    const { error } = await linkLessonVideo(
+      lessonId,
+      { assetId: result.assetId, playbackId: result.playbackId, durationSec: result.durationSec },
+      'poll',
+    );
     if (error) {
       return problemWithCause(
         500,
@@ -65,22 +56,12 @@ export async function POST(request: Request) {
         error,
       );
     }
-    // DC-51 · 영상이 붙으면 상세 커리큘럼의 hasVideo가 바뀐다.
-    revalidateTag(CATALOG_TAG);
-    // 완료 기록은 이 한 줄이 유일한 흔적이다 — 없으면 "왜 DB가 비었나"를 사후에 추적할
-    // 방법이 없다(실제로 그 상황을 겪었다).
-    console.info(
-      `[mux] lesson ${lessonId} linked: asset=${result.assetId} duration=${result.durationSec ?? 'none'}`,
-    );
   } else if (result.state === 'errored') {
-    console.warn(`[mux] lesson ${lessonId} upload ${uploadId} errored: ${result.reason ?? '사유 없음'}`);
     // 실패한 업로드를 남겨두면 편집기가 재진입할 때마다 끝나지 않을 폴링을 되살린다.
-    const admin = createAdminClient();
-    await admin
-      .from('lessons')
-      .update({ mux_upload_id: null, updated_at: new Date().toISOString() })
-      .eq('id', lessonId)
-      .eq('mux_upload_id', uploadId);
+    // 사유를 DB에도 남긴다 — 이 응답을 볼 브라우저가 없는 경우(웹훅 경로)와 표시를 맞춘다.
+    await markLessonVideoFailed(lessonId, result.reason ?? '영상 처리에 실패했습니다.', {
+      onlyUploadId: uploadId,
+    });
   }
 
   // 사유·재생시간 유무를 함께 내려보낸다 — 클라이언트가 실패를 한 문장으로 뭉개지 않도록,
