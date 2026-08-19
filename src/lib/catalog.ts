@@ -20,7 +20,7 @@ import { unstable_cache } from 'next/cache';
 const CATALOG_REVALIDATE_SEC = 3600;
 
 // 단일 브랜드(1인 파티시에) — courses에 강사명 컬럼이 없어 상수로 표기. 직함만 i18n(instructor_title).
-const BRAND_INSTRUCTOR = '민소희 (Sohee Min)';
+const BRAND_INSTRUCTOR = '김소우 (Sowoo Kim)';
 
 // 아바타 미설정 후기용 중립 플레이스홀더(외부 요청 없이 인라인).
 const DEFAULT_AVATAR =

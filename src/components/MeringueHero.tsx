@@ -182,7 +182,7 @@ export default function MeringueHero({ onSearch, onExplore, onQuiz }: MeringueHe
         {/* Left brand/slogan */}
         <div className="hidden sm:flex items-center gap-3 shrink-0">
           <span className="text-[10px] font-mono tracking-[0.25em] text-brown-deep uppercase font-bold">
-            ATELIER CRÈME BY MIN SOHEE
+            ATELIER CRÈME BY SOWOO KIM
           </span>
           <span className="h-[12px] w-[1px] bg-brown-light hidden sm:inline-block" />
           <span className="text-[9px] font-mono tracking-[0.15em] text-gold uppercase font-semibold hidden sm:inline-block">

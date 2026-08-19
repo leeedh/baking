@@ -15,7 +15,7 @@ import type {
 } from '@/types';
 
 // 단일 브랜드(1인 파티시에) — courses에 강사명 컬럼이 없어 상수 표기(catalog.ts와 동일).
-const BRAND_INSTRUCTOR = '민소희 (Sohee Min)';
+const BRAND_INSTRUCTOR = '김소우 (Sowoo Kim)';
 
 const STATS_COLUMNS =
   'course_id, title, instructor_title, price_krw, list_price_krw, status, sales_count, gross_krw, active_enrollments, avg_completion';

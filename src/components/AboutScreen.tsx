@@ -53,7 +53,7 @@ export default function AboutScreen() {
                 <img
                   referrerPolicy="no-referrer"
                   src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?auto=format&fit=crop&q=80&w=600"
-                  alt="Chef Sohee Min"
+                  alt="Chef Sowoo Kim"
                   className="w-full h-full object-cover filter brightness-[0.98]"
                 />
               </div>
@@ -229,7 +229,7 @@ export default function AboutScreen() {
         </div>
       </section>
 
-      {/* Bottom CTA board for Sohee Min */}
+      {/* Bottom CTA board for Sowoo Kim */}
       <section
         aria-labelledby="about-cta-heading"
         className="py-16 bg-brown text-cream text-center px-6"

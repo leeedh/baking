@@ -2,7 +2,7 @@
 
 > **버전**: v2.0 (as-built 동기화)
 > **브랜드**: Atelier Crème — Premium French Baking Atelier
-> **대표 파티시에**: 민소희 (Sohee Min)
+> **대표 파티시에**: 김소우 (Sowoo Kim)
 > **플랫폼**: 반응형 웹 SPA (Mobile-first) · KO/EN 다국어 · **Light 전용**
 > **스택**: React + TypeScript + Vite · Tailwind CSS v4 · lucide-react · GSAP(ScrollTrigger)
 > **상태**: 프론트엔드 프로토타입 (데이터·결제·영상은 목업/샘플)
@@ -320,7 +320,7 @@ AA에 미달한다는 사실까지 단언한다. 어두운 면 검사가 처음�
 | 영상 보안 | Mux 서명 JWT + 워터마크 | 네이티브 `<video>`, 보안 없음 |
 | 결제 | TossPayments 서버검증·멱등 | 1.5s 시뮬레이션 `alert` |
 | 테마 | Light + Dark | Light 전용 |
-| 브랜드 | SOWOO / 유아시스 | **Atelier Crème / 민소희** |
+| 브랜드 | SOWOO / 유아시스 | **Atelier Crème / 김소우** |
 | 접근성 | WCAG AA·키보드·SR 완비 | 초기 수준(§6.2 과제) |
 
 ### 7.4 화면 ↔ 컴포넌트 매핑
@@ -339,7 +339,7 @@ AA에 미달한다는 사실까지 단언한다. 어두운 면 검사가 처음�
 ---
 
 **변경 이력**
-- **v2.0** — 실제 구현(as-built) 기준 전면 동기화: 브랜드(Atelier Crème/민소희), 컬러 토큰 6종·Light 전용, Tailwind 브레이크포인트, 9개 화면(도서·강사 추가), 네이티브 플레이어·목업 결제 반영, 접근성 현황/과제 명시.
+- **v2.0** — 실제 구현(as-built) 기준 전면 동기화: 브랜드(Atelier Crème/김소우), 컬러 토큰 6종·Light 전용, Tailwind 브레이크포인트, 9개 화면(도서·강사 추가), 네이티브 플레이어·목업 결제 반영, 접근성 현황/과제 명시.
 - v1.0 — 초기 기획(Next.js/Supabase/Mux 전제, SOWOO 브랜드). §7.3에 갭 보존.
 
 ---

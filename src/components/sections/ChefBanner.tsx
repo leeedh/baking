@@ -67,7 +67,7 @@ export default function ChefBanner() {
                 <img
                   referrerPolicy="no-referrer"
                   src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?auto=format&fit=crop&q=80&w=300"
-                  alt="Chef Min Sohee"
+                  alt="Chef Sowoo Kim"
                   className="w-full h-full object-cover"
                 />
               </div>
