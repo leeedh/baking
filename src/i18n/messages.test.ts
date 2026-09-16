@@ -116,6 +116,14 @@ const I18N_DONE: string[] = [
   'sections/RecommendationQuiz.tsx',
   'sections/StudentArchive.tsx',
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
+  // 랜딩 후보(`/landing`) — 홈을 대체하지 않는 비교용 화면
+  'landing/LandingScreen.tsx',
+  'landing/LandingScrubHero.tsx',
+  'landing/LandingStations.tsx',
+  'landing/LandingCarte.tsx',
+  'landing/LandingVitrine.tsx',
+  'landing/LandingChef.tsx',
+  'landing/LandingClose.tsx',
 ];
 
 /**
