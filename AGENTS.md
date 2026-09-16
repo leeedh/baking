@@ -1,0 +1,130 @@
+# AGENTS.md
+
+This file provides guidance to Codex when working with code in this repository.
+
+## Project
+
+**Atelier Crème** (`atelier-creme`) — a French-baking masterclass (VOD) platform. Next.js 15 App Router + Supabase (Auth/DB/Storage/RLS) + Mux (signed video) + TossPayments v2 (KRW settlement). Bilingual: Korean (`ko`, default) and English (`en`). Code comments and user-facing copy are Korean.
+
+## Commands
+
+Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `package.json`).
+
+- `pnpm dev` — dev server on **port 3000** (payment/origin guards assume `http://localhost:3000`)
+- **성능 진단 주의**: `pnpm dev`는 라우트를 처음 방문할 때마다 on-demand 컴파일한다 — "클릭이 느리다"는 대부분 이 dev 컴파일이지 앱 성능이 아니다. 실제 성능은 `pnpm build && pnpm start`로 검증할 것. dev 스크립트는 `--turbopack` 사용. 실행 모드 판별: `.next/BUILD_ID` 없으면 dev.
+- `pnpm build` / `pnpm start`
+- **프로덕션 검증은 포트 3100에서** — 3000은 사용자 dev 서버가 점유 중일 때가 많다. `PORT=3100 pnpm start`.
+- **`TaskStop`은 node를 죽이지 않는다** — 리스너가 남아 다음 `pnpm start`가 `EADDRINUSE`로 조용히 실패하고, 그대로 curl하면 **구 빌드를 측정하게 된다**. 종료 후 반드시 `netstat -ano | grep ":3100 "` → `taskkill //PID <pid> //F`로 해제를 확인할 것.
+- `pnpm lint` — Biome check. **주의: 커밋된 파일이 CRLF라 리포 전체에서 `format` 에러로 실패한다(main도 동일, pre-existing).** 실제 지적만 보려면 **`npx biome check --formatter-enabled=false <경로>`** — CRLF 노이즈가 걷히고 lint/organizeImports 위반만 남는다.
+- **`biome check --write`를 디렉터리에 돌리지 말 것** — 손대지 않은 파일의 import까지 정렬해 diff를 오염시킨다. 변경한 파일만 명시할 것.
+- `pnpm typecheck` — `tsc --noEmit`
+- `pnpm test` — Vitest(`vitest run`). 순수 판정 로직만 대상이며 DB·네트워크에 의존하지 않는다(`vitest.config.ts` 주석 참조).
+- `pnpm format` 존재하나 **리포 전체 실행 금지**(CRLF로 대량 diff). 포맷은 변경 파일에만 개별 적용.
+- **변경 검증 순서**: `pnpm typecheck` → `pnpm test` → `pnpm build` → `PORT=3100 pnpm start` → curl 스모크 → **포트 해제 확인**. 마지막을 빠뜨리면 다음 회차가 구 빌드를 측정한다.
+- Database: migrations live in `supabase/migrations/` (timestamped). 원격 프로젝트는 **`sowoo` = `ptwgrmdtzdphervuanxi`**. 로컬 Docker가 없어 Supabase **MCP**로 운영: `apply_migration`(DDL) 후 `generate_typescript_types`로 `supabase/database.types.ts` 재생성. **`apply_migration`은 자체 UTC 타임스탬프를 version으로 부여하므로**, 적용 후 `list_migrations`로 확인해 **로컬 파일명을 그 version에 맞출 것**(로컬 KST로 지으면 어긋난다). 권한(GRANT)·CHECK 제약만 바꿨다면 타입 재생성은 불필요하다. **주의: MCP `execute_sql`의 쓰기(INSERT/UPDATE/DELETE)는 하네스 안전 분류기가 차단**하므로 데이터 시드/변경은 앱 플로우로 하거나 사용자에게 요청. `createServerClient<Database>`가 타입에 의존하므로 스키마 변경 후 재생성 필수.
+
+**Windows quirk**: Bash 툴에서 Python/echo로 한글을 stdout에 출력하면 `UnicodeEncodeError: 'cp949'`가 난다. Python은 `sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`로 감쌀 것.
+
+**Bash 툴 heredoc 한계**: 따옴표·중괄호가 많은 Python을 `python - <<'PY'`로 넘기면 bash가 `unexpected EOF`로 깨진다. 여러 줄 스크립트는 **스크래치패드에 `.py`로 쓴 뒤 `python <path>`로 실행**할 것. 반대로 git 커밋 메시지는 heredoc(`git commit -F - <<'EOF'`)이 안전하다 — **단 `git merge`는 `-F -`(stdin)를 못 읽는다**(`could not read file '-'`). 병합 메시지는 스크래치패드에 파일로 쓴 뒤 `-F <path>`로 넘길 것. **PowerShell here-string(`@'...'@`)을 Bash 툴에 쓰면 `@`가 본문에 그대로 들어간다.**
+
+**CRLF 보존**: 리포 전역이 CRLF다. Python으로 파일을 고칠 때는 `open(p, encoding='utf-8', newline='')`로 읽고 쓸 것 — `Path.read_text()`에는 `newline` 인자가 아예 없고, 기본 모드로 열면 개행이 통째로 뒤바뀌어 무관한 diff가 대량 발생한다.
+
+## Architecture — the parts that span files
+
+### Auth & trust boundary (read before touching anything under `src/app/api` or `src/lib/supabase`)
+Three Supabase clients, deliberately separate:
+- `lib/supabase/server.ts` `createClient()` — request-scoped, reads the user session from cookies, **subject to RLS**. Use for all normal reads. `getUser()` / `getProfile()` (role) are helpers here. `getUser()`는 **React `cache()`로 요청 스코프 메모이즈** — 같은 요청 내 여러 호출도 Supabase Auth 왕복 1회. 내부에서 `supabase.auth.getUser()`를 직접 부르지 말고 이 헬퍼를 재사용할 것.
+- `lib/supabase/admin.ts` `createAdminClient()` — `service_role`, **bypasses RLS**. Guarded by `import 'server-only'`. Use *only* for server-authoritative writes (order completion, enrollment grants, admin console mutations).
+- `lib/supabase/public.ts` `createPublicClient()` — anon 키, **쿠키를 읽지 않는다**(세션 없음). 권한은 `createClient()`와 동일한 anon RLS이므로 신뢰 경계는 넓어지지 않는다. 존재 이유는 오직 하나 — 쿠키 접근은 렌더를 동적으로 만들고 `unstable_cache` 안에서는 아예 호출할 수 없다. **캐시되는 공개 조회 전용**이며, 세션이 없어 owner 기반 RLS(enrollments·progress·inquiries)는 아무 행도 돌려주지 않으니 사용자별 데이터에 쓰지 말 것.
+
+Because `service_role` bypasses RLS, **RLS is never the sole gate**. Admin API routes must call `requireAdmin()` (`lib/auth/require-admin.ts`) at the app layer; the DB `is_admin()` RLS is only a backstop. Sensitive reads use **double defense**: RLS gates the row (e.g. `lessons_select_guarded`) *and* the route re-checks access (e.g. `has_course_access()` RPC in the playback route).
+
+`middleware.ts` refreshes the Supabase session cookie on every non-API request and runs next-intl locale routing on the **same** response object. Its `matcher` deliberately excludes `/api` and `/auth` — so route handlers get **no** middleware auth/CSRF protection and must guard themselves. 성능상 미들웨어는 **`sb-*-auth-token` 쿠키가 있을 때만** `getUser()`(Auth 서버 왕복)를 호출한다 — 비로그인 이동에서 매번 왕복하지 않도록.
+
+### CSRF / same-origin
+State-changing route handlers call `assertSameOrigin(request)` (`lib/api/origin.ts`) first, because middleware skips `/api` and Next has no built-in CSRF for route handlers. Missing `Origin` header is allowed through on purpose (server-to-server / CLI). Prefer `x-forwarded-host` over `request.url` (Vercel proxy).
+
+### Payments (`src/app/api/payments/*`, `lib/payments/*`)
+The confirm flow (`payments/confirm/route.ts`) is the critical trust boundary and encodes hard-won invariants — preserve them when editing:
+- **Amount is re-derived server-side**: the client-supplied `amount` is compared against `order.amount_krw`, never trusted.
+- **Idempotent**: an already-`paid` order returns success without re-charging; webhook and confirm can race.
+- **Double-charge guard**: before calling Toss confirm (= capture), it checks for an existing active enrollment; unconfirmed authorizations expire uncharged.
+- **Failure handling is status-dependent**: only deterministic 4xx marks the order `failed`; 5xx/timeout keeps it `pending` so the webhook can complete it — Toss may have actually approved.
+
+The webhook (`payments/webhook/route.ts`, `TS-API-11`) is the completion path for async methods (e.g. virtual accounts) and a recovery path when confirm left an order `pending` **or `failed`** (Toss may have approved after confirm hit a transient error). It never trusts the payload — it re-fetches the payment from Toss by `paymentKey`. Both confirm and the webhook call the shared `completePaidOrder` (`lib/payments/orders.ts`), which is idempotent: the `orders` update is guarded by `.in('status', ['pending','failed'])` and re-`select()`ed so only one caller is the real transitioner (coupon increments key off that), and `grant_enrollment` is unique on `order_id`. It also maps `CANCELED`→`refunded`/`canceled` on the order and enrollments. 운영자 환불(`api/admin/orders/[id]/refund`)과 webhook 취소는 공유 `refundOrder`(`lib/payments/orders.ts`)로 주문·수강권을 `refunded` 전이(하드삭제 없음)한다.
+
+**테스트 결제 e2e 주의:** Toss 샌드박스 카드 결제창은 본인인증(주민번호 등) 입력을 요구해 브라우저 자동화로 완결 불가 — 결제 승인 단계는 사람이 직접 완료해야 한다. `gh` CLI는 이 환경에 미설치라 PR은 GitHub compare URL로 수동 생성.
+
+### Video playback (`src/app/api/playback/token`, `lib/mux`)
+Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`). Token TTL scales with lesson duration so one token covers full playback. Returns `503 mux-unconfigured` when Mux keys aren't provisioned — the code ships before keys exist.
+
+### 캐시와 재검증 (DC-51)
+공개 카탈로그 조회(`lib/catalog.ts`의 `getCatalog`·`getCourseSummary`·`getPublicCourseDetail`)는 `unstable_cache`에 태그 **`CATALOG_TAG`**(`lib/cache-tags.ts`)로 얹혀 있다. **정확성은 TTL이 아니라 태그 무효화가 책임진다** — `courses`·`lessons`·`reviews`에 쓰는 라우트는 성공 응답 직전에 `revalidateTag(CATALOG_TAG)`를 불러야 하고, 빠뜨리면 운영자가 고친 가격이 최대 1시간 낡은 채로 팔린다. `src/lib/cache-tags.test.ts`가 소스 스캔으로 이걸 잠근다(새 쓰기 라우트는 자동으로 감시 대상이 된다).
+
+**`unstable_cache` 안에서 `getUser()`·`createClient()`·`cookies()`를 절대 부르지 말 것** — 한 사용자의 세션 판정이 캐시에 얼어붙어 다른 사용자에게 나간다. 그래서 캐시 대상은 `createPublicClient()`만 쓰고, 상세 페이지는 공개부(캐시)와 세션부(`canReview`·`myReview`, 요청 시점 조회)를 갈라 뒀다. 같은 이유로 **캐시에는 매핑을 거친 결과만 넣는다** — lessons 원시 행을 그대로 캐시하면 `mux_playback_id`가 디스크 캐시에 남는다.
+
+**빌드 표의 `●`(SSG)를 믿지 말 것** — 실제 프리렌더 여부는 `.next/server/app`에 `.html`이 생겼는지로 확인한다. `setRequestLocale`을 레이아웃에 넣기 전까지 이 리포에서 프리렌더된 페이지는 `_not-found` 하나뿐이었는데도 표에는 `●`로 찍혀 있었다. next-intl은 `setRequestLocale` 없이 `getMessages()`를 부르면 렌더를 동적으로 만든다.
+
+### 공용 UI 프리미티브
+`src/components/ui/`에 `Button`·`Card`·`Field`·`Badge`·`Modal`·`ConfirmDialog`·`SectionHeading`·`Reveal`·**`Toast`**가 있다. **`alert()`/`confirm()`을 새로 쓰지 말 것** — 안내는 `useToast()`(레이아웃에 마운트돼 내비게이션을 넘어 살아남고, 오류는 assertive·나머지는 polite 라이브 리전으로 분리), 확인은 `ConfirmDialog`다. 운영자 콘솔의 쓰기 액션은 **`hooks/useAdminMutation`**(`{busy, error, setError, runMutation}`)을 재사용할 것 — 예전에 `DashboardScreen`·`LessonManager`에 같은 코드가 복제돼 있었다. 실패는 인라인 오류 박스, 성공은 토스트(`runMutation`의 `successMessage`)가 규약이다.
+
+### 색 토큰과 대비 (DC-56)
+**골드는 배경 밝기에 따라 방향이 반대다** — 밝은 면(cream·ivory·white)은 `gold-deep`, 어두운 면(`bg-brown`·`hero-ink`)은 `gold`. 반대로 쓰면 각각 3.0:1대로 AA 미달이다. `src/lib/color-contrast.test.ts`가 `globals.css` 토큰을 파싱해 **양방향**을 잠근다. hover 정본은 `src/lib/button-classes.ts`이며 임의값 hex(`text-[#...]`)는 쓰지 않는다(예외: `LoginScreen`의 구글 로고 4색 — 외부 브랜드 고정값).
+
+**색 클래스를 파일 전역으로 일괄 치환하지 말 것** — 파일 단위 grep으로 `text-gold`를 바꿨다가 `bg-brown` 컬럼 안의 한 줄을 놓쳐 대비가 반토막 났다(Codex 리뷰가 잡았다). 조상 배경을 줄 단위로 확인할 것.
+
+모션 감소(`globals.css`의 전역 `prefers-reduced-motion` 블록)는 애니메이션을 전부 죽이므로, 로딩 스피너처럼 **멈추면 정보가 사라지는 요소**에는 `data-motion-essential`을 붙여 예외 처리한다.
+
+### 테스트 규약
+로컬 Docker가 없어 DB 통합 테스트를 못 돌린다. 그래서 **판정 로직만 순수 모듈로 분리하고 콜로케이트 테스트를 붙이는 것**이 이 리포의 규약이다 — `lib/mux/ttl.ts` · `lib/payments/policy.ts` · `lib/progress/policy.ts` · `lib/api/origin.ts`. 라우트는 Supabase 클라이언트에 묶여 import할 수 없으므로 **라우트에 직접 테스트를 붙이려 하지 말 것**. 결제 상태 전이·RLS 같은 불변식은 DB 제약과 RPC가 대신 강제한다.
+
+**게이트를 추가했으면 일부러 깨뜨려 실패를 확인할 것** — 통과만 하는 검사는 무용하다(`messages.test.ts`의 키 유효성 검사가 실제로 이 방식으로 검증됐다).
+
+### API conventions
+- Errors use RFC 7807 Problem Details via `problem(status, type, title, detail)` (`lib/api/problem.ts`); `detail` is Korean, user-facing.
+- Request bodies validated with **Zod** (v4). Use `z.guid()` for Postgres UUIDs, **not** `z.uuid()` — Zod v4's `z.uuid()` validates RFC 4122 variant/version bits and rejects otherwise-valid Postgres UUIDs.
+
+### i18n
+`next-intl` with `/[locale]` routing (`src/i18n/routing.ts`, locales `ko`/`en`). Translations in `messages/{ko,en}.json`. All pages live under `src/app/[locale]/`. Use the navigation helpers in `src/i18n/navigation.ts`, not raw `next/link`, to keep locale prefixes.
+
+**네임스페이스 규약(EPIC-K)**: 화면 단위 평면 구조 — `detail`·`payment`·`player`·`login`·`myclasses`·`inquiries`·`classes`·`review`·`common`. `sections/*` 컴포넌트는 `sections` 아래 한 겹(`sections.chef`·`sections.catalog`·`sections.card` …). 배열 데이터는 `t.raw()` + 타입 단언(`AboutScreen.tsx` 참조).
+
+**`src/i18n/messages.test.ts`가 네 가지를 잠근다** — ko/en 키 집합 동등성, 미참조 네임스페이스, en 값의 한글 잔존, 그리고 **`I18N_DONE`에 오른 컴포넌트의 하드코딩 한글**. 새 고객 화면을 만들면 이 배열에 추가할 것. 운영자 콘솔(`DashboardScreen`·`LessonManager`)은 의도적으로 범위 밖이다(운영자는 한국어 단일 사용자).
+
+**번역하면 안 되는 것 두 가지**: ① 금액·날짜는 `lib/format.ts`의 `formatKrw`/`formatDate`로 — 로케일을 지정하지 않은 `toLocaleString()`은 서버/브라우저 기본값이 달라 하이드레이션이 깨진다. ② API·DB에 저장되는 **값**(문의 분류·코스 카테고리)은 `lib/inquiry-categories.ts`·`lib/course-categories.ts`에 두고 라벨만 메시지에서 꺼낸다.
+
+**`messages/*.json`은 CRLF다** — `json.dumps`로 통째로 재직렬화하면 인라인 객체가 펼쳐져 무관한 diff가 대량 발생한다. 네임스페이스 추가는 **닫는 `}` 앞에 텍스트로 삽입**하고 CRLF를 보존할 것.
+
+**강좌·차시 콘텐츠는 아직 한국어뿐이다** — `pickLocale()`(`lib/i18n-json.ts`)은 정상이지만 DB의 `en` 값이 비어 있어 `/en`에서도 강좌 제목·설명이 한국어로 나온다. 코드가 아니라 데이터 문제이며 **Jira DC-108** 소관이다.
+
+### 정보구조 — 홈·소개·온라인 클래스 3면 (DC-96)
+홈(`/`)은 **브랜드 게이트웨이**이고 클래스 목록 본체는 **`/classes`**, 브랜드/셰프 소개는 **`/about`**이다(구 `/instructor`는 `/about` 리다이렉트). 화면 골격은 `src/components/{HomeScreen,ClassesScreen,AboutScreen}.tsx`가 조립하고, 재사용 섹션은 **`src/components/sections/`**(`AnnouncementBar`·`PhilosophyPillars`·`RecommendationQuiz`·`ClassCard`·`ClassCatalogGrid`·`StudentArchive`·`ChefBanner`·`FaqAccordion`·`NewsletterCTA`·`BestClasses`)에 있다. **`src/features/`는 없다** — TechSpec의 `features/*` 표기는 to-be다.
+
+**검색은 URL이 소스**: `MeringueHero`(홈)는 검색어를 자체 state로 두고 제출 시 `/classes?q=`로 `push`하며, `/classes` 페이지가 `searchParams`로 초기값을 받아 `ClassCatalogGrid`에 넘긴다. 홈에 그리드가 없으므로 히어로에 검색 state를 되돌리지 말 것.
+
+**`loading.tsx`는 라우트 그룹으로 범위를 좁혀 둔다 — 함부로 옮기지 말 것.** `loading.tsx`는 Suspense 셸을 즉시 flush하고, 헤더가 나간 뒤에는 상태 코드를 바꿀 수 없어 그 하위에서 `notFound()`를 호출하면 **HTTP 200**(soft-404)이 된다. 그래서 홈은 `[locale]/(home)/`, 클래스 목록은 `classes/(list)/`에 페이지와 `loading.tsx`를 함께 두어 `classes/[id]`를 감싸지 않게 했다(라우트 그룹이라 URL은 그대로). **`classes/[id]`에는 `loading.tsx`를 만들지 말 것.** 상위 세그먼트의 `loading.tsx`도 하위 전체를 감싼다는 점을 함께 볼 것. `checkout/[id]`·`learn/[id]`·`admin/courses/[id]`는 인증 뒤라 색인 대상이 아니어서 스켈레톤을 유지했고 `notFound()` 시 200이다(의도). 실측 근거는 `Docs/UXGuide.md` §8.6.
+
+### 문의사항(Inquiries, DC-97)
+**1:1 비공개**: `inquiries` RLS는 `owner-or-admin`(작성자 본인 OR `is_admin()`)이라 목록·상세는 **라우트 없이 RSC에서 쿠키 클라이언트로 직접 조회**한다(`src/lib/inquiries.ts` — 같은 쿼리가 작성자에겐 본인 것만, 운영자에겐 전체를 돌려주므로 앱에서 소유자 필터를 중복하지 말 것). 쓰기는 `POST /api/inquiries`(세션에서 `user_id` 주입)·`PATCH /api/admin/inquiries/[id]`(`requireAdmin`, `answered_by/at` 서버 주입)만 경유한다. 운영자 답변 UI는 별도 라우트가 아니라 `DashboardScreen`의 "문의 · 답변 관리" 섹션이며, 초기 데이터는 `getAdminDashboard()`가 함께 실어 준다.
+
+### 도서(Books)
+도서는 **추천 큐레이션**(외부 쿠팡 판매, 파트너스 제휴)으로, 자체 결제·배송이 없다. 데이터는 `books` 테이블이 아니라 **정적 상수 `src/lib/books-data.ts`**에서 오며(`getBooks()` in `src/lib/books.ts`), 표지는 로컬 자산(`public/books/`). `books` 테이블·seed는 이력용으로 존치되지만 앱은 읽지 않는다.
+
+## Docs & a documentation gotcha
+Design docs are in `Docs/` (`PRD.md`, `TechSpec.md`, `DBSchema.md`, `UXGuide.md`, `plan.md`, `CodeReview-2026-07.md`) and API/security items are traceable by `TS-*` codes (e.g. `TS-API-10`, `TS-SEC-02`) referenced in route comments.
+
+**`Docs/CodeReview-2026-07.md` §12에 미완 사람 검증 18건이 모여 있다** — 로그인 세션·운영자 권한·Toss 결제창 본인인증이 필요해 도구로 완결할 수 없는 항목들이다. 관련 화면을 건드릴 때 함께 확인하도록 유도할 것.
+
+**`TechSpec.md` is the "to-be" target spec, not as-built.** It lists TanStack Query and Zustand, but the actual app installs neither — server state is plain RSC fetching and there is no global client store yet. Trust the code over the spec for what's actually wired up.
+
+## Jira
+이슈 추적은 **`claude.ai Atlassian Rovo` 커넥터**(cloudId `7cb9460c-4bd1-42dc-9f05-491aa11178dd`), 프로젝트 **`DC`(dessert Class)**. 다른 `mcp-atlassian` 커넥터는 접근 가능한 프로젝트가 없으니 쓰지 말 것. Jira의 EPIC/작업(DC-*)은 `Docs/plan.md`의 EPIC과 대응된다.
+
+**주의**: `searchJiraIssuesUsingJql`를 프로젝트 전체에 돌리면 토큰 한도를 초과한다. **`fields`를 명시해도 초과한다**(실측) — 결과가 파일로 저장되므로 그 **JSON을 Python으로 파싱하는 것이 유일하게 확실한 방법**이다. 상태 전이 ID(DC 워크플로): **할일=11 · 진행중=21 · 검토중=31 · 완료=41**.
+
+**완료 전이 전에 `getJiraIssue`로 `description`의 완료 기준을 읽을 것.** 요약(summary)만 보고 판단하면 오판한다 — DC-70·DC-54를 "완료"로 잘못 보고했다가 정정한 전례가 있다(하네스만 있고 요구된 테스트 커버리지가 없었고, 모달만 됐고 표 접근성은 미비했다).
+
+**완료 기준에 키보드·스크린리더·시각 확인이나 실결제가 걸려 있으면 완료(41)가 아니라 검토중(31)**으로 올리고, 남은 검증을 체크리스트 코멘트로 남길 것. 범위에서 제외한 항목도 사유와 함께 코멘트에 적는다.
+
+## Notion
+진행 현황은 `아틀리에 크렘 — 프로젝트 진행 현황` 페이지와 그 하위 영역 페이지들이며 **비개발자 대상 서술**이라 코드 식별자·전문용어를 쓰지 않는다(코드 변경을 반영할 때 톤을 맞출 것). `notion-update-page`에 **긴 한글 본문을 `content_updates`로 넘기면 JSON 파싱이 깨진다** — 큰 블록은 `insert_content`, 기존 문장 교체는 짧은 `content_updates` 여러 건으로 나눌 것.

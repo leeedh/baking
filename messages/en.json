@@ -543,5 +543,113 @@
       "description": "The three master courses with the highest student ratings. See the full lineup under Online Classes.",
       "cta": "See all classes"
     }
+  },
+  "landing": {
+    "metaTitle": "Atelier Crème — Night Counter",
+    "metaDescription": "The atelier after hours. Keep Sowoo Kim's French pastry masterclasses for life.",
+    "scrub": {
+      "kicker": "Nocturne · Seoul · Paris",
+      "title1": "After the doors close,",
+      "title2": "the real lesson begins",
+      "desc": "Once the window lights go out, all that remains is the formula and the oven. Chef Sowoo Kim's VOD captures that night shift exactly as it runs.",
+      "scrollHint": "Scroll to finish the cake",
+      "beats": [
+        {
+          "title": "Texture comes from",
+          "emphasis": "the angle of your hand, not the recipe",
+          "body": "How high you hold the piping bag, and how slowly you turn the table, decides the grain of every rosette."
+        },
+        {
+          "title": "Where a single berry lands",
+          "emphasis": "decides the whole finish",
+          "body": "Finishing is sequence, not instinct. We show you the order the fruit goes on, too."
+        }
+      ],
+      "finaleTitle": "Start to finish,",
+      "finaleEmphasis": "not one step skipped",
+      "searchPlaceholder": "Search classes, desserts, techniques",
+      "searchAria": "Search classes",
+      "ctaEnter": "Enter the classes",
+      "ctaChef": "Meet the chef",
+      "stats": [
+        {
+          "value": "4,800+",
+          "label": "Students"
+        },
+        {
+          "value": "4.9",
+          "label": "Avg. rating"
+        },
+        {
+          "value": "Lifetime",
+          "label": "Access"
+        }
+      ]
+    },
+    "stations": {
+      "eyebrow": "Mise en place",
+      "title": "Three things before class",
+      "items": [
+        {
+          "no": "01",
+          "title": "Measure",
+          "body": "From flour protein to butter melting point. Numbers are locked so beginners can bake the same result."
+        },
+        {
+          "no": "02",
+          "title": "Cost",
+          "body": "Not a hobby recipe. You leave with formulas that shorten shop process and hold unit cost."
+        },
+        {
+          "no": "03",
+          "title": "Plate",
+          "body": "Plating and packaging as one editorial frame. The last move that turns taste into a brand."
+        }
+      ]
+    },
+    "carte": {
+      "eyebrow": "La carte",
+      "title": "Classes on the counter today",
+      "description": "The three highest-rated courses. Continue to the full lineup under Online Classes.",
+      "viewAll": "See the full menu",
+      "lifetime": "Lifetime access",
+      "rating": "Rated {rating}",
+      "empty": "No published classes right now.",
+      "openClass": "Open {title}"
+    },
+    "vitrine": {
+      "eyebrow": "Vitrine",
+      "title": "What students baked",
+      "items": [
+        {
+          "title": "Meringue cookies",
+          "credit": "Student archive"
+        },
+        {
+          "title": "Macarons",
+          "credit": "Student archive"
+        },
+        {
+          "title": "Tart",
+          "credit": "Student archive"
+        }
+      ]
+    },
+    "chef": {
+      "eyebrow": "Le chef",
+      "quote": "Without integrity of technique, flavor cannot be reproduced.",
+      "name": "Sowoo Kim",
+      "role": "Owner chef, Atelier Crème",
+      "body": "From Paris's Ritz Escoffier to a Hannam boutique and Taipei workshops. One person owns the measure, the bake, and the feedback.",
+      "cta": "Read more on About",
+      "photoAlt": "Chef Sowoo Kim"
+    },
+    "close": {
+      "eyebrow": "Fermeture",
+      "title": "Pay once. The night continues.",
+      "body": "Unlimited VOD, original formulas, chef feedback. Take the after-hours atelier home.",
+      "cta": "Enter masterclasses",
+      "ctaQuiz": "1-minute course match"
+    }
   }
 }

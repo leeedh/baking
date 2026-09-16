@@ -1,0 +1,262 @@
+/* /landing 후보 전용. 홈(`/`)의 아이보리·줌 히어로와 결을 갈라 둔다. */
+
+.font-landing {
+  font-family: var(--font-landing-display), "Pretendard", Georgia, serif;
+}
+
+.landing-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.landing-ticket {
+  position: relative;
+  background-color: var(--color-ivory);
+}
+
+.landing-ticket::before,
+.landing-ticket::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 14px;
+  pointer-events: none;
+  background: radial-gradient(circle, var(--color-hero-ink) 5px, transparent 5.5px) 0 0 / 14px 22px;
+}
+
+.landing-ticket::before {
+  left: -7px;
+}
+
+.landing-ticket::after {
+  right: -7px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-drift {
+    animation: landing-drift 22s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes landing-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+/* ── 스크롤 스크러빙 히어로 ────────────────────────────────────────────────
+ * 두 가지 레이아웃이 한 DOM을 공유한다.
+ *  · 기본(정적)     — SSR·JS 미실행·모션 감소. 영상 한 장 + 카피 세로 스택.
+ *  · [data-active]  — 훅이 마운트된 뒤에만. 400vh 트랙 + 핀 고정 + 겹친 카피.
+ * 숨김을 JS로만 적용하는 규약은 `useRevealOnScroll.ts`와 같다 —
+ * 스크립트가 죽어도 카피가 통째로 사라지면 안 된다.
+ */
+
+.landing-scrub {
+  /* 상시 액션 레이어가 차지하는 높이. 카피와 스크롤 힌트가 이만큼 위로 비켜선다.
+     640px 아래에서는 검색과 CTA가 세로로 쌓여 더 높다. */
+  --landing-actions-h: 8.5rem;
+}
+
+@media (min-width: 640px) {
+  .landing-scrub {
+    --landing-actions-h: 4.9rem;
+  }
+}
+
+.landing-scrub__pin {
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-scrub__video {
+  display: block;
+  width: 100%;
+  /* 정적 레이아웃에서 영상이 화면을 다 먹으면 h1이 첫 화면 밖으로 밀린다.
+     절반 높이로 잘라 두어야 제목과 카피가 스크롤 없이 읽힌다. */
+  height: 50svh;
+  object-fit: cover;
+}
+
+/* 좌우는 크림으로 눌러 카피를 띄우고, 가운데도 완전히 비우지 않는다.
+ * `transparent`로 두면 케이크가 밝은 프레임에서 10px 키커(gold-deep)와
+ * 9px 지표 라벨의 대비가 프레임마다 달라져 어떤 정적 검증으로도 보장되지 않는다.
+ * 이 구간 텍스트는 전부 밝은 면 기준(gold-deep·brown)이므로 스크림도 밝은 쪽으로 준다
+ * — 다크 스크림을 깔면 CTA·placeholder가 통째로 묻힌다(`LandingScrubHero.tsx` 주석 참조). */
+.landing-scrub__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  background: linear-gradient(
+    90deg,
+    var(--color-cream) 0%,
+    color-mix(in srgb, var(--color-cream) 45%, transparent) 26%,
+    color-mix(in srgb, var(--color-cream) 45%, transparent) 74%,
+    var(--color-cream) 100%
+  );
+}
+
+.landing-scrub__stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.landing-scrub__beat {
+  max-width: 34rem;
+}
+
+/* 스크럽이 꺼진 모든 경로(SSR·JS 미실행·모션 감소·로드 실패 강등)에서 카피는 반드시 보인다.
+ * 특히 강등은 rAF가 이미 인라인 불투명도를 써 둔 뒤에 일어나므로, 이 규칙이 없으면
+ * 폴백이 빈 화면이 된다. `[data-active]`가 붙기 전에는 비용도 없다. */
+.landing-scrub:not([data-active]) .landing-scrub__beat {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* 상시 액션 레이어 — 스크럽 진행률과 무관하게 검색·1차 CTA를 노출한다.
+ * 홈 `MeringueHero`의 #hero-fixed-action-bar와 같은 역할이다. 정적 레이아웃에서는
+ * 흐름에 그대로 두고, 활성일 때만 핀 **하단**에 띄운다(stage가 z-index 2라 그 위).
+ *
+ * **상단에 두지 말 것** — 핀이 sticky top:0으로 붙는 순간 사이트 헤더
+ * (`Header.tsx`의 `sticky top-0 z-40`) 아래로 들어가 통째로 가려진다. 헤더 높이는
+ * 뷰포트에 따라 61~169px로 출렁여(실측) 고정 오프셋으로 피할 수 없다.
+ * 하단은 그 충돌이 없고, 모바일에서는 엄지가 닿는 자리이기도 하다. */
+.landing-scrub__actions {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── 스크럽 활성 ─────────────────────────────────────────────────────────── */
+
+.landing-scrub[data-active] {
+  /* 스크롤 예산. 8초 영상에 화면 두 장 분량을 배정한다. */
+  height: 300vh;
+}
+
+/* 핀은 사이트 헤더 **아래**에 붙고, 프레임이 첫 화면을 넘지 않는 높이만 쓴다.
+ * `top: 0; height: 100svh`로 두면 두 가지가 동시에 깨진다 — 핀 상단이 헤더에 가리고,
+ * 스크롤 0에서는 프레임이 아직 밀려 있어 하단 액션 바가 접힌다(실측 101px 초과).
+ * 두 값은 `LandingScrubHero`의 효과가 실측해 넣는다(헤더 높이가 61~169px로 출렁인다). */
+.landing-scrub[data-active] .landing-scrub__pin {
+  position: sticky;
+  top: var(--landing-pin-top, 0px);
+  height: calc(100svh - var(--landing-pin-inset, 0px));
+}
+
+.landing-scrub[data-active] .landing-scrub__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.landing-scrub[data-active] .landing-scrub__stage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+}
+
+.landing-scrub[data-active] .landing-scrub__actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* 스크롤 힌트도 액션 레이어 위로 비켜선다. */
+.landing-scrub[data-active] .landing-scrub__hint {
+  bottom: calc(1.25rem + var(--landing-actions-h));
+}
+
+/* 활성 상태에선 카피가 같은 자리를 나눠 쓰며 교차 페이드한다. */
+.landing-scrub[data-active] .landing-scrub__beat {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  max-width: 32rem;
+  /* opacity는 rAF가 프레임마다 직접 쓴다. transition을 걸면 스크롤보다 늦게 따라온다. */
+}
+
+.landing-scrub[data-active] .landing-scrub__beat--top {
+  top: 4.5rem;
+}
+
+.landing-scrub[data-active] .landing-scrub__beat--bottom,
+.landing-scrub[data-active] .landing-scrub__beat--finale {
+  bottom: calc(3.5rem + var(--landing-actions-h));
+}
+
+@media (min-width: 640px) {
+  .landing-scrub[data-active] .landing-scrub__beat {
+    left: 3rem;
+    right: 3rem;
+  }
+
+}
+
+@media (min-width: 1024px) {
+  .landing-scrub[data-active] {
+    height: 400vh;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__beat {
+    left: 4rem;
+    right: auto;
+    max-width: 30rem;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__beat--top {
+    top: 6rem;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__beat--bottom,
+  .landing-scrub[data-active] .landing-scrub__beat--finale {
+    bottom: calc(4.5rem + var(--landing-actions-h));
+  }
+}
+
+/* 모션 감소 — 핀·스크럽을 통째로 포기한다. 훅도 이때는 마운트되지 않으므로
+ * [data-active]가 붙지 않지만, 혹시 붙더라도 정적 레이아웃이 이기게 둔다. */
+@media (prefers-reduced-motion: reduce) {
+  .landing-scrub[data-active] {
+    height: auto;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__pin {
+    position: relative;
+    height: auto;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__video {
+    position: relative;
+    height: 50svh;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__stage {
+    position: relative;
+    display: flex;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__beat {
+    position: relative;
+    inset: auto;
+    opacity: 1 !important;
+  }
+}

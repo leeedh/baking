@@ -338,6 +338,27 @@ export default function LessonCard({
         </div>
       )}
 
+      {/* DC-111 · 서버(웹훅)가 받아 적어 둔 인코딩 실패 사유.
+          업로드 직후의 인라인 메시지(upload)와 달리, 이건 운영자가 화면에 없을 때
+          실패한 경우에도 남는다 — 그래서 진행 중인 업로드가 없을 때만 보여 준다. */}
+      {!upload && lesson.muxError && (
+        <div className="mt-3 pl-8">
+          <div className="flex items-start justify-between gap-3 rounded border border-terracotta/30 bg-terracotta/5 px-2.5 py-2">
+            <span className="text-[11px] font-semibold text-terracotta-deep">
+              영상 처리 실패 · {lesson.muxError}
+            </span>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onPickVideo(lesson.id)}
+              className="text-[10px] font-bold text-terracotta underline shrink-0 disabled:opacity-50"
+            >
+              다시 올리기
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* DC-58 · 차시 실습 핵심 요약 참고서(PDF) */}
       <div className="mt-2 pl-8 space-y-1">
         {lesson.materials.map((m) => (

@@ -543,5 +543,113 @@
       "description": "수강생 평점이 가장 높은 세 개의 마스터 코스입니다. 전체 라인업은 온라인 클래스에서 확인하세요.",
       "cta": "전체 클래스 보기"
     }
+  },
+  "landing": {
+    "metaTitle": "Atelier Crème — 야간 카운터",
+    "metaDescription": "문이 닫힌 뒤의 아틀리에. 김소우 셰프의 프랑스 제과 마스터클래스를 평생 소장하세요.",
+    "scrub": {
+      "kicker": "Nocturne · Seoul · Paris",
+      "title1": "문이 닫힌 뒤,",
+      "title2": "진짜 수업이 시작됩니다",
+      "desc": "쇼윈도 불이 꺼진 시간, 남는 것은 배합표와 오븐뿐입니다. 김소우 셰프의 VOD는 그 밤의 공정을 그대로 담았습니다.",
+      "scrollHint": "스크롤해서 완성하기",
+      "beats": [
+        {
+          "title": "결을 만드는 건",
+          "emphasis": "레시피가 아니라 손의 각도입니다",
+          "body": "짤주머니를 어느 높이에서, 얼마나 느리게 돌리느냐가 로젠트의 결을 가릅니다."
+        },
+        {
+          "title": "한 알을 어디에 올리느냐가",
+          "emphasis": "완성도를 가릅니다",
+          "body": "마감은 감각이 아니라 순서입니다. 어떤 순서로 올리는지까지 그대로 보여 드립니다."
+        }
+      ],
+      "finaleTitle": "완성까지,",
+      "finaleEmphasis": "한 공정도 생략하지 않습니다",
+      "searchPlaceholder": "클래스, 디저트, 기법 검색",
+      "searchAria": "클래스 검색",
+      "ctaEnter": "클래스 입장",
+      "ctaChef": "셰프 소개",
+      "stats": [
+        {
+          "value": "4,800+",
+          "label": "수강생"
+        },
+        {
+          "value": "4.9",
+          "label": "평균 평점"
+        },
+        {
+          "value": "평생",
+          "label": "소장 기간"
+        }
+      ]
+    },
+    "stations": {
+      "eyebrow": "Mise en place",
+      "title": "수업 전에 놓는 세 가지",
+      "items": [
+        {
+          "no": "01",
+          "title": "계량",
+          "body": "밀가루 단백질부터 버터 융점까지. 초보자도 같은 결과물이 나오도록 숫자를 고정합니다."
+        },
+        {
+          "no": "02",
+          "title": "원가",
+          "body": "취미용 레시피가 아닙니다. 매장 공정을 줄이고 단가를 맞추는 배합을 함께 가져갑니다."
+        },
+        {
+          "no": "03",
+          "title": "연출",
+          "body": "플레이팅과 패키지까지 한 장의 에디토리얼처럼. 맛이 브랜드가 되는 마지막 한 수입니다."
+        }
+      ]
+    },
+    "carte": {
+      "eyebrow": "La carte",
+      "title": "오늘 올려 둔 클래스",
+      "description": "수강생 평점이 높은 세 코스입니다. 전체 라인업은 온라인 클래스에서 이어서 보세요.",
+      "viewAll": "전체 메뉴 보기",
+      "lifetime": "평생 소장",
+      "rating": "평점 {rating}",
+      "empty": "지금 게시된 클래스가 없습니다.",
+      "openClass": "{title} 클래스 열기"
+    },
+    "vitrine": {
+      "eyebrow": "Vitrine",
+      "title": "수강생이 구운 것들",
+      "items": [
+        {
+          "title": "머랭 쿠키",
+          "credit": "수강생 아카이브"
+        },
+        {
+          "title": "마카롱",
+          "credit": "수강생 아카이브"
+        },
+        {
+          "title": "타르트",
+          "credit": "수강생 아카이브"
+        }
+      ]
+    },
+    "chef": {
+      "eyebrow": "Le chef",
+      "quote": "기술의 무결성 없이는, 맛도 복제되지 않습니다.",
+      "name": "김소우",
+      "role": "Atelier Crème 오너 셰프",
+      "body": "파리 Ritz Escoffier에서 시작해 한남동 부티크와 타이베이 워크숍까지. 계량부터 피드백까지 한 사람이 책임집니다.",
+      "cta": "소개에서 더 읽기",
+      "photoAlt": "김소우 셰프"
+    },
+    "close": {
+      "eyebrow": "Fermeture",
+      "title": "한 번 결제하면, 밤은 계속됩니다",
+      "body": "수강 기한 없는 VOD, 원본 배합표, 셰프 피드백. 문을 닫은 뒤의 아틀리에를 집으로 가져가세요.",
+      "cta": "마스터클래스 입장",
+      "ctaQuiz": "1분 코스 진단"
+    }
   }
 }

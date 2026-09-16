@@ -15,3 +15,7 @@ tsconfig.tsbuildinfo
 # Playwright MCP (test artifacts)
 .playwright-mcp/
 .vercel
+
+# Python (에이전트 스킬 스크립트 실행 산출물)
+__pycache__/
+*.pyc

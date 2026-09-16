@@ -161,7 +161,7 @@ export async function getCourseEditor(courseId: string): Promise<AdminCourseEdit
     admin
       .from('lessons')
       .select(
-        'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id, mux_upload_id',
+        'id, title, chapter_index, chapter_title, order_index, duration_sec, is_preview, mux_playback_id, mux_upload_id, mux_error',
       )
       .eq('course_id', courseId)
       .order('order_index', { ascending: true }),
@@ -199,6 +199,9 @@ export async function getCourseEditor(courseId: string): Promise<AdminCourseEdit
     // 완료·실패 시 status 라우트가 null로 지우므로, 남아 있으면 곧 진행 중이라는 뜻이다.
     // 재생 ID 유무로 거르면 안 된다 — 영상 "교체" 업로드는 이미 재생 ID가 있는 차시에서 시작한다.
     pendingUploadId: l.mux_upload_id,
+    // DC-111 · 웹훅이 남긴 인코딩 실패 사유. 실패 시점에 운영자가 화면에 없었을 수 있어
+    // 응답이 아니라 DB에서 가져온다.
+    muxError: l.mux_error,
     materials: materialsByLesson[l.id] ?? [],
   }));
 

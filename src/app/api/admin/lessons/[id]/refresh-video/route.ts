@@ -1,10 +1,9 @@
 import { assertSameOrigin } from '@/lib/api/origin';
 import { problem, problemWithCause } from '@/lib/api/problem';
 import { requireAdmin } from '@/lib/auth/require-admin';
-import { CATALOG_TAG } from '@/lib/cache-tags';
 import { getAssetResult, getUploadResult } from '@/lib/mux/client';
+import { linkLessonVideo } from '@/lib/mux/link-lesson';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 
 /**
@@ -15,7 +14,7 @@ import { NextResponse } from 'next/server';
  * 올라가 있는데 차시에는 아무것도 안 남는다. 그러면 재생시간은 비고(--:--) 재생 토큰
  * 라우트는 409로 막아 **수강생이 영상을 못 본다**. 재업로드 말고는 되살릴 방법이 없었다.
  *
- * 이 라우트는 그 안전망이다. 근본 해결(웹훅)은 별도 이슈.
+ * 웹훅(DC-111)이 붙은 뒤에도 이 라우트는 남는다 — 통보가 유실되는 경우의 이중화다.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   // /api는 미들웨어 밖이라 Route Handler가 스스로 막아야 한다(TS-SEC CSRF).
@@ -88,17 +87,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const { error: updateError } = await admin
-    .from('lessons')
-    .update({
-      mux_asset_id: result.assetId,
-      mux_playback_id: result.playbackId,
-      mux_upload_id: null,
-      // 재생시간을 못 가져왔다면 기존 값을 덮지 않는다(손으로 넣어둔 값이 있을 수 있다).
-      ...(result.durationSec !== null ? { duration_sec: result.durationSec } : {}),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', lesson.id);
+  // 저장은 세 경로(폴링·수동 복구·웹훅)가 공유하는 linkLessonVideo가 전담한다 — 캐시
+  // 무효화와 완료 로그도 그 안에 있다.
+  const { error: updateError } = await linkLessonVideo(
+    lesson.id,
+    { assetId: result.assetId, playbackId: result.playbackId, durationSec: result.durationSec },
+    'refresh',
+  );
   if (updateError) {
     return problemWithCause(
       500,
@@ -108,9 +103,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       updateError,
     );
   }
-
-  // DC-51 · 재생 가능 여부와 재생시간은 상세 커리큘럼에 그대로 나간다.
-  revalidateTag(CATALOG_TAG);
 
   return NextResponse.json({
     ok: true,
