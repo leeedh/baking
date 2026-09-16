@@ -54,7 +54,7 @@ export default function LandingVitrine() {
                 </div>
                 <figcaption className="mt-3 flex items-baseline justify-between gap-3 border-t border-gold/25 pt-2">
                   <span className="font-landing text-sm text-cream">{item.title}</span>
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-gold/80">
+                  <span className="text-[10px] tracking-[0.18em] uppercase text-gold">
                     {item.credit}
                   </span>
                 </figcaption>

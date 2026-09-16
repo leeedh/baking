@@ -27,7 +27,19 @@ interface ScrollScrubResult {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   /** 스크럽이 실제로 동작 중인가. false면 정적 폴백을 그려야 한다. */
   active: boolean;
+  /**
+   * 모션 감소 설정이 켜져 있는가. 호출부가 `<video>` 자체를 포스터로 갈아끼우는 데 쓴다 —
+   * CSS로 숨기기만 하면 브라우저는 영상을 그대로 내려받는다.
+   */
+  reduced: boolean;
 }
+
+/**
+ * 이 시간 안에 첫 프레임이 디코딩되지 않으면 스크럽을 포기하고 정적 레이아웃으로 내려간다.
+ * iOS 저전력 모드는 `play()`를 거부하고 `preload`를 강등해 `loadeddata`가 영영 오지 않는데,
+ * 감지가 없으면 사용자는 포스터 정지화면을 보며 화면 세 장을 굴리게 된다.
+ */
+const LOAD_TIMEOUT_MS = 6000;
 
 /**
  * 스크롤 진행률을 <video>의 재생 위치에 연결한다(스크롤 스크러빙).
@@ -61,6 +73,7 @@ export function useScrollScrub({
   const trackRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
+  const [reduced, setReduced] = useState(false);
 
   // 콜백이 매 렌더 새로 만들어져도 효과가 재실행되지 않게 ref로 흘려보낸다.
   const onFrameRef = useRef(onFrame);
@@ -72,7 +85,10 @@ export function useScrollScrub({
     if (!track || !video) return;
 
     // 모션 감소: 스크럽·핀 연출을 통째로 포기하고 포스터 한 장으로 간다.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setReduced(true);
+      return;
+    }
 
     setActive(true);
 
@@ -81,6 +97,7 @@ export function useScrollScrub({
     let frame = 0;
     let visible = true;
     let ready = video.readyState >= 2;
+    let timer = 0;
 
     const readTarget = () => {
       const rect = track.getBoundingClientRect();
@@ -121,6 +138,10 @@ export function useScrollScrub({
 
     const onLoaded = () => {
       ready = true;
+      if (timer) {
+        clearTimeout(timer);
+        timer = 0;
+      }
       apply(current);
     };
     video.addEventListener('loadeddata', onLoaded);
@@ -145,20 +166,39 @@ export function useScrollScrub({
     window.addEventListener('scroll', kick, { passive: true });
     window.addEventListener('resize', kick);
 
+    const teardown = () => {
+      window.removeEventListener('scroll', kick);
+      window.removeEventListener('resize', kick);
+      video.removeEventListener('loadeddata', onLoaded);
+      observer.disconnect();
+      visible = false;
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      if (timer) {
+        clearTimeout(timer);
+        timer = 0;
+      }
+    };
+
+    // 첫 프레임이 끝내 오지 않으면 정적 레이아웃으로 강등한다. 이때 rAF가 이미 써 둔
+    // 인라인 불투명도가 카피를 숨긴 채로 남는데, `landing.css`의
+    // `.landing-scrub:not([data-active])` 규칙이 그걸 되돌린다.
+    if (!ready) {
+      timer = window.setTimeout(() => {
+        if (ready) return;
+        teardown();
+        setActive(false);
+      }, LOAD_TIMEOUT_MS);
+    }
+
     // 첫 프레임은 감쇠 없이 바로 맞춘다. 페이지 중간으로 바로 들어온 경우
     // (새로고침·앵커 이동) 0에서부터 굴러오면 엉뚱한 장면이 먼저 보인다.
     readTarget();
     current = target;
     apply(current);
 
-    return () => {
-      window.removeEventListener('scroll', kick);
-      window.removeEventListener('resize', kick);
-      video.removeEventListener('loadeddata', onLoaded);
-      observer.disconnect();
-      if (frame) cancelAnimationFrame(frame);
-    };
+    return teardown;
   }, [duration, fps, smoothing]);
 
-  return { trackRef, videoRef, active };
+  return { trackRef, videoRef, active, reduced };
 }

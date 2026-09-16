@@ -6,7 +6,7 @@ import { beatOpacity, clamp } from '@/lib/scrub/progress';
 import { Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * 스크럽 자산. 자체 촬영본으로 교체할 때 이 네 값만 바꾸면 된다.
@@ -86,11 +86,47 @@ export default function LandingScrubHero() {
     });
   }, []);
 
-  const { trackRef, videoRef, active } = useScrollScrub({
+  const { trackRef, videoRef, active, reduced } = useScrollScrub({
     duration: SCRUB_DURATION,
     fps: SCRUB_FPS,
     onFrame,
   });
+
+  /**
+   * 핀이 붙을 자리를 실측해 CSS 변수로 넘긴다.
+   * 사이트 헤더는 `sticky top-0 z-40`(`Header.tsx`)이고 높이가 뷰포트 폭에 따라
+   * 61~169px로 출렁인다(실측). 여기에 랜딩 프레임의 여백·테두리까지 더해지므로
+   * 고정 오프셋으로는 맞출 수 없다. 보정이 없으면 핀 상단이 헤더에 가리고,
+   * 스크롤 0에서 하단 액션 바가 첫 화면 밖으로 접힌다.
+   */
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const header = document.querySelector('header');
+
+    const sync = () => {
+      const headerHeight = header?.getBoundingClientRect().height ?? 0;
+      // 문서 기준 트랙 상단 = 스크롤 0에서 프레임이 밀려 있는 양.
+      const inset = track.getBoundingClientRect().top + window.scrollY;
+      track.style.setProperty('--landing-pin-top', `${Math.round(headerHeight)}px`);
+      track.style.setProperty('--landing-pin-inset', `${Math.round(inset)}px`);
+    };
+
+    sync();
+
+    // 리사이즈만 듣고 끝내면 안 된다 — 웹폰트가 늦게 도착하며 헤더가 한 번 더 커지는데
+    // (768px에서 내비가 두 줄로 접히며 80px → 169px, 실측) 그때 다시 재지 않으면
+    // 첫 화면에서 액션 바가 그만큼 잘린다. ResizeObserver가 그 리플로를 잡는다.
+    const observer = new ResizeObserver(sync);
+    if (header) observer.observe(header);
+    window.addEventListener('resize', sync);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', sync);
+    };
+  }, [trackRef]);
 
   const beats = t.raw('beats') as Beat[];
   const stats = t.raw('stats') as Stat[];
@@ -118,18 +154,33 @@ export default function LandingScrubHero() {
       data-active={active || undefined}
     >
       <div className="landing-scrub__pin bg-cream text-brown">
-        <video
-          ref={videoRef}
-          src={SCRUB_SRC}
-          poster={SCRUB_POSTER}
-          muted
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          aria-hidden="true"
-          tabIndex={-1}
-          className="landing-scrub__video"
-        />
+        {reduced ? (
+          /* 모션 감소: 스크럽을 포기한 사용자에게 7MB짜리 mp4를 내려보낼 이유가 없다.
+             CSS로 숨기기만 하면 브라우저는 그대로 받아 간다 — 요소 자체를 바꾼다. */
+          <img
+            src={SCRUB_POSTER}
+            alt=""
+            aria-hidden="true"
+            className="landing-scrub__video"
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            src={SCRUB_SRC}
+            poster={SCRUB_POSTER}
+            muted
+            playsInline
+            /* `auto`도 `metadata`도 첫 화면에서 7MB를 통째로 끌어온다 —
+               Chromium은 metadata에도 0부터 전체 범위를 range 요청한다(실측).
+               `none`이면 훅이 스크럽을 켜면서 부르는 play()까지 한 바이트도 받지 않고,
+               모션 감소 사용자는 아예 받지 않는다. 끝내 안 오면 훅이 정적으로 강등한다. */
+            preload="none"
+            disablePictureInPicture
+            aria-hidden="true"
+            tabIndex={-1}
+            className="landing-scrub__video"
+          />
+        )}
 
         {/* 좌우 비네트 — 가운데 케이크는 건드리지 않고 가장자리만 눌러 카피를 띄운다. */}
         <div aria-hidden className="landing-scrub__vignette" />
@@ -148,6 +199,38 @@ export default function LandingScrubHero() {
           다음 섹션(hero-ink)이 그대로 올라오는 편이 정직하다.
         */}
         <div className="landing-scrub__stage">
+          {/*
+            상시 액션 레이어 — 스크럽 진행률과 무관하게 항상 살아 있다.
+            검색과 1차 CTA를 finale(진행률 0.68 = 화면 두 장 남짓)에 가둬 뒀더니
+            첫 화면에서 아무 데도 갈 수 없었고, 키보드로는 아예 도달하지 못했다.
+            홈 `MeringueHero`의 #hero-fixed-action-bar와 같은 역할이다.
+            **여기에 둔 것을 finale에 복제하지 말 것** — finale가 열리는 순간
+            같은 aria-label을 가진 검색 입력이 두 개 노출된다.
+          */}
+          <div className="landing-scrub__actions flex flex-col sm:flex-row sm:items-center gap-3 px-6 py-4 sm:px-12 lg:px-16">
+            <form onSubmit={goSearch} className="relative flex-1 sm:max-w-xs">
+              <Search
+                size={14}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-gold-deep"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('searchPlaceholder')}
+                aria-label={t('searchAria')}
+                className="w-full border-0 border-b border-gold-deep/40 bg-transparent pl-7 pr-3 py-3 min-h-[44px] text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              />
+            </form>
+            <Link
+              href="/classes"
+              className="inline-flex items-center justify-center min-h-[44px] px-7 bg-brown text-cream text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-brown-deep transition-colors cursor-pointer"
+            >
+              {t('ctaEnter')}
+            </Link>
+          </div>
+
           {/* 01 — 진입. h1은 하나뿐이고 처음부터 보인다(LCP 텍스트). */}
           <div
             ref={setBeatRef(0)}
@@ -207,29 +290,9 @@ export default function LandingScrubHero() {
               ))}
             </dl>
 
-            <form onSubmit={goSearch} className="relative mt-6 max-w-md">
-              <Search
-                size={14}
-                className="absolute left-0 top-1/2 -translate-y-1/2 text-gold-deep"
-                aria-hidden
-              />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t('searchPlaceholder')}
-                aria-label={t('searchAria')}
-                className="w-full border-0 border-b border-gold-deep/40 bg-transparent pl-7 pr-3 py-3 min-h-[44px] text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-none focus-visible:border-gold-deep"
-              />
-            </form>
-
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/classes"
-                className="inline-flex items-center justify-center min-h-[44px] px-7 bg-brown text-cream text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-brown-deep transition-colors cursor-pointer"
-              >
-                {t('ctaEnter')}
-              </Link>
+            {/* 검색과 `ctaEnter`는 상시 액션 레이어로 올라갔다. 여기 남은 보조 CTA 하나만
+                inert가 가리므로, 투명한 동안 Tab 포커스가 빨려 들어가지 않는다. */}
+            <div className="mt-6">
               <Link
                 href="/about"
                 className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold-deep hover:bg-gold-deep/10 transition-colors cursor-pointer"
@@ -255,7 +318,7 @@ export default function LandingScrubHero() {
           <p
             ref={hintRef}
             aria-hidden
-            className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] uppercase text-brown-medium"
+            className="landing-scrub__hint pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] uppercase text-brown-medium"
           >
             {t('scrollHint')}
           </p>
