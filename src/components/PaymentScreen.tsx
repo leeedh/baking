@@ -1,5 +1,6 @@
 'use client';
 
+import { useProblemMessage } from '@/hooks/useProblemMessage';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { formatCount, formatKrw } from '@/lib/format';
@@ -45,6 +46,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
   const router = useRouter();
   const locale = useLocale() as 'ko' | 'en';
   const t = useTranslations('payment');
+  const describeProblem = useProblemMessage();
   const { user } = useAuth();
   const userEmail = user?.email ?? '';
   const supabase = useMemo<SupabaseClient<Database> | null>(() => {
@@ -169,10 +171,10 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
           couponCode: coupon?.code,
         }),
       });
-      const body = await res.json();
       if (!res.ok) {
-        throw new Error(body.detail ?? body.title ?? t('errOrderCreate'));
+        throw new Error(await describeProblem(res, t('errOrderCreate')));
       }
+      const body = await res.json();
 
       // 서버 산출 금액을 위젯에 최종 반영 후 결제창 호출
       await widgetsRef.current.setAmount({ currency: 'KRW', value: body.amount });

@@ -1,5 +1,6 @@
 'use client';
 
+import { useProblemMessage } from '@/hooks/useProblemMessage';
 import MuxPlayer from '@mux/mux-player-react';
 import { Loader2, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -28,6 +29,7 @@ export default function SecureVideoPlayer({
   title,
 }: SecureVideoPlayerProps) {
   const t = useTranslations();
+  const describeProblem = useProblemMessage();
   const [state, setState] = useState<TokenState>({ status: 'loading' });
   const { report, flush } = usePlaybackProgress(lessonId);
   const flushRef = useRef(flush);
@@ -43,15 +45,13 @@ export default function SecureVideoPlayer({
       body: JSON.stringify({ lessonId }),
     })
       .then(async (res) => {
-        const body = await res.json().catch(() => null);
-        if (!active) return;
         if (!res.ok) {
-          setState({
-            status: 'error',
-            message: body?.detail ?? t('common.videoLoadFailed'),
-          });
+          const message = await describeProblem(res, t('common.videoLoadFailed'));
+          if (active) setState({ status: 'error', message });
           return;
         }
+        const body = await res.json().catch(() => null);
+        if (!active) return;
         setState({ status: 'ready', playbackId: body.playbackId, token: body.token });
       })
       .catch(() => {
@@ -62,7 +62,7 @@ export default function SecureVideoPlayer({
     return () => {
       active = false;
     };
-  }, [lessonId, t]);
+  }, [lessonId, t, describeProblem]);
 
   // 언마운트 시 마지막 위치 저장 (이어보기).
   useEffect(() => {

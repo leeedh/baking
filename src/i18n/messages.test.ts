@@ -124,6 +124,9 @@ const I18N_DONE: string[] = [
   'landing/LandingVitrine.tsx',
   'landing/LandingChef.tsx',
   'landing/LandingClose.tsx',
+  // DC-33 · 결제 결과 화면(Toss success/fail 랜딩)
+  'checkout/CheckoutFailScreen.tsx',
+  'checkout/CheckoutSuccessScreen.tsx',
 ];
 
 /**
