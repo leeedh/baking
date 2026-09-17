@@ -3,6 +3,7 @@
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Field';
+import { useProblemMessage } from '@/hooks/useProblemMessage';
 import { Link } from '@/i18n/navigation';
 import { buttonClasses } from '@/lib/button-classes';
 import { cn } from '@/lib/cn';
@@ -33,6 +34,7 @@ interface InquiriesScreenProps {
 export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScreenProps) {
   const router = useRouter();
   const t = useTranslations('inquiries');
+  const describeProblem = useProblemMessage();
   const locale = useLocale() as 'ko' | 'en';
   const [category, setCategory] = useState<string>(DEFAULT_INQUIRY_CATEGORY);
   const [subject, setSubject] = useState('');
@@ -53,8 +55,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
         body: JSON.stringify({ category, subject, body }),
       });
       if (!res.ok) {
-        const problem = await res.json().catch(() => null);
-        setError(problem?.detail ?? t('errSubmit'));
+        setError(await describeProblem(res, t('errSubmit')));
         return;
       }
       setSubject('');

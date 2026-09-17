@@ -19,3 +19,6 @@ tsconfig.tsbuildinfo
 # Python (에이전트 스킬 스크립트 실행 산출물)
 __pycache__/
 *.pyc
+
+# Claude Code (머신별 로컬 권한 설정 — MCP 서버 활성화·execute_sql 등 개인 권한 포함)
+.claude/settings.local.json

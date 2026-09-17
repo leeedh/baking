@@ -2,6 +2,7 @@
 
 import SecureVideoPlayer from '@/components/player/SecureVideoPlayer';
 import { useToast } from '@/components/ui/Toast';
+import { useProblemMessage } from '@/hooks/useProblemMessage';
 import { useRouter } from '@/i18n/navigation';
 import { readError } from '@/lib/api/read-error';
 import { formatBytes } from '@/lib/format';
@@ -49,6 +50,7 @@ export default function PlayerScreen({
 }: PlayerScreenProps) {
   const router = useRouter();
   const t = useTranslations('player');
+  const describeProblem = useProblemMessage();
   const toast = useToast();
   const onNavigateBack = () => router.push(`/classes/${classId}`);
   // 재생 중인 차시는 URL이 소스다(코드리뷰 M-10). 예전에는 ?lesson=을 useState 초기값으로만
@@ -107,7 +109,7 @@ export default function PlayerScreen({
       });
       if (!res.ok) {
         setCompletedLessonIds((ids) => ids.filter((id) => id !== lesson.id));
-        setCompleteError(await readError(res));
+        setCompleteError(await describeProblem(res));
         return;
       }
       // 완강 여부의 진실은 서버가 정한다(진도 정책은 lib/progress/policy.ts).
@@ -129,8 +131,7 @@ export default function PlayerScreen({
     try {
       const res = await fetch(`/api/materials/${material.id}/download`);
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { detail?: string } | null;
-        setMaterialError(body?.detail ?? t('materialFailed'));
+        setMaterialError(await describeProblem(res, t('materialFailed')));
         return;
       }
       const { url } = (await res.json()) as { url: string };

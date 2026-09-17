@@ -1,5 +1,5 @@
 import { assertSameOrigin } from '@/lib/api/origin';
-import { problem } from '@/lib/api/problem';
+import { problem, problemWithCause } from '@/lib/api/problem';
 import { completePaidOrder } from '@/lib/payments/orders';
 import { shouldMarkOrderFailed } from '@/lib/payments/policy';
 import { confirmTossPayment } from '@/lib/payments/toss';
@@ -117,6 +117,8 @@ export async function POST(request: Request) {
       'toss-confirm-failed',
       'Payment confirmation failed',
       getTossFailureMessage(result.error.code, result.error.message),
+      // DC-33 · 화면이 실패 사유별 안내·CTA를 고르도록 Toss 코드를 확장 멤버로 싣는다.
+      { code: result.error.code },
     );
   }
   if (result.payment.status !== 'DONE') {
@@ -128,7 +130,13 @@ export async function POST(request: Request) {
     await completePaidOrder(admin, orderId, result.payment);
   } catch (e) {
     // 승인은 됐으나 발급 실패 — webhook 재시도로 복구 가능, 오류는 노출
-    return problem(500, 'grant-failed', 'Enrollment grant failed', (e as Error).message);
+    return problemWithCause(
+      500,
+      'grant-failed',
+      'Enrollment grant failed',
+      '결제는 승인됐지만 수강권 발급이 지연되고 있습니다. 잠시 후 보관함에서 확인해 주세요.',
+      e,
+    );
   }
   return NextResponse.json({ ok: true, courseId: claim.course_id });
 }

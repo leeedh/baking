@@ -1,6 +1,6 @@
 # Atelier Crème — 남은 작업 계획 (Implementation Plan)
 
-> **작성일**: 2026-07-08 · **개정**: 2026-07-29 (정보구조 개편·문의사항 정본 편입 — EPIC-M/N 신설) / 2026-07-27 (EPIC-C~G·L 완료, 도서·강사 정본화 반영 / Jira DC 동기화)
+> **작성일**: 2026-07-08 · **개정**: 2026-09-17 (Sprint 1 정리 — EPIC-E/H/J 상태 정정, 잔여를 Jira DC-113~115로 등록) / 2026-07-29 (정보구조 개편·문의사항 정본 편입 — EPIC-M/N 신설) / 2026-07-27 (EPIC-C~G·L 완료, 도서·강사 정본화 반영 / Jira DC 동기화)
 > **기준 문서**: PRD v1.1(정본) · TechSpec v1.1(정본) · DBSchema v1.0(정본) · UXGuide v2.0(as-built)
 > **목적**: 가이드 문서(목표 스펙)와 현재 코드(`src/`)를 비교해 **남은 구현 작업**을 정리한다.
 >
@@ -16,6 +16,8 @@
 > - 2026-07-25 **EPIC-D 환불** — 운영자 환불(PG 취소·수강권 회수·접근 차단, 커밋 `0a9a9f6`). = Jira DC-34/35, 스토리 DC-15 완료.
 > - 2026-07-27 **EPIC-L 착수** — 도서 외부 커머스 CTA 전환 + `books` 데이터 연동(`src/lib/books.ts`), 강사 소개 i18n화(`instructor.*` 메시지). = Jira DC-66/68 구현. DC-67은 실제 판매 URL 확보 대기(플레이스홀더 게이팅으로 CTA 비활성).
 > - 2026-08-12 **EPIC-I 성능 축 완료** — 카탈로그 캐싱(DC-51). 공개 조회를 `unstable_cache`+태그 `catalog`으로 감싸고 쓰기 라우트 6곳이 `revalidateTag`로 무효화. 쿠키 없는 `lib/supabase/public.ts` 신설, 상세는 공개부/세션부 분리. 홈 575ms→40ms. 회귀 방지 게이트 `lib/cache-tags.test.ts`(무효화 누락·캐시 내 쿠키 클라이언트 사용을 소스 스캔으로 차단).
+> - 2026-09-16 **Mux 웹훅(DC-111)** — 인코딩 완료를 폴링 대신 `POST /api/mux/webhook` 통보로 수신, 교체 업로드 경합 2건 처리. `/landing` 스크럽 히어로 후보 병합(`208c748`, noindex·내비 미연결).
+> - 2026-09-17 **Sprint 1 정리** — Jira 미완료 대조. DC-70·33·30·21은 완료 기준 미충족으로 코멘트만 기록(상태 유지). Jira에 없던 잔여를 DC-113(접근성)·DC-114(advisor 보안 지적)·DC-115(랜딩 채택 결정)로 등록.
 
 ---
 
@@ -109,7 +111,8 @@
 - 🔲 잔여: **결제→수강권 e2e 검증**(`SUPABASE_SERVICE_ROLE_KEY` 설정 대기), 실 가맹 키 교체, 웹훅 엔드포인트 등록(배포 후).
 - **참조**: PRD-F-04/04.1, PRD-NF-06, TS-ADR-05/08, TS-API-10/11/20, DB-T-05/06/09
 
-### EPIC-E · 보안 영상 재생 (P0)
+### EPIC-E · 보안 영상 재생 (P0) — ✅ **완료** (2026-07-24, 커밋 `1eae935` / Mux 웹훅 2026-09-16 DC-111 검토중)
+> 아래 목록은 착수 전 설계다. 실제 구현: `POST /api/playback/token`(명칭 변경) · `components/player/SecureVideoPlayer.tsx` · `WatermarkOverlay.tsx` · `POST /api/progress` · `POST /api/mux/webhook`. 잔여: 플레이어 키보드 단축키(DC-113), 실제 업로드→재생 사람 검증(CodeReview §12 #13).
 - `@mux/mux-player-react` 도입, `POST /api/video/playback-token`(수강권 확인 후 서명 JWT).
 - `<WatermarkOverlay>` — 사용자 식별자 부분 마스킹(`j***@e***`) 오버레이.
 - 다운로드/우클릭 방어, 비구매자 `is_preview` 차시만 재생.
@@ -146,7 +149,8 @@
 - ✅ **DC-67 완료(2026-07-28)**: 도서를 **추천 큐레이션**(외부 쿠팡 판매)으로 확정, 실제 쿠팡 파트너스 링크 2종(머랭 쿠키·마시멜로) 반영. MCP 데이터 쓰기 차단·정적 소수 도서 특성상 `books` 테이블 대신 **앱 상수 `src/lib/books-data.ts`**로 소스(파트너스 URL 원본 보존), `getBooks()`는 상수 읽도록 개편. 큐레이션 카피·파트너스 고지 문구 추가. 3번째 링크(9071474313)는 상품명 확보 후 추가 예정.
 - **참조**: PRD-F-18/F-19, TS-COMP-11/12, DB-T-10
 
-### EPIC-H · 환불 (P1)
+### EPIC-H · 환불 (P1) — ✅ **완료** (2026-07-25, 커밋 `0a9a9f6`, = Jira DC-34/35)
+- 구현: `POST /api/admin/orders/[id]/refund` + webhook 취소가 공유 `refundOrder`(`lib/payments/orders.ts`)로 전이. 잔여: 쿠폰 결제 후 취소 시 `redeemed_count` 원복 사람 검증(§12 #15).
 - 주문 취소 → `orders.status` 전이 + `enrollments.status='refunded'`(하드삭제 X) → `has_course_access` 자동 차단.
 - **참조**: PRD-F-12, DB-T-06 비고
 
@@ -155,19 +159,20 @@
 - ✅ **DC-55 `alert()` 제거**: `ui/Toast.tsx` 신설(오류=assertive·나머지=polite로 라이브 리전 분리, hover/focus 시 타이머 정지). 레이아웃에 마운트해 내비게이션을 넘어 살아남는다. `DashboardScreen`·`LessonManager`에 복제돼 있던 `runMutation`을 `hooks/useAdminMutation`으로 통합하고 없던 성공 채널을 추가.
 - ✅ **DC-56 색 대비**: `lib/color-contrast.ts` + 테스트가 `globals.css` 토큰을 직접 파싱해 WCAG AA를 잠근다. `gold-deep`이 cream 위 3.90:1로 미달이던 것을 `#89682d`(4.70:1)로 조정하고 밝은 배경의 `text-gold` 66줄을 전환. 모션 감소에서 로딩 스피너가 얼어붙던 문제는 `data-motion-essential` 예외로 해결. **모션 감소 자체는 이전에 이미 완료**(전역 CSS + JS 가드 2곳).
 - ✅ **DC-57 hover 토큰**: 재확인 결과 오타 `#B1863C`와 임의값 hex는 `src/`에서 이미 사라졌고 hover 정본은 `lib/button-classes.ts`다. UXGuide §1.2의 낡은 서술을 정정. 남은 투명도 변형 난립(`hover:bg-cream` 7종)은 시각 회귀 대비 이득이 낮아 **의도적 제외**.
-- 🔲 **잔여 접근성**: 플레이어 키보드 단축키, 모달 배경 `inert`(레이아웃 구조 변경 필요 — `aria-modal`로 스크린리더 요구는 충족), 표 인터랙티브 정렬(`aria-sort`).
+- 🔲 **잔여 접근성** → **Jira DC-113**: 플레이어 키보드 단축키, 모달 배경 `inert`(레이아웃 구조 변경 필요 — `aria-modal`로 스크린리더 요구는 충족), 표 인터랙티브 정렬(`aria-sort`).
 - ✅ **DC-51 카탈로그 캐싱**(2026-08-12): `getCatalog`·`getCourseSummary`·상세 공개부를 `unstable_cache`(태그 `catalog`, 1시간)로 감싸고, 카탈로그 반영 테이블(courses·lessons·reviews)에 쓰는 6개 라우트가 `revalidateTag`로 무효화한다. 캐시 대상은 쿠키를 읽지 않는 신규 `lib/supabase/public.ts`를 쓴다 — 쿠키 접근이 있으면 `unstable_cache` 안에서 쓸 수 없고 세션이 캐시에 섞인다. 상세는 공개부(코스·커리큘럼·후기)와 세션부(`canReview`·`myReview`)를 갈라 후자만 요청 시점에 조회한다. **실측: 홈 575ms→40ms, 목록 225ms→30ms, 상세 410ms→20ms.**
   - ⚠️ **TanStack Query는 의도적 제외** — 이 앱은 서버 상태를 전부 RSC로 가져오고 전역 클라이언트 스토어가 없다(TechSpec의 TanStack/Zustand는 to-be 표기이며 둘 다 미설치). 도입해도 캐싱을 맡길 소비처가 없어 ISR+태그로 대체했다.
   - ⚠️ **프리렌더는 별개 문제** — `setRequestLocale`을 레이아웃에 넣어 `/login`·`/instructor`가 처음으로 정적 생성됐지만, 홈·`/about`·`/books`는 여전히 빌드 산출물에 HTML이 없다(원인 미규명, DC-51 이전부터 그랬다). 위 수치의 출처는 정적 셸이 아니라 Data Cache다.
 - **성능 잔여**: DB 인덱스/RLS 최적화, 홈·소개 페이지 프리렌더 미달 원인 규명.
 - **에러(P0)**: RFC 7807 응답, Error Boundary, 결제 실패 사유별 다국어 메시지.
-- **보안(P0)**: Zod 입력검증(모든 Route Handler), 시크릿 서버 전용 분리.
+- **보안(P0)**: ✅ Zod 입력검증·Problem Details 적용. 🔲 Supabase advisor 지적(`course_catalog` SECURITY DEFINER 뷰, RPC anon 실행 권한) → **Jira DC-114**, Auth 설정 점검 → DC-30.
 - **관측성(P1)**: Sentry, Supabase Logs, 분석 이벤트(PRD-M-01~05).
 - **참조**: PRD-NF-01/02/08, TS §6
 
 ### EPIC-J · 개발 인프라 (P0 병행)
 - ✅ **pnpm, Biome** 전환 완료(EPIC-A). ✅ Supabase CLI 마이그레이션 구조(`supabase/migrations/`) 도입(EPIC-B).
-- 🔲 남은 것: Husky+lint-staged, Vitest(단위) + Playwright(결제·시청 E2E), CI/CD 파이프라인, Vercel 환경 분리.
+- ✅ **Vitest** 도입(15파일 231건, 2026-09-17). 단 DC-70 수용 기준(쿠폰·수강권 멱등·금액 조작 테스트)은 DB RPC에 묶여 미충족.
+- 🔲 남은 것: Husky+lint-staged(DC-69), Playwright(결제·시청 E2E, DC-71·72), CI/CD 파이프라인·Vercel 환경 분리(DC-73).
 - **참조**: TS §1.4, §7
 
 ### EPIC-K · i18n 완성 (P1) — ✅ **화면 문구 완료**(2026-08-05, = Jira DC-62·63·64·65)
@@ -232,7 +237,7 @@
 ## 5. 선결 결정 사항 (Open Decisions)
 
 1. ~~**아키텍처 경로**~~ → ✅ **해소**: Next.js 15 App Router 이관 완료(EPIC-A).
-2. **범위/속도** — 프레임워크→데이터→인증→결제 순으로 진행 완료. 다음은 EPIC-E(보안 영상).
+2. **범위/속도** — 기능 EPIC(A~N) 구현 완료. 다음은 **결제 GA 경로**(DC-33·109 → DC-31 사람 e2e) → 운영 안전망(DC-73·53·69·30·114) → 품질(DC-71·72·21·108·113).
 3. **결제 계정** — ✅ 개발은 **테스트(샌드박스) 키**로 진행(실결제 없음). 실 가맹(해외카드 MID) 계약 후 `live_` 키 교체 + 웹훅 URL 등록 필요(GA 전).
 4. ~~**Supabase 계정**~~ → ✅ **해소**: `sowoo` 프로젝트(`ptwgrmdtzdphervuanxi`)에 스키마 적용. **Mux 계정**은 EPIC-E 착수 전 필요(별도 미해결). 로컬 검증용 Docker는 미설치(2026-07-08 확인) — 원격 프로젝트로 대체 검증 중.
 5. **도서 외부 커머스 URL** — 네이버쇼핑/쿠팡 실제 판매 링크 미확보. `books.external_purchase_url`은 현재 시드에 **플레이스홀더**로 입력됨 → 실값 확보 후 갱신 필요.

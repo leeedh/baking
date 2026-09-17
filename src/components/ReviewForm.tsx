@@ -1,6 +1,6 @@
 'use client';
 
-import { readError } from '@/lib/api/read-error';
+import { useProblemMessage } from '@/hooks/useProblemMessage';
 import type { MyReview } from '@/types';
 import { Star } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -17,6 +17,7 @@ type Props = {
 
 export default function ReviewForm({ courseId, canReview, myReview }: Props) {
   const t = useTranslations();
+  const describeProblem = useProblemMessage();
   const router = useRouter();
   const [rating, setRating] = useState(myReview?.rating ?? 5);
   const [content, setContent] = useState(myReview?.content ?? '');
@@ -45,7 +46,7 @@ export default function ReviewForm({ courseId, canReview, myReview }: Props) {
           });
     setBusy(false);
     if (!res.ok) {
-      setError(await readError(res));
+      setError(await describeProblem(res));
       return;
     }
     if (method === 'DELETE') {

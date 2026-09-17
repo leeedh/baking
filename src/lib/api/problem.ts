@@ -1,9 +1,22 @@
 import { NextResponse } from 'next/server';
+import { PROBLEM_TYPE_BASE } from './problem-type-base';
 
-/** RFC 7807 Problem Details 응답 (TS §4.4). */
-export function problem(status: number, type: string, title: string, detail?: string) {
+/**
+ * RFC 7807 Problem Details 응답 (TS §4.4).
+ *
+ * `detail`은 한국어 고정이다 — 라우트는 로케일을 모른다(DC-109). 고객 화면은 `detail`을
+ * 그대로 띄우지 말고 `type`으로 메시지 카탈로그를 고를 것. `extensions`는 RFC 7807의
+ * 확장 멤버로, 화면이 더 세밀하게 안내해야 할 때(예: Toss 실패 `code`)만 싣는다.
+ */
+export function problem(
+  status: number,
+  type: string,
+  title: string,
+  detail?: string,
+  extensions?: Record<string, string | number>,
+) {
   return NextResponse.json(
-    { type: `https://ateliercreme.example/errors/${type}`, title, status, detail },
+    { ...extensions, type: `${PROBLEM_TYPE_BASE}${type}`, title, status, detail },
     { status, headers: { 'Content-Type': 'application/problem+json' } },
   );
 }

@@ -651,5 +651,54 @@
       "cta": "Enter masterclasses",
       "ctaQuiz": "1-minute course match"
     }
+  },
+  "errors": {
+    "generic": "We could not process your request. Please try again shortly.",
+    "network": "A network error prevented the request. Check your connection and try again.",
+    "unauthorized": "Please sign in again to continue.",
+    "forbidden": "This request is not allowed. Refresh the page and try again.",
+    "invalidRequest": "Some of the information is invalid. Please check and try again.",
+    "noAccess": "You do not have access to this lesson. Please check your enrollment.",
+    "notEnrolled": "Only students enrolled in this class can leave a review.",
+    "courseNotFound": "We could not find this class.",
+    "orderNotFound": "We could not find this order. Please reopen the checkout page.",
+    "lessonNotFound": "We could not find this lesson.",
+    "materialNotFound": "We could not find this material.",
+    "reviewNotFound": "We could not find your review.",
+    "reviewExists": "You have already reviewed this class.",
+    "invalidCoupon": "This coupon is not valid.",
+    "alreadyEnrolled": "You already own this class. This order was not charged.",
+    "alreadyPaid": "This class is already paid for. Check your library in a moment.",
+    "paymentInProgress": "A payment for this class is in progress. Check your library in a moment.",
+    "orderInvalidState": "This order can no longer be paid. Please reopen the checkout page.",
+    "amountMismatch": "The payment amount does not match the order. Please reopen the checkout page.",
+    "grantDelayed": "Your payment was approved, but access is taking longer than usual. Check your library in a moment.",
+    "videoNotReady": "This video is not ready yet.",
+    "videoUnavailable": "Video playback is unavailable right now. Please try again shortly.",
+    "toss": {
+      "canceled": "The payment was canceled. You can try again whenever you are ready.",
+      "sessionExpired": "The payment session expired. Please start the payment again.",
+      "cardRejected": "Your card issuer declined the payment. Check your card details or use a different card or payment method.",
+      "limitExceeded": "The payment exceeded your limit or balance. Please use a different card or payment method.",
+      "authFailed": "Card authentication (such as 3D Secure) failed. Please retry the verification or use a different card.",
+      "network": "A temporary error occurred during payment. You were not charged — please try again.",
+      "config": "There is a problem with our payment setup. We apologize — please let us know via Inquiries.",
+      "unknown": "The payment was not approved. Please try again or use a different payment method."
+    }
+  },
+  "checkout": {
+    "failTitle": "Payment failed",
+    "errorCode": "Error code {code}",
+    "ctaRetry": "Try payment again",
+    "ctaOtherMethod": "Pay with another card or method",
+    "ctaContact": "Contact us",
+    "ctaBackToClass": "Back to class",
+    "confirmingTitle": "Confirming payment and issuing access...",
+    "confirmingBody": "We are verifying the payment amount on our server. Please wait a moment.",
+    "doneTitle": "Your lifetime access is ready!",
+    "doneBody": "Taking you to My Classes...",
+    "errorTitle": "We could not complete your payment",
+    "errInvalidParams": "The payment approval details are invalid. Please start the payment again.",
+    "errPending": "This payment is awaiting deposit. Access will be issued automatically once it is confirmed."
   }
 }
