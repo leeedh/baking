@@ -672,6 +672,8 @@ erDiagram
 | DB-F-02 | `is_admin` | `() returns boolean` | definer | RLS 관리자 판별 헬퍼 | TS-SEC-02 |
 | DB-F-03 | `has_course_access` | `(p_course_id uuid) returns boolean` | definer | 수강권 보유 여부(영상/자료 RLS) | TS-SEC-02, TS-API-12 |
 
+> **DC-114 개정(2026-09-18, `20260918063055_advisor_security_hardening`)**: DB-F-02/03의 DEFINER 구현은 API 비노출 스키마 `private.is_admin()`·`private.has_course_access()`로 이동했고, **RLS 정책은 `private.*`를 직접 참조**한다. `public.is_admin`/`has_course_access`는 앱 RPC용 **INVOKER 래퍼**(authenticated 전용, anon 실행 불가)다. `reorder_lessons`는 INVOKER(운영자 쓰기는 `lessons_admin_modify`가 허용), `course_catalog`는 `security_invoker = on`이며 RLS에 가려지는 집계(수강생 수·차시 수·총 길이)만 `private.course_public_stats()`가 계산한다. `validate_coupon`은 `coupons`가 운영자 전용 테이블이라 의도적으로 DEFINER 유지(authenticated만). 아래 SQL은 최초 설계 기록이다.
+
 ```sql
 -- DB-F-02: 관리자 판별
 create or replace function public.is_admin()
