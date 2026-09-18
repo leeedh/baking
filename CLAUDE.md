@@ -82,6 +82,7 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 
 ### API conventions
 - Errors use RFC 7807 Problem Details via `problem(status, type, title, detail)` (`lib/api/problem.ts`); `detail` is Korean, user-facing.
+- 라우트는 로케일을 모른다(미들웨어가 `/api` 제외) — 고객 화면에 노출되는 새 오류 `type`을 추가하면 `lib/api/problem-client.ts`의 `TYPE_TO_KEY`에 매핑을 더하고 `messages/{ko,en}.json`의 `errors.*`에 키를 채울 것. 화면은 `detail`을 직접 쓰지 말고 `useProblemMessage()`(`describeProblem(res, fallback)`)로 문구를 골라야 한다(DC-109). 운영자 콘솔은 예외 — 한국어 단일 사용자라 기존 `readError`(detail 그대로 표시)를 계속 쓴다.
 - Request bodies validated with **Zod** (v4). Use `z.guid()` for Postgres UUIDs, **not** `z.uuid()` — Zod v4's `z.uuid()` validates RFC 4122 variant/version bits and rejects otherwise-valid Postgres UUIDs.
 
 ### i18n
