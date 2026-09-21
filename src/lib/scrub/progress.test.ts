@@ -51,6 +51,19 @@ describe('scrollProgress', () => {
     expect(scrollProgress(-99999, TRACK, VIEW)).toBe(1);
   });
 
+  it('세 번째 인자는 뷰포트가 아니라 핀의 실측 높이다', () => {
+    // 핀 높이는 `calc(100svh - inset)`이라 뷰포트보다 항상 낮다. 여기에
+    // `window.innerHeight`를 넣으면 예산이 inset만큼 짧게 잡혀 진행률이 1에 닿기 전에
+    // 핀이 풀린다(모바일에서는 주소창까지 겹쳐 더 벌어진다).
+    const PIN = 800; // 뷰포트 1000 - 헤더/여백 200
+    expect(scrollProgress(-(TRACK - PIN), TRACK, PIN)).toBe(1);
+    // 같은 스크롤 위치를 뷰포트 높이로 재면 이미 1을 넘겨 잘린 상태다.
+    expect(scrollProgress(-(TRACK - PIN), TRACK, VIEW)).toBe(1);
+    // 그리고 그 직전 구간에서 두 기준은 서로 다른 진행률을 준다.
+    expect(scrollProgress(-1600, TRACK, PIN)).toBeCloseTo(0.5, 5);
+    expect(scrollProgress(-1600, TRACK, VIEW)).toBeCloseTo(0.5333, 4);
+  });
+
   it('트랙이 뷰포트보다 짧으면 0으로 고정한다', () => {
     // 예산이 0 이하면 -rectTop/0 = Infinity 가 되어 진행률이 튄다.
     expect(scrollProgress(-100, 600, 1000)).toBe(0);
