@@ -39,6 +39,8 @@ Three Supabase clients, deliberately separate:
 
 Because `service_role` bypasses RLS, **RLS is never the sole gate**. Admin API routes must call `requireAdmin()` (`lib/auth/require-admin.ts`) at the app layer; the DB `is_admin()` RLS is only a backstop. Sensitive reads use **double defense**: RLS gates the row (e.g. `lessons_select_guarded`) *and* the route re-checks access (e.g. `has_course_access()` RPC in the playback route).
 
+**RLS 헬퍼는 `private` 스키마에 있다(DC-114)**: DEFINER 구현은 PostgREST에 노출되지 않는 `private.is_admin()`·`private.has_course_access()`이고, **새 RLS 정책은 반드시 `private.*`를 참조할 것** — `public.is_admin`/`has_course_access`는 anon 실행권이 없는 INVOKER 래퍼라 정책에 쓰면 비로그인 조회가 `permission denied`로 깨진다. `public`에 새 SECURITY DEFINER 함수를 만들면 advisor가 다시 지적하므로, 앱이 RPC로 부를 필요가 없으면 `private`에 둘 것.
+
 `middleware.ts` refreshes the Supabase session cookie on every non-API request and runs next-intl locale routing on the **same** response object. Its `matcher` deliberately excludes `/api` and `/auth` — so route handlers get **no** middleware auth/CSRF protection and must guard themselves. 성능상 미들웨어는 **`sb-*-auth-token` 쿠키가 있을 때만** `getUser()`(Auth 서버 왕복)를 호출한다 — 비로그인 이동에서 매번 왕복하지 않도록.
 
 ### CSRF / same-origin
