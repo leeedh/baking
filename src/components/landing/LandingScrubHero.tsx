@@ -86,11 +86,38 @@ export default function LandingScrubHero() {
     });
   }, []);
 
-  const { trackRef, videoRef, active, reduced } = useScrollScrub({
+  const { trackRef, videoRef, active, reduced, readDiagnostics } = useScrollScrub({
     duration: SCRUB_DURATION,
     fps: SCRUB_FPS,
     onFrame,
   });
+
+  /**
+   * `?debug=scrub` 진단 배지.
+   *
+   * 실기기 모바일에서 스크럽이 정적 폴백으로 내려앉았는데, 원격 디버깅(chrome://inspect)이
+   * 불가능한 환경이라 원인을 좁힐 근거가 없었다. 이 배지는 훅의 판정 근거를 화면에 띄워
+   * 기기에서 눈으로 확인하게 한다. 쿼리가 없으면 트리 자체를 만들지 않는다.
+   *
+   * `useSearchParams()`를 쓰지 않는 이유 — Next 15에서 Suspense 경계를 요구해 이 페이지의
+   * 프리렌더를 통째로 흔든다. 진단 도구 하나 때문에 라우트 렌더 모드를 바꿀 이유가 없다.
+   * 라벨을 한국어로 쓰지 않는 것도 의도다(`messages.test.ts`의 하드코딩 한글 검사 대상).
+   */
+  const [debug, setDebug] = useState<string | null>(null);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('debug') !== 'scrub') return;
+    const tick = () => {
+      const d = readDiagnostics();
+      setDebug(
+        `${d.phase} · ${d.reason} · rs=${d.readyState} ns=${d.networkState} ` +
+          `buf=${d.buffered.toFixed(2)}s play=${d.playRejection ?? 'ok'} ` +
+          `vv=${Math.round(window.visualViewport?.height ?? 0)} ih=${window.innerHeight}`,
+      );
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [readDiagnostics]);
 
   /**
    * 핀이 붙을 자리를 실측해 CSS 변수로 넘긴다.
@@ -121,10 +148,14 @@ export default function LandingScrubHero() {
     const observer = new ResizeObserver(sync);
     if (header) observer.observe(header);
     window.addEventListener('resize', sync);
+    // 모바일 주소창이 접히고 펼쳐질 때 `resize`가 항상 오지는 않는다(실측).
+    // 그때 핀 높이가 바뀌므로 여기서도 다시 재야 액션 바가 첫 화면 밖으로 밀리지 않는다.
+    window.visualViewport?.addEventListener('resize', sync);
 
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', sync);
+      window.visualViewport?.removeEventListener('resize', sync);
     };
   }, [trackRef]);
 
@@ -157,12 +188,7 @@ export default function LandingScrubHero() {
         {reduced ? (
           /* 모션 감소: 스크럽을 포기한 사용자에게 7MB짜리 mp4를 내려보낼 이유가 없다.
              CSS로 숨기기만 하면 브라우저는 그대로 받아 간다 — 요소 자체를 바꾼다. */
-          <img
-            src={SCRUB_POSTER}
-            alt=""
-            aria-hidden="true"
-            className="landing-scrub__video"
-          />
+          <img src={SCRUB_POSTER} alt="" aria-hidden="true" className="landing-scrub__video" />
         ) : (
           <video
             ref={videoRef}
@@ -172,8 +198,10 @@ export default function LandingScrubHero() {
             playsInline
             /* `auto`도 `metadata`도 첫 화면에서 7MB를 통째로 끌어온다 —
                Chromium은 metadata에도 0부터 전체 범위를 range 요청한다(실측).
-               `none`이면 훅이 스크럽을 켜면서 부르는 play()까지 한 바이트도 받지 않고,
-               모션 감소 사용자는 아예 받지 않는다. 끝내 안 오면 훅이 정적으로 강등한다. */
+               `none`이면 훅이 트랙을 화면에서 만나 load()를 부를 때까지 한 바이트도 받지
+               않고, 모션 감소 사용자는 아예 받지 않는다. 끝내 안 오면 훅이 정적으로 강등한다.
+               **로딩 트리거를 play()로 되돌리지 말 것** — 모바일 Chrome이 미디어 정책으로
+               거부하면 요청 자체가 사라져 스크럽이 통째로 죽는다(`useScrollScrub.ts` 참조). */
             preload="none"
             disablePictureInPicture
             aria-hidden="true"
@@ -232,10 +260,7 @@ export default function LandingScrubHero() {
           </div>
 
           {/* 01 — 진입. h1은 하나뿐이고 처음부터 보인다(LCP 텍스트). */}
-          <div
-            ref={setBeatRef(0)}
-            className="landing-scrub__beat landing-scrub__beat--top"
-          >
+          <div ref={setBeatRef(0)} className="landing-scrub__beat landing-scrub__beat--top">
             <p className="text-[10px] font-bold tracking-[0.38em] uppercase text-gold-deep">
               {t('kicker')}
             </p>
@@ -311,6 +336,12 @@ export default function LandingScrubHero() {
           >
             <div ref={meterRef} className="h-full w-px origin-top scale-y-0 bg-gold-deep" />
           </div>
+        )}
+
+        {debug && (
+          <p className="pointer-events-none absolute left-2 right-2 top-2 z-50 bg-brown/90 px-2 py-1 font-mono text-[10px] leading-snug text-cream break-all">
+            {debug}
+          </p>
         )}
 
         {/* 스크롤 힌트 — 시작 부근에서만. */}
