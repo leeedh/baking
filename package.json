@@ -10,7 +10,8 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepare": "husky"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -38,6 +39,8 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
     "postcss": "^8.4.49",
     "supabase": "^2.109.1",
     "tailwindcss": "^4.1.14",
@@ -45,9 +48,6 @@
     "vitest": "^4.1.10"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "sharp"
-    ]
+    "onlyBuiltDependencies": ["@biomejs/biome", "sharp"]
   }
 }

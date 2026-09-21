@@ -18,6 +18,7 @@ Package manager is **pnpm** (enforced by `vercel.json` and the `pnpm` block in `
 - `pnpm lint` — Biome check. **주의: 커밋된 파일이 CRLF라 리포 전체에서 `format` 에러로 실패한다(main도 동일, pre-existing).** 실제 지적만 보려면 **`npx biome check --formatter-enabled=false <경로>`** — CRLF 노이즈가 걷히고 lint/organizeImports 위반만 남는다.
 - **`biome check --write`를 디렉터리에 돌리지 말 것** — 손대지 않은 파일의 import까지 정렬해 diff를 오염시킨다. 변경한 파일만 명시할 것.
 - `pnpm typecheck` — `tsc --noEmit`
+- **pre-commit 훅(DC-69)**: Husky + `lint-staged.config.mjs` — 스테이징된 파일에만 `biome check --write`(수정분은 자동 재스테이징), TS가 스테이징됐으면 `tsc --noEmit`을 한 번 돈다(증분 캐시로 ~15초). `core.autocrlf=true`라 인덱스엔 LF로 들어가 CRLF 노이즈는 커밋에 섞이지 않는다. 훅을 건너뛰지(`--no-verify`) 말고 지적을 고칠 것.
 - `pnpm test` — Vitest(`vitest run`). 순수 판정 로직만 대상이며 DB·네트워크에 의존하지 않는다(`vitest.config.ts` 주석 참조).
 - `pnpm format` 존재하나 **리포 전체 실행 금지**(CRLF로 대량 diff). 포맷은 변경 파일에만 개별 적용.
 - **변경 검증 순서**: `pnpm typecheck` → `pnpm test` → `pnpm build` → `PORT=3100 pnpm start` → curl 스모크 → **포트 해제 확인**. 마지막을 빠뜨리면 다음 회차가 구 빌드를 측정한다.
