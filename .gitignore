@@ -28,3 +28,13 @@ __pycache__/
 /playwright-report/
 /blob-report/
 /.playwright/
+
+# Motion 스킬·에이전트 설치 자산 (벤더 CLI가 생성·갱신한다)
+#
+# `.claude/agents/*.md`·`.claude/skills/*`는 이 리포가 추적하는 관례지만(code-reviewer·
+# senior-architect 등), motion 자산은 `npx skills`/벤더 CLI가 통째로 재생성하므로
+# 추적하지 않는다. 다른 사람이 받아야 하면 설치 명령을 안내할 것.
+.agents/
+.cursor/
+.claude/skills/motion/
+.claude/agents/motion-reviewer.md
