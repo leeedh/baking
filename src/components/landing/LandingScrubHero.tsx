@@ -132,12 +132,21 @@ export default function LandingScrubHero() {
 
     const header = document.querySelector('header');
 
+    let lastTop = Number.NaN;
+    let lastInset = Number.NaN;
+
     const sync = () => {
-      const headerHeight = header?.getBoundingClientRect().height ?? 0;
+      const headerHeight = Math.round(header?.getBoundingClientRect().height ?? 0);
       // 문서 기준 트랙 상단 = 스크롤 0에서 프레임이 밀려 있는 양.
-      const inset = track.getBoundingClientRect().top + window.scrollY;
-      track.style.setProperty('--landing-pin-top', `${Math.round(headerHeight)}px`);
-      track.style.setProperty('--landing-pin-inset', `${Math.round(inset)}px`);
+      const inset = Math.round(track.getBoundingClientRect().top + window.scrollY);
+      // 값이 그대로면 쓰지 않는다 — `--landing-pin-inset`은 핀의 `height: calc()`에 물려
+      // 있어, 같은 값을 다시 써도 레이아웃이 무효화된다. 이 효과는 읽기 직후 쓰는
+      // read→write라 연속 발화 구간에서 강제 동기 레이아웃이 이벤트마다 걸린다.
+      if (headerHeight === lastTop && inset === lastInset) return;
+      lastTop = headerHeight;
+      lastInset = inset;
+      track.style.setProperty('--landing-pin-top', `${headerHeight}px`);
+      track.style.setProperty('--landing-pin-inset', `${inset}px`);
     };
 
     sync();
@@ -148,14 +157,18 @@ export default function LandingScrubHero() {
     const observer = new ResizeObserver(sync);
     if (header) observer.observe(header);
     window.addEventListener('resize', sync);
-    // 모바일 주소창이 접히고 펼쳐질 때 `resize`가 항상 오지는 않는다(실측).
-    // 그때 핀 높이가 바뀌므로 여기서도 다시 재야 액션 바가 첫 화면 밖으로 밀리지 않는다.
-    window.visualViewport?.addEventListener('resize', sync);
+
+    // **`visualViewport`의 resize는 일부러 듣지 않는다.** 두 값 모두 주소창과 무관하다 —
+    // `--landing-pin-top`은 헤더 높이(뷰포트 **폭**과 폰트에만 의존), `--landing-pin-inset`은
+    // 랜딩 프레임의 여백(정적 레이아웃 값)이다. 반면 `inset`의 측정식
+    // `rect.top + scrollY`는 시각 뷰포트가 애니메이션 중이 아닐 때만 유효하다 —
+    // 모바일 Chrome이 주소창을 접는 동안 `rect.top`은 그 오프셋을 따라가는데 `scrollY`는
+    // 레이아웃 뷰포트 기준이라 둘이 어긋나고, 오염된 inset이 핀 높이에 그대로 반영돼
+    // 몇 프레임 출렁인다(사용자 보고 "덜컹"). 다시 추가하지 말 것.
 
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', sync);
-      window.visualViewport?.removeEventListener('resize', sync);
     };
   }, [trackRef]);
 

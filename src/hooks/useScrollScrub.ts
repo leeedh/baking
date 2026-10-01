@@ -165,14 +165,22 @@ export function useScrollScrub({
      * 모바일의 `innerHeight`는 주소창 상태에 따라 `svh`~`lvh` 사이에서 출렁여
      * 진행률이 1에 닿지 못하거나 일찍 포화된다(데스크톱에서도 inset만큼 어긋났다).
      */
-    const pinHeight = () => {
-      const pin = track.querySelector<HTMLElement>('.landing-scrub__pin');
-      return pin?.getBoundingClientRect().height || window.innerHeight;
+    const pin = track.querySelector<HTMLElement>('.landing-scrub__pin');
+
+    /**
+     * 분모는 캐시한다. 트랙(`300vh`)도 핀(`calc(100svh - inset)`)도 주소창 상태에
+     * 면역인 단위라, 스크롤·주소창 전환마다 다시 잴 이유가 없다. 실제로 바뀌는 경우
+     * (폭 변경·늦은 폰트 리플로)는 아래 `resize`와 핀 ResizeObserver가 잡는다.
+     */
+    let pinHeight = 0;
+    const measurePin = () => {
+      pinHeight = pin?.getBoundingClientRect().height || window.innerHeight;
     };
+    measurePin();
 
     const readTarget = () => {
       const rect = track.getBoundingClientRect();
-      target = scrollProgress(rect.top, rect.height, pinHeight());
+      target = scrollProgress(rect.top, rect.height, pinHeight);
     };
 
     const apply = (progress: number) => {
@@ -205,6 +213,32 @@ export function useScrollScrub({
     const kick = () => {
       readTarget();
       if (!frame && visible) frame = requestAnimationFrame(draw);
+    };
+
+    /** 분모가 실제로 바뀔 수 있는 경로에서만 다시 잰다. */
+    const remeasure = () => {
+      measurePin();
+      kick();
+    };
+
+    /**
+     * 주소창 접힘/펼침 전용 경로.
+     *
+     * 감쇠를 태우지 않고 `current`를 목표로 **스냅**한다 — 뷰포트 전환은 사용자의 스크롤
+     * 입력이 아닌데, 스무딩 루프에 태우면 진행률 차이를 30여 프레임에 걸쳐 따라가며
+     * 프레임마다 `video.currentTime`을 쓴다(모바일에서 비싼 seek). 손가락과 무관한
+     * 영상 되감기가 바로 그 "덜컹"으로 보인다. 분모 재측정도 하지 않는다 — 핀은 `svh`라
+     * 주소창에 면역이다. rAF로 묶어 연속 발화 구간에서 프레임당 한 번만 돈다.
+     */
+    let viewportFrame = 0;
+    const onViewportResize = () => {
+      if (viewportFrame) return;
+      viewportFrame = requestAnimationFrame(() => {
+        viewportFrame = 0;
+        readTarget();
+        current = target;
+        apply(current);
+      });
     };
 
     const stopWatchdog = () => {
@@ -293,23 +327,28 @@ export function useScrollScrub({
     observer.observe(track);
 
     window.addEventListener('scroll', kick, { passive: true });
-    window.addEventListener('resize', kick);
-    // 모바일 주소창이 접히고 펼쳐질 때 `resize`가 항상 오지는 않는다. 핀 높이는
-    // 그때 바뀌므로 visualViewport 쪽도 같이 들어야 진행률이 어긋나지 않는다.
-    window.visualViewport?.addEventListener('resize', kick);
+    window.addEventListener('resize', remeasure);
+    // 폰트가 늦게 도착하며 헤더가 커지면 `--landing-pin-inset`이 다시 써지고 핀 높이가
+    // 바뀐다. `resize`는 그걸 못 잡으므로 핀 자체를 관찰해 분모 캐시를 무효화한다.
+    const pinObserver = new ResizeObserver(remeasure);
+    if (pin) pinObserver.observe(pin);
+    window.visualViewport?.addEventListener('resize', onViewportResize);
 
     // 함수 선언(`function teardown()`)으로 두지 말 것 — 호이스팅 때문에 TS가 위쪽의
     // `if (!video) return` 좁히기를 잃고 `video`를 null 가능으로 본다.
     const teardown = () => {
       window.removeEventListener('scroll', kick);
-      window.removeEventListener('resize', kick);
-      window.visualViewport?.removeEventListener('resize', kick);
+      window.removeEventListener('resize', remeasure);
+      window.visualViewport?.removeEventListener('resize', onViewportResize);
       video.removeEventListener('loadeddata', onLoaded);
       video.removeEventListener('error', onError);
       observer.disconnect();
+      pinObserver.disconnect();
       visible = false;
       if (frame) cancelAnimationFrame(frame);
       frame = 0;
+      if (viewportFrame) cancelAnimationFrame(viewportFrame);
+      viewportFrame = 0;
       stopWatchdog();
     };
 
