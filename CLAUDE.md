@@ -72,6 +72,15 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 ### 공용 UI 프리미티브
 `src/components/ui/`에 `Button`·`Card`·`Field`·`Badge`·`Modal`·`ConfirmDialog`·`SectionHeading`·`Reveal`·**`Toast`**가 있다. **`alert()`/`confirm()`을 새로 쓰지 말 것** — 안내는 `useToast()`(레이아웃에 마운트돼 내비게이션을 넘어 살아남고, 오류는 assertive·나머지는 polite 라이브 리전으로 분리), 확인은 `ConfirmDialog`다. 운영자 콘솔의 쓰기 액션은 **`hooks/useAdminMutation`**(`{busy, error, setError, runMutation}`)을 재사용할 것 — 예전에 `DashboardScreen`·`LessonManager`에 같은 코드가 복제돼 있었다. 실패는 인라인 오류 박스, 성공은 토스트(`runMutation`의 `successMessage`)가 규약이다.
 
+### Motion (애니메이션)
+`motion@13`을 쓰지만 **직접 `motion.*`을 import 하지 말 것** — `MotionProvider`(`src/components/ui/MotionProvider.tsx`)가 `LazyMotion` + `strict`로 감싸고 있어 던진다. 호출부는 `import * as m from 'motion/react-m'`로 받는다(Motion 13의 `react-m`은 `m` 객체가 아니라 요소별 named export다). 기능 엔진은 `ui/motion-features.ts`를 경유해 동적 import된다 — `import('motion/react').then(mod => mod.domMax)`로 쓰면 네임스페이스 전체가 살아남아 비동기 청크가 51kB까지 분다(실측 27.6kB → 51.2kB).
+
+**전역 `prefers-reduced-motion` 블록은 Motion을 막지 못한다** — 그 블록은 CSS `animation`/`transition`의 duration만 누르므로 JS 애니메이션에는 무효다. Motion을 쓰는 컴포넌트는 `useReducedMotion()`으로 직접 분기할 것(`ui/Modal.tsx`·`ui/Toast.tsx` 참조).
+
+**`AnimatePresence`의 퇴장 구간에는 props가 마지막 렌더값으로 얼어붙는다** — `{open && <X inert={!open}/>}`는 `open === true`였던 결과를 붙잡으므로 `inert`가 끝까지 false다(Codex 리뷰가 잡았다). 퇴장 여부는 **자식 컴포넌트에서 `useIsPresent()`로** 읽어야 한다(`ui/Modal.tsx`의 `ModalSurface`가 그래서 분리돼 있다).
+
+스크럽 히어로(`useScrollScrub`)와 섹션 리빌(`useRevealOnScroll`)은 **Motion으로 옮기지 말 것** — 전자는 로딩 파이프라인(버퍼 워치독·강등·핀 실측)이 본체이고 스프링에 태우면 중복 seek 가드 임계를 진동해 모바일 seek이 늘고, 후자는 SSR이 보이는 상태로 렌더되는 안전성을 잃는다.
+
 ### 색 토큰과 대비 (DC-56)
 **골드는 배경 밝기에 따라 방향이 반대다** — 밝은 면(cream·ivory·white)은 `gold-deep`, 어두운 면(`bg-brown`·`hero-ink`)은 `gold`. 반대로 쓰면 각각 3.0:1대로 AA 미달이다. `src/lib/color-contrast.test.ts`가 `globals.css` 토큰을 파싱해 **양방향**을 잠근다. hover 정본은 `src/lib/button-classes.ts`이며 임의값 hex(`text-[#...]`)는 쓰지 않는다(예외: `LoginScreen`의 구글 로고 4색 — 외부 브랜드 고정값).
 
