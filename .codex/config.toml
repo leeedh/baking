@@ -1,21 +1,22 @@
 [mcp_servers.mcp-atlassian]
 command = "uvx"
-args = [
-    "mcp-atlassian",
-    "--env-file",
-    ".env.local",
-]
+args = [ "mcp-atlassian", "--env-file", ".env.local" ]
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["@playwright/mcp@latest"]
+args = [ "@playwright/mcp@latest" ]
 
 [mcp_servers.supabase]
 url = "https://mcp.supabase.com/mcp"
 
 [mcp_servers.tosspayments-integration-guide]
 command = "npx"
-args = [
-    "-y",
-    "@tosspayments/integration-guide-mcp@latest",
-]
+args = [ "-y", "@tosspayments/integration-guide-mcp@latest" ]
+
+[mcp_servers.motion]
+type = "http"
+url = "https://mcp.motion.dev"
+
+[mcp_servers.motion-plus]
+type = "http"
+url = "https://mcp.motion.dev/plus"
