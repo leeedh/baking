@@ -95,7 +95,7 @@ export default function LandingCarte({ classes }: LandingCarteProps) {
           <div className="pt-6 mt-2 border-t border-dashed border-brown-light text-center">
             <Link
               href="/classes"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 text-[11px] font-bold tracking-[0.22em] uppercase text-gold-deep hover:text-terracotta transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center min-h-[44px] px-6 text-[11px] font-bold tracking-[0.22em] uppercase text-gold-deep hover:text-terracotta landing-cta cursor-pointer"
             >
               {t('carte.viewAll')}
             </Link>

@@ -15,6 +15,22 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* 랜딩 CTA 공용 — 각진 에디토리얼 외형이라 `lib/button-classes.ts`의 `buttonClasses`를
+ * 쓰지 않는다(`rounded-xl`·`text-xs`가 붙어 결이 깨진다). 대신 그쪽 `BASE`가 이미 갖고 있던
+ * 프레스 피드백(`active:scale-[0.97]`)만 여기로 들여온다 — 모바일에서 탭해도 아무 반응이
+ * 없는 상태로 라우트 이동을 기다리던 문제. 외형은 각 호출부의 유틸리티 클래스가 유지한다.
+ *
+ * `transform`을 쓰므로 `globals.css`의 전역 `prefers-reduced-motion` 블록
+ * (`transition-duration: 0.01ms`)이 그대로 덮는다 — 별도 분기가 필요 없다. */
+.landing-cta {
+  transition: background-color 0.3s var(--ease-out-soft), color 0.3s var(--ease-out-soft),
+    border-color 0.3s var(--ease-out-soft), transform 0.3s var(--ease-out-soft);
+}
+
+.landing-cta:active {
+  transform: scale(0.97);
+}
+
 .landing-ticket {
   position: relative;
   background-color: var(--color-ivory);
@@ -207,7 +223,6 @@
     left: 3rem;
     right: 3rem;
   }
-
 }
 
 @media (min-width: 1024px) {

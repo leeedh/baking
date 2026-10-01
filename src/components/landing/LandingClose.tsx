@@ -27,13 +27,13 @@ export default function LandingClose() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/classes"
-            className="inline-flex items-center justify-center min-h-[44px] px-8 bg-cream text-brown text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-ivory transition-colors cursor-pointer w-full sm:w-auto"
+            className="inline-flex items-center justify-center min-h-[44px] px-8 bg-cream text-brown text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-ivory landing-cta cursor-pointer w-full sm:w-auto"
           >
             {t('close.cta')}
           </Link>
           <Link
             href="/classes#baking-quiz-section"
-            className="inline-flex items-center justify-center min-h-[44px] px-8 border border-gold/50 text-gold text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold hover:text-cream transition-colors cursor-pointer w-full sm:w-auto"
+            className="inline-flex items-center justify-center min-h-[44px] px-8 border border-gold/50 text-gold text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold hover:text-cream landing-cta cursor-pointer w-full sm:w-auto"
           >
             {t('close.ctaQuiz')}
           </Link>

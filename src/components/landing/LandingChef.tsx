@@ -11,10 +11,7 @@ export default function LandingChef() {
   const t = useTranslations('landing');
 
   return (
-    <section
-      aria-labelledby="landing-chef-heading"
-      className="border-t border-gold/25"
-    >
+    <section aria-labelledby="landing-chef-heading" className="border-t border-gold/25">
       <div className="grid grid-cols-1 lg:grid-cols-12 max-w-6xl mx-auto">
         <div className="relative lg:col-span-5 aspect-[4/5] lg:aspect-auto lg:min-h-[520px]">
           <Image
@@ -50,7 +47,7 @@ export default function LandingChef() {
           </p>
           <Link
             href="/about"
-            className="inline-flex items-center justify-center self-start min-h-[44px] px-6 border border-gold/50 text-gold text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold hover:text-cream transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center self-start min-h-[44px] px-6 border border-gold/50 text-gold text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold hover:text-cream landing-cta cursor-pointer"
           >
             {t('chef.cta')}
           </Link>

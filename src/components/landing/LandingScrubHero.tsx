@@ -253,7 +253,7 @@ export default function LandingScrubHero() {
             </form>
             <Link
               href="/classes"
-              className="inline-flex items-center justify-center min-h-[44px] px-7 bg-brown text-cream text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-brown-deep transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center min-h-[44px] px-7 bg-brown text-cream text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-brown-deep landing-cta cursor-pointer"
             >
               {t('ctaEnter')}
             </Link>
@@ -320,7 +320,7 @@ export default function LandingScrubHero() {
             <div className="mt-6">
               <Link
                 href="/about"
-                className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold-deep hover:bg-gold-deep/10 transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold-deep hover:bg-gold-deep/10 landing-cta cursor-pointer"
               >
                 {t('ctaChef')}
               </Link>
