@@ -174,7 +174,7 @@ export default function PlayerScreen({
           </div>
           <div className="w-full bg-cream h-2 rounded-full overflow-hidden">
             <div
-              className="bg-terracotta h-full rounded-full transition-all duration-500"
+              className="bg-terracotta h-full rounded-full transition-[width] duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -314,9 +314,7 @@ export default function PlayerScreen({
             <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
               <BookOpen size={16} className="text-terracotta" /> {t('lessonListTitle')}
             </h3>
-            <p className="text-[10px] text-brown-medium mt-0.5">
-              {t('lessonListHint')}
-            </p>
+            <p className="text-[10px] text-brown-medium mt-0.5">{t('lessonListHint')}</p>
           </div>
 
           <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">

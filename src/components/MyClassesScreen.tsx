@@ -42,9 +42,7 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
             {t('countBadge', { count: purchasedClasses.length })}
           </span>
         </h1>
-        <p className="text-xs text-brown-medium mt-1">
-          {t('subtitle')}
-        </p>
+        <p className="text-xs text-brown-medium mt-1">{t('subtitle')}</p>
       </div>
 
       {purchasedClasses.length === 0 ? (
@@ -57,9 +55,7 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
             <FolderLock size={28} />
           </div>
           <div className="space-y-2">
-            <h3 className="font-serif text-xl font-bold text-brown">
-              {t('emptyTitle')}
-            </h3>
+            <h3 className="font-serif text-xl font-bold text-brown">{t('emptyTitle')}</h3>
             <p className="text-xs text-brown-medium leading-relaxed max-w-md mx-auto">
               {t('emptyBody')}
             </p>
@@ -76,7 +72,9 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
                 className="bg-cream p-3 rounded-lg text-left border border-brown-light cursor-pointer hover:border-terracotta transition-colors"
                 onClick={onNavigateToCatalog}
               >
-                <span className="text-[10px] text-gold-deep font-semibold block">{t('recommend1Tag')}</span>
+                <span className="text-[10px] text-gold-deep font-semibold block">
+                  {t('recommend1Tag')}
+                </span>
                 <span className="text-xs font-bold text-brown block truncate">
                   {t('recommend1Name')}
                 </span>
@@ -162,12 +160,14 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
                       </div>
                       <div className="w-full bg-white h-2 rounded-full overflow-hidden border border-brown-light/60">
                         <div
-                          className="bg-terracotta h-full rounded-full transition-all duration-300"
+                          className="bg-terracotta h-full rounded-full transition-[width] duration-300"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
                       <div className="flex justify-between text-[10px] text-brown-medium/60 pt-0.5">
-                        <span>{progress === 0 ? t('statusNotStarted') : t('statusInProgress')}</span>
+                        <span>
+                          {progress === 0 ? t('statusNotStarted') : t('statusInProgress')}
+                        </span>
                         <span>{cls.duration}</span>
                       </div>
                     </div>
