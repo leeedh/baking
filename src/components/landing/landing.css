@@ -160,8 +160,9 @@
 /* ── 스크럽 활성 ─────────────────────────────────────────────────────────── */
 
 .landing-scrub[data-active] {
-  /* 스크롤 예산. 8초 영상에 화면 두 장 분량을 배정한다. */
-  height: 300vh;
+  /* 스크롤 예산. 8초 영상에 화면 두 장 분량을 배정한다(핀 한 장 + 스크럽 두 장).
+     긴 영상은 `--landing-scrub-scale`(ScrubAsset.scrollScale)로 스크럽 구간만 늘린다. */
+  height: calc(100vh + 200vh * var(--landing-scrub-scale, 1));
   /* 핀은 `100svh`(주소창 있는 기준)라, 모바일에서 주소창이 접히면 그 아래로 ~56px이
      드러난다. 핀과 같은 크림으로 받쳐 경계가 보이지 않게 한다. 핀을 `dvh`로 키우지 않는
      것은 의도다 — 전환 중 핀이 실시간 리사이즈되며 영상 크롭과 진행률 분모가 함께 변한다. */
@@ -231,7 +232,7 @@
 
 @media (min-width: 1024px) {
   .landing-scrub[data-active] {
-    height: 400vh;
+    height: calc(100vh + 300vh * var(--landing-scrub-scale, 1));
   }
 
   .landing-scrub[data-active] .landing-scrub__beat {
