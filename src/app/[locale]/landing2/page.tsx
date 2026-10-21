@@ -34,6 +34,9 @@ const FLAMINGO: ScrubAsset = {
   src: '/landing/flamingo2-scrub.mp4',
   duration: 10,
   fps: 24,
+  /* 케이크(7.2초)와 같은 스크롤 거리에 10초를 넣으면 1.4배 빠르게 감긴다.
+     1.3이면 스크롤 100vh당 약 3.8초 — 케이크(3.6초)에 가깝다. */
+  scrollScale: 1.3,
 };
 
 export async function generateMetadata({

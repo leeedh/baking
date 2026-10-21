@@ -41,6 +41,12 @@ export interface ScrubAsset {
   /** 스크럽에 쓸 길이(초). 영상 전체보다 짧게 잘라 쓸 수 있다. */
   duration: number;
   fps: number;
+  /**
+   * 스크롤 거리 배율(기본 1). 트랙에서 핀 한 장을 뺀 **스크럽 구간**에만 곱한다 —
+   * 1.3이면 같은 영상을 1.3배 더 긴 스크롤로 감는다. 진행률·비트 구간은 트랙 높이로
+   * 정규화되므로 카피 타이밍도 함께 늘어난다.
+   */
+  scrollScale?: number;
 }
 
 const DEFAULT_ASSET: ScrubAsset = {
@@ -220,6 +226,11 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
       aria-labelledby="landing-scrub-heading"
       className="landing-scrub relative"
       data-active={active || undefined}
+      style={
+        asset.scrollScale
+          ? ({ '--landing-scrub-scale': asset.scrollScale } as React.CSSProperties)
+          : undefined
+      }
     >
       <div className="landing-scrub__pin bg-cream text-brown">
         {reduced ? (
