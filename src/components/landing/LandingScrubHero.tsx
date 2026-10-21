@@ -27,6 +27,30 @@ const SCRUB_DURATION = 7.2;
 const SCRUB_FPS = 24;
 
 /**
+ * 스크럽 자산 묶음. 기본값은 위 케이크 영상이고, `/landing2`처럼 영상만 바꾼
+ * 비교 경로가 이 네 값을 넘긴다. **카피와 비트 구간(BEATS)은 공유한다** —
+ * 비교 대상이 영상 하나로 좁혀져야 판단이 가능하다.
+ *
+ * `poster`는 없을 수 있다(정지 프레임을 뽑아 두지 않은 영상). 그때 모션 감소
+ * 분기는 영상 대신 빈 자리만 남긴다 — 영상을 CSS로 숨기면 브라우저가 그대로
+ * 받아 가므로, 요소 자체를 내보내지 않는 쪽이 맞다.
+ */
+export interface ScrubAsset {
+  src: string;
+  poster?: string;
+  /** 스크럽에 쓸 길이(초). 영상 전체보다 짧게 잘라 쓸 수 있다. */
+  duration: number;
+  fps: number;
+}
+
+const DEFAULT_ASSET: ScrubAsset = {
+  src: SCRUB_SRC,
+  poster: SCRUB_POSTER,
+  duration: SCRUB_DURATION,
+  fps: SCRUB_FPS,
+};
+
+/**
  * 카피 한 덩어리가 온전히 보이는 진행률 구간. 사이는 교차 페이드로 메운다.
  * 영상 구간과 맞춰 뒀다 — 01 진입(민무늬 케이크) · 02 피핑 · 03 딸기 · 04 완성.
  */
@@ -42,7 +66,7 @@ const FADE = 0.06;
 type Beat = { title: string; emphasis: string; body: string };
 type Stat = { value: string; label: string };
 
-export default function LandingScrubHero() {
+export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: ScrubAsset }) {
   const t = useTranslations('landing.scrub');
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -87,8 +111,8 @@ export default function LandingScrubHero() {
   }, []);
 
   const { trackRef, videoRef, active, reduced, readDiagnostics } = useScrollScrub({
-    duration: SCRUB_DURATION,
-    fps: SCRUB_FPS,
+    duration: asset.duration,
+    fps: asset.fps,
     onFrame,
   });
 
@@ -201,12 +225,16 @@ export default function LandingScrubHero() {
         {reduced ? (
           /* 모션 감소: 스크럽을 포기한 사용자에게 7MB짜리 mp4를 내려보낼 이유가 없다.
              CSS로 숨기기만 하면 브라우저는 그대로 받아 간다 — 요소 자체를 바꾼다. */
-          <img src={SCRUB_POSTER} alt="" aria-hidden="true" className="landing-scrub__video" />
+          asset.poster ? (
+            <img src={asset.poster} alt="" aria-hidden="true" className="landing-scrub__video" />
+          ) : (
+            <div aria-hidden="true" className="landing-scrub__video bg-cream" />
+          )
         ) : (
           <video
             ref={videoRef}
-            src={SCRUB_SRC}
-            poster={SCRUB_POSTER}
+            src={asset.src}
+            poster={asset.poster}
             muted
             playsInline
             /* `auto`도 `metadata`도 첫 화면에서 7MB를 통째로 끌어온다 —
