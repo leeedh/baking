@@ -114,7 +114,9 @@ Issues a short-lived signed Mux JWT after verifying enrollment (or `is_preview`)
 ### 정보구조 — 홈·소개·온라인 클래스 3면 (DC-96)
 홈(`/`)은 **브랜드 게이트웨이**이고 클래스 목록 본체는 **`/classes`**, 브랜드/셰프 소개는 **`/about`**이다(구 `/instructor`는 `/about` 리다이렉트). 화면 골격은 `src/components/{HomeScreen,ClassesScreen,AboutScreen}.tsx`가 조립하고, 재사용 섹션은 **`src/components/sections/`**(`AnnouncementBar`·`PhilosophyPillars`·`RecommendationQuiz`·`ClassCard`·`ClassCatalogGrid`·`StudentArchive`·`ChefBanner`·`FaqAccordion`·`NewsletterCTA`·`BestClasses`)에 있다. **`src/features/`는 없다** — TechSpec의 `features/*` 표기는 to-be다.
 
-**검색은 URL이 소스**: `MeringueHero`(홈)는 검색어를 자체 state로 두고 제출 시 `/classes?q=`로 `push`하며, `/classes` 페이지가 `searchParams`로 초기값을 받아 `ClassCatalogGrid`에 넘긴다. 홈에 그리드가 없으므로 히어로에 검색 state를 되돌리지 말 것.
+**홈 히어로는 플라밍고 스크롤 스크럽**(`landing/LandingScrubHero` + `landing/scrub-assets.ts`의 `FLAMINGO_ASSET`, `/landing2`와 공유)이다. 구 원형 줌 `MeringueHero.tsx`는 더 이상 마운트되지 않는다. 서체 변수(`landingDisplayFont`)는 `(home)/page.tsx`가 건다.
+
+**검색은 URL이 소스**: 홈 히어로는 검색어를 자체 state로 두고 제출 시 `/classes?q=`로 `push`하며, `/classes` 페이지가 `searchParams`로 초기값을 받아 `ClassCatalogGrid`에 넘긴다. 홈에 그리드가 없으므로 히어로에 검색 state를 되돌리지 말 것.
 
 **`loading.tsx`는 라우트 그룹으로 범위를 좁혀 둔다 — 함부로 옮기지 말 것.** `loading.tsx`는 Suspense 셸을 즉시 flush하고, 헤더가 나간 뒤에는 상태 코드를 바꿀 수 없어 그 하위에서 `notFound()`를 호출하면 **HTTP 200**(soft-404)이 된다. 그래서 홈은 `[locale]/(home)/`, 클래스 목록은 `classes/(list)/`에 페이지와 `loading.tsx`를 함께 두어 `classes/[id]`를 감싸지 않게 했다(라우트 그룹이라 URL은 그대로). **`classes/[id]`에는 `loading.tsx`를 만들지 말 것.** 상위 세그먼트의 `loading.tsx`도 하위 전체를 감싼다는 점을 함께 볼 것. `checkout/[id]`·`learn/[id]`·`admin/courses/[id]`는 인증 뒤라 색인 대상이 아니어서 스켈레톤을 유지했고 `notFound()` 시 200이다(의도). 실측 근거는 `Docs/UXGuide.md` §8.6.
 

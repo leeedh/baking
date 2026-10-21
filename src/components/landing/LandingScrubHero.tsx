@@ -7,6 +7,8 @@ import { Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+// 홈(`/`)은 `LandingScreen` 없이 이 히어로만 쓰므로 스타일을 직접 가져온다.
+import './landing.css';
 
 /**
  * 스크럽 자산. 자체 촬영본으로 교체할 때 이 네 값만 바꾸면 된다.
