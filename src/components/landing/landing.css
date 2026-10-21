@@ -102,6 +102,8 @@
      절반 높이로 잘라 두어야 제목과 카피가 스크롤 없이 읽힌다. */
   height: 50svh;
   object-fit: cover;
+  /* ScrubAsset.zoom. 고정값이라 스크럽 중 레이아웃·합성 비용이 늘지 않는다. */
+  transform: scale(var(--landing-scrub-zoom, 1));
 }
 
 /* 좌우는 크림으로 눌러 카피를 띄우고, 가운데도 완전히 비우지 않는다.
