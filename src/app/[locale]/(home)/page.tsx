@@ -1,4 +1,5 @@
 import HomeScreen from '@/components/HomeScreen';
+import { landingDisplayFont } from '@/components/landing/font';
 import { getCatalog } from '@/lib/catalog';
 import { setRequestLocale } from 'next-intl/server';
 
@@ -18,5 +19,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   // 정적 렌더 전제 — 없으면 next-intl이 요청 헤더를 읽어 동적으로 떨어진다.
   setRequestLocale(locale);
   const classes = await getCatalog(locale);
-  return <HomeScreen classes={classes} />;
+  // 스크럽 히어로의 디스플레이 서체(`font-landing`). 호출은 `font.ts` 한 곳에만 둔다.
+  return (
+    <div className={landingDisplayFont.variable}>
+      <HomeScreen classes={classes} />
+    </div>
+  );
 }

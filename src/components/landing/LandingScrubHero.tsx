@@ -7,6 +7,8 @@ import { Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+// 홈(`/`)은 `LandingScreen` 없이 이 히어로만 쓰므로 스타일을 직접 가져온다.
+import './landing.css';
 
 /**
  * 스크럽 자산. 자체 촬영본으로 교체할 때 이 네 값만 바꾸면 된다.
@@ -47,6 +49,11 @@ export interface ScrubAsset {
    * 정규화되므로 카피 타이밍도 함께 늘어난다.
    */
   scrollScale?: number;
+  /**
+   * 영상 배율(기본 1). 1보다 작으면 영상을 축소해 가장자리에 핀 배경(크림)이 드러난다 —
+   * **배경을 크림에 맞춘 영상에서만 쓸 것**(그렇지 않으면 경계가 사각형으로 보인다).
+   */
+  zoom?: number;
 }
 
 const DEFAULT_ASSET: ScrubAsset = {
@@ -227,9 +234,10 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
       className="landing-scrub relative"
       data-active={active || undefined}
       style={
-        asset.scrollScale
-          ? ({ '--landing-scrub-scale': asset.scrollScale } as React.CSSProperties)
-          : undefined
+        {
+          ...(asset.scrollScale && { '--landing-scrub-scale': asset.scrollScale }),
+          ...(asset.zoom && { '--landing-scrub-zoom': asset.zoom }),
+        } as React.CSSProperties
       }
     >
       <div className="landing-scrub__pin bg-cream text-brown">

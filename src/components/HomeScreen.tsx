@@ -1,17 +1,16 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import type { ClassItem } from '../types';
+import LandingScrubHero from './landing/LandingScrubHero';
+import { FLAMINGO_ASSET } from './landing/scrub-assets';
 import AnnouncementBar from './sections/AnnouncementBar';
 import BestClasses from './sections/BestClasses';
 import ChefBanner from './sections/ChefBanner';
 import NewsletterCTA from './sections/NewsletterCTA';
 import PhilosophyPillars from './sections/PhilosophyPillars';
 import StudentArchive from './sections/StudentArchive';
-
-const MeringueHero = dynamic(() => import('./MeringueHero'), { ssr: false });
 
 interface HomeScreenProps {
   /** course_catalog 뷰에서 서버가 로드한 게시 클래스 목록. */
@@ -44,13 +43,9 @@ export default function HomeScreen({ classes }: HomeScreenProps) {
     >
       <AnnouncementBar />
 
-      <MeringueHero
-        onSearch={(query) =>
-          router.push(query ? `/classes?q=${encodeURIComponent(query)}` : '/classes')
-        }
-        onExplore={() => router.push('/classes')}
-        onQuiz={() => router.push('/classes#baking-quiz-section')}
-      />
+      {/* 플라밍고 스크롤 스크럽 히어로(구 MeringueHero 원형 줌 대체). 검색은 히어로가
+          직접 `/classes?q=`로 보낸다. 서체 변수는 페이지(`(home)/page.tsx`)가 건다. */}
+      <LandingScrubHero asset={FLAMINGO_ASSET} />
 
       <PhilosophyPillars variant="summary" />
       <BestClasses classes={classes} />
