@@ -8,7 +8,7 @@ import { FLAMINGO_ASSET } from './landing/scrub-assets';
 import AnnouncementBar from './sections/AnnouncementBar';
 import BestClasses from './sections/BestClasses';
 import ChefBanner from './sections/ChefBanner';
-import NewsletterCTA from './sections/NewsletterCTA';
+import ClassOfferBand from './sections/ClassOfferBand';
 import PhilosophyPillars from './sections/PhilosophyPillars';
 import StudentArchive from './sections/StudentArchive';
 
@@ -18,8 +18,9 @@ interface HomeScreenProps {
 }
 
 // DC-96 (PRD-F-20) · 홈 = 브랜드 게이트웨이.
-// 히어로 → 철학 요약 3카드 → 베스트 클래스 3개 → 수강생 아카이브 → 셰프 배너 → 뉴스레터.
-// 각 섹션은 소개(/about)·온라인 클래스(/classes)로 보내는 진입점 역할만 한다.
+// 히어로 → 베스트 클래스 3개 → 철학(Rows) → 셰프 배너 → 수강생 아카이브(예시) → 대표 클래스 offer.
+// Hallmark anatomy "buy": 히어로 다음에 가격이 붙은 상품을 두고, 구매 행동으로 닫는다.
+// 뉴스레터는 백엔드가 없어 홈의 마지막 밴드에서 빠지고 푸터 한 줄 안내로 옮겼다.
 export default function HomeScreen({ classes }: HomeScreenProps) {
   const router = useRouter();
 
@@ -47,11 +48,11 @@ export default function HomeScreen({ classes }: HomeScreenProps) {
           직접 `/classes?q=`로 보낸다. 서체 변수는 페이지(`(home)/page.tsx`)가 건다. */}
       <LandingScrubHero asset={FLAMINGO_ASSET} />
 
-      <PhilosophyPillars variant="summary" />
       <BestClasses classes={classes} />
-      <StudentArchive />
+      <PhilosophyPillars variant="summary" />
       <ChefBanner />
-      <NewsletterCTA />
+      <StudentArchive />
+      <ClassOfferBand classes={classes} />
     </div>
   );
 }

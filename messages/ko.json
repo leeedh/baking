@@ -33,6 +33,7 @@
     "start": "베이킹 DNA 진단 시작하기"
   },
   "footer": {
+    "photoCredit": "사진",
     "intro": "글로벌 디저트 아티스트의 한정판 제과 테크닉을 HD 고화질 VOD로 평생 소장하세요. 한 번의 구매로 서울, 타이베이, 글로벌 마스터 파티시에의 오리지널 레시피와 핵심 노하우를 기간 제한 없이 반복 학습할 수 있습니다.",
     "languages": "한국어 & 繁體中文 지원",
     "locations": "서울 성수 & 타이베이 신이 지구",
@@ -55,20 +56,21 @@
     "title1": "김소우 셰프가 추천하는",
     "titleEm": "실전 레시피 도서",
     "subtitle": "클래스와 함께 보면 좋은, 집에서 반복 연습하기 좋은 실전 레시피 북을 골라 소개합니다. 구매는 쿠팡에서 진행됩니다.",
-    "selectEdition": "Select Book",
-    "selectedManual": "SELECTED BOOK",
+    "selectEdition": "도서 선택",
+    "selectedManual": "선택한 도서",
     "chaptersTitle": "이 책에서 배우는 것 ({count})",
     "priceRef": "참고가 — 실제 결제는 쿠팡",
     "externalNotice": "이 도서는 쿠팡에서 판매합니다.",
     "buyCta": "쿠팡에서 구매",
     "buyUnavailable": "판매 링크 준비 중",
-    "noticeBadge": "NOTICE",
+    "noticeBadge": "안내",
     "noticeTitle": "추천 도서는 쿠팡에서 판매됩니다",
     "noticeDesc": "본 페이지는 추천 도서를 소개하며, 구매·결제·배송은 쿠팡에서 진행됩니다. 온라인 클래스와 달리 자체 결제·배송을 제공하지 않습니다.",
     "disclosure": "이 페이지의 구매 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따라 일정액의 수수료를 제공받습니다.",
     "empty": "현재 소개 중인 도서가 없습니다."
   },
   "instructor": {
+    "storyTitle": "셰프 이야기",
     "chefName": "김소우 (Sowoo Kim)",
     "chefRole": "Atelier Crème 대표 디렉터 겸 파티시에",
     "heroBadge": "ATELIER OWNER CHEF PHILOSOPHY",
@@ -103,7 +105,10 @@
     "milestones": [
       { "year": "2016", "event": "프랑스 파리 L'École Ritz Escoffier 그랑 디플로마 장학생 졸업" },
       { "year": "2018", "event": "한남동 디저트 부티크 \"Atelier Crème\" 설립, 전 제품 조기 완판" },
-      { "year": "2020", "event": "대만 타이베이 & 가오슝 구움과자 마스터 워크숍 전석 매진 (누적 3,000석)" },
+      {
+        "year": "2020",
+        "event": "대만 타이베이 & 가오슝 구움과자 마스터 워크숍 전석 매진 (누적 3,000석)"
+      },
       { "year": "2022", "event": "Happy Happy Academy 모던 파티세리 디렉팅 라이선스 협업 제휴" },
       { "year": "2024", "event": "SBS, MBC 베이킹 트렌드 오너 파티시에 기술 부문 특집 자문 출연" },
       { "year": "2025", "event": "시그니처 베이킹 가이드북 [아틀리에 크렘의 사계] 베스트셀러 등극" }
@@ -349,6 +354,8 @@
     }
   },
   "common": {
+    "chefMonogram": "소우",
+    "chefPortraitAria": "김소우 셰프 (사진 준비 중)",
     "skipToContent": "본문으로 건너뛰기",
     "confirm": "확인",
     "cancel": "취소",
@@ -436,8 +443,8 @@
       ]
     },
     "newsletter": {
-      "perk1": "• 오프라인 아카데미 서울 / 타이베이 동시 제휴",
-      "perk2": "• 카카오톡 및 이메일 24시간 피드백 지원",
+      "perk1": "오프라인 아카데미 서울 / 타이베이 동시 제휴",
+      "perk2": "카카오톡 및 이메일 24시간 피드백 지원",
       "headingPrefix": "일상을 특별한 예술로 바꾸는 프랑스 가치, 지금 당신의 아이디로",
       "headingEm": "아틀리에",
       "headingSuffix": "에 가입하세요",
@@ -466,6 +473,7 @@
       "resultRetry": "다시 테스트"
     },
     "archive": {
+      "sampleBadge": "예시 콘텐츠",
       "title": "수강생 실습 아카이브",
       "description": "Atelier Crème 오리지널 교육과정을 수강하고 가내 스튜디오 및 상업 오븐에서 직접 구워낸 리얼 포토 후기입니다.",
       "filterAria": "실습작 카테고리 필터",
@@ -510,11 +518,7 @@
       "installment": "무이자 12개월 할부 시",
       "installmentAmount": "월 {amount}원",
       "cta": "마스터 코스 탐색",
-      "highlights": [
-        "#원가절감 배합",
-        "#밀착 오븐피드백",
-        "#비밀 PDF북"
-      ]
+      "highlights": ["#원가절감 배합", "#밀착 오븐피드백", "#비밀 PDF북"]
     },
     "catalog": {
       "category": {
@@ -535,8 +539,13 @@
     },
     "announcement": {
       "promo": "Sugar Lane & Happy Happy Academy 콜라보 레퍼런스 오픈 기념 최대 45% 즉시 할인",
-      "perk1": "• 오너 셰프 1:1 디렉션 보증",
-      "perk2": "• 실전 상업용 황금 배합비 PDF 즉시 배포"
+      "perk1": "오너 셰프 1:1 디렉션 보증",
+      "perk2": "실전 상업용 황금 배합비 PDF 즉시 배포"
+    },
+    "offer": {
+      "heading": "평점이 가장 높은 클래스로 시작하세요",
+      "lead": "한 번 결제로 평생 소장하고, 필요할 때마다 다시 보세요.",
+      "allCta": "전체 클래스 보기"
     },
     "best": {
       "title": "지금 가장 사랑받는 클래스",

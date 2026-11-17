@@ -21,8 +21,6 @@ import { useRouter } from 'next/navigation';
 import { useId, useState } from 'react';
 import FaqAccordion from './sections/FaqAccordion';
 
-
-
 interface InquiriesScreenProps {
   /** 비로그인이면 null — 폼 대신 로그인 유도를 보여준다. */
   isLoggedIn: boolean;
@@ -76,7 +74,6 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
       className="bg-ivory min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
       <section className="pt-12 pb-4 px-6 sm:px-12 max-w-4xl mx-auto text-center space-y-3">
-        <p className="text-xs font-bold text-gold-deep tracking-[0.25em] uppercase">Support</p>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight">
           {t('title')}
         </h1>
@@ -86,10 +83,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
       </section>
 
       {/* 사전 안내 FAQ — 반복 문의를 줄이기 위해 폼보다 위에 둔다 */}
-      <FaqAccordion
-        title={t('faqTitle')}
-        description={t('faqDescription')}
-      />
+      <FaqAccordion title={t('faqTitle')} description={t('faqDescription')} />
 
       <section className="pb-20 px-6 sm:px-12 max-w-4xl mx-auto space-y-12">
         {/* 1:1 문의 작성 */}
@@ -155,9 +149,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
             </form>
           ) : (
             <div className="text-center py-8 space-y-4 bg-cream/50 rounded-2xl border border-brown-light">
-              <p className="text-xs text-brown-medium font-light">
-                {t('loginRequired')}
-              </p>
+              <p className="text-xs text-brown-medium font-light">{t('loginRequired')}</p>
               <Link href="/login" className={buttonClasses()}>
                 {t('loginCta')}
               </Link>
@@ -231,9 +223,7 @@ export default function InquiriesScreen({ isLoggedIn, inquiries }: InquiriesScre
                           <div className="bg-cream/60 rounded-xl border border-brown-light p-4 space-y-2">
                             <div className="flex items-center gap-1.5 text-terracotta">
                               <CheckCircle2 size={13} />
-                              <span className="text-[11px] font-bold uppercase tracking-wider">
-                                {t('answerLabel')}
-                              </span>
+                              <span className="text-xs font-bold">{t('answerLabel')}</span>
                               {inq.answeredAt && (
                                 <span className="text-[11px] text-brown-medium/80 font-normal">
                                   {formatDate(inq.answeredAt, locale)}

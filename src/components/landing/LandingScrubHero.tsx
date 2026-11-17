@@ -308,12 +308,12 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
                 aria-label={t('searchAria')}
-                className="w-full border-0 border-b border-gold-deep/40 bg-transparent pl-7 pr-3 py-3 min-h-[44px] text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="w-full border-0 border-b border-edge bg-transparent pl-7 pr-3 py-3 min-h-[44px] text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
             </form>
             <Link
               href="/classes"
-              className="inline-flex items-center justify-center min-h-[44px] px-7 bg-brown text-cream text-[11px] font-bold tracking-[0.22em] uppercase hover:bg-brown-deep landing-cta cursor-pointer"
+              className="inline-flex items-center justify-center min-h-[44px] px-7 bg-brown text-cream text-sm font-bold hover:bg-brown-deep landing-cta cursor-pointer"
             >
               {t('ctaEnter')}
             </Link>
@@ -321,12 +321,9 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
 
           {/* 01 — 진입. h1은 하나뿐이고 처음부터 보인다(LCP 텍스트). */}
           <div ref={setBeatRef(0)} className="landing-scrub__beat landing-scrub__beat--top">
-            <p className="text-[10px] font-bold tracking-[0.38em] uppercase text-gold-deep">
-              {t('kicker')}
-            </p>
             <h1
               id="landing-scrub-heading"
-              className="font-landing mt-4 text-[2.1rem] sm:text-5xl lg:text-[3.4rem] font-medium leading-[1.12] tracking-tight text-brown break-keep"
+              className="font-landing text-[2.1rem] sm:text-5xl lg:text-[3.4rem] font-medium leading-[1.12] tracking-tight text-brown break-keep"
             >
               <span className="block">{t('title1')}</span>
               <span className="block italic font-normal text-gold-deep">{t('title2')}</span>
@@ -360,16 +357,14 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
             inert={active && !finaleReady}
           >
             <p className="font-landing text-2xl sm:text-3xl lg:text-4xl leading-[1.2] text-brown break-keep">
-              <span>{t('finaleTitle')} </span>
-              <span className="italic text-gold-deep">{t('finaleEmphasis')}</span>
+              <span className="block">{t('finaleTitle')}</span>
+              <span className="block italic text-gold-deep">{t('finaleEmphasis')}</span>
             </p>
 
             <dl className="mt-6 grid grid-cols-3 gap-3 max-w-sm border-y border-gold-deep/30 py-4">
               {stats.map((stat) => (
                 <div key={stat.label}>
-                  <dt className="text-[9px] tracking-[0.22em] uppercase text-gold-deep">
-                    {stat.label}
-                  </dt>
+                  <dt className="text-xs text-gold-deep">{stat.label}</dt>
                   <dd className="font-landing mt-1 text-xl sm:text-2xl text-brown">{stat.value}</dd>
                 </div>
               ))}
@@ -380,7 +375,7 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
             <div className="mt-6">
               <Link
                 href="/about"
-                className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-[11px] font-semibold tracking-[0.18em] uppercase hover:border-gold-deep hover:bg-gold-deep/10 landing-cta cursor-pointer"
+                className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-sm font-semibold hover:border-gold-deep hover:bg-gold-deep/10 landing-cta cursor-pointer"
               >
                 {t('ctaChef')}
               </Link>
@@ -409,7 +404,7 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
           <p
             ref={hintRef}
             aria-hidden
-            className="landing-scrub__hint pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] uppercase text-brown-medium"
+            className="landing-scrub__hint pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 text-xs text-brown-medium"
           >
             {t('scrollHint')}
           </p>

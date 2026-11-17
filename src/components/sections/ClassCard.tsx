@@ -1,7 +1,7 @@
 'use client';
 
 import Button from '@/components/ui/Button';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { formatCount, formatKrw } from '@/lib/format';
 import { ChevronRight, Clock, PlayCircle, Star } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -14,7 +14,7 @@ interface ClassCardProps {
 }
 
 // DC-96 · 카탈로그 카드. 홈(베스트 3)·온라인 클래스(전체 그리드) 양쪽에서 재사용한다.
-// 클릭 타깃이 제목·버튼 둘이라 <Link> 래핑 대신 router.push를 쓴다(프리페치는 호출부에서 수행).
+// 제목은 <Link>, CTA는 진행 표시를 위해 router.push(useTransition)를 쓴다.
 export default function ClassCard({ cls }: ClassCardProps) {
   const t = useTranslations();
   const locale = useLocale() as 'ko' | 'en';
@@ -42,24 +42,24 @@ export default function ClassCard({ cls }: ClassCardProps) {
           fill
           // 1열(모바일) → 4열(xl)까지의 실제 렌더 폭. 과도한 원본 다운로드를 막는다.
           sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 25vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out-soft filter brightness-[0.97]"
+          className="object-cover filter brightness-[0.97]"
         />
 
         {/* Dark gradient vignette edge */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
 
         {/* Left Category Badge Overlays */}
-        <span className="absolute top-3 left-3 bg-brown/90 backdrop-blur-md text-cream text-[11px] font-semibold px-2.5 py-1 rounded-lg tracking-wider border border-white/5 uppercase">
+        <span className="absolute top-3 left-3 bg-brown text-cream text-xs font-semibold px-2.5 py-1 rounded-lg">
           {cls.category}
         </span>
 
         {/* Right Ownership/Discount Overlays */}
         <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
-          <span className="bg-terracotta text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full tracking-wider uppercase shadow-card">
+          <span className="bg-terracotta text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-card">
             {t('sections.card.lifetimeBadge')}
           </span>
           {discountPercent > 0 && (
-            <span className="bg-gold text-white text-[11px] font-extrabold px-1.5 py-0.5 rounded shadow-card">
+            <span className="bg-gold-deep text-white text-[11px] font-bold px-1.5 py-0.5 rounded shadow-card">
               {discountPercent}% OFF
             </span>
           )}
@@ -70,12 +70,12 @@ export default function ClassCard({ cls }: ClassCardProps) {
          * 이제 한 줄의 flex 바에 담아 gap과 truncate로 충돌을 막는다.
          */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
-          <span className="min-w-0 bg-white/95 backdrop-blur-md text-brown text-[11px] font-semibold px-2.5 py-1.5 rounded-lg shadow-card border border-brown-light/80 flex items-center gap-1.5">
+          <span className="min-w-0 bg-white text-brown text-[11px] font-semibold px-2.5 py-1.5 rounded-lg shadow-card border border-brown-light/80 flex items-center gap-1.5">
             <PlayCircle size={13} className="shrink-0 text-terracotta" />
             <span className="truncate">{t('sections.card.freeLesson')}</span>
           </span>
 
-          <span className="shrink-0 bg-brown/70 backdrop-blur text-white text-[11px] px-2 py-1 rounded whitespace-nowrap">
+          <span className="shrink-0 bg-brown text-white text-[11px] px-2 py-1 rounded whitespace-nowrap">
             {t('sections.card.students', { count: formatCount(cls.studentsCount, locale) })}
           </span>
         </div>
@@ -95,15 +95,18 @@ export default function ClassCard({ cls }: ClassCardProps) {
             </span>
           </div>
 
-          {/* Title: High serif, line limit. 버튼으로 감싸 키보드로도 도달한다. */}
+          {/*
+            제목은 상세로 가는 링크다. 예전엔 <button>이라 긴 제목이 줄바꿈될 때마다
+            "버튼 라벨이 감긴다"는 결함이 됐고(Hallmark 49a) 프리페치도 없었다.
+            로딩 표시가 필요한 주 행동은 아래 CTA 버튼(useTransition)이 맡는다.
+          */}
           <h3 className="font-serif text-[17px] sm:text-[18px] font-bold leading-snug">
-            <button
-              type="button"
-              onClick={onNavigateToDetail}
-              className="text-left text-brown line-clamp-2 hover:text-terracotta transition-colors cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            <Link
+              href={`/classes/${cls.id}`}
+              className="text-brown line-clamp-2 hover:text-terracotta-deep transition-colors rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               {cls.title}
-            </button>
+            </Link>
           </h3>
 
           {/* Multi metrics badges bar */}

@@ -2,9 +2,8 @@
 
 import Button from '@/components/ui/Button';
 import { useRouter } from '@/i18n/navigation';
-import { Award, Sparkles } from 'lucide-react';
+import { Award } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import NewsletterCTA from './sections/NewsletterCTA';
 import PhilosophyPillars from './sections/PhilosophyPillars';
 
 interface Milestone {
@@ -25,6 +24,7 @@ interface QA {
 export default function AboutScreen() {
   const router = useRouter();
   const t = useTranslations('instructor');
+  const tc = useTranslations('common');
   const onNavigateToCatalog = () => router.push('/classes');
   const onNavigateToBooks = () => router.push('/books');
 
@@ -37,86 +37,106 @@ export default function AboutScreen() {
       id="about-screen"
       className="bg-cream min-h-screen text-brown font-sans selection:bg-terracotta/20 selection:text-terracotta"
     >
-      {/* Editorial Mini Hero */}
+      {/*
+        히어로 — Hallmark Stage: 왼쪽 초상, 오른쪽에 h1·한 문장·행동 둘.
+        예전에는 행동 앞에 텍스트 블록이 12개였다(게이트 58). bio2·bio3과 수치는
+        바로 아래 '셰프 이야기'로 자리만 옮겼다(문구·수치는 그대로).
+      */}
       <section
         aria-labelledby="about-hero-heading"
-        className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 sm:pb-20 px-4 sm:px-12 max-w-7xl mx-auto border-b border-brown-light"
+        className="relative pt-8 sm:pt-12 pb-16 sm:pb-20 px-4 sm:px-12 max-w-7xl mx-auto"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Side: Chef Elegant Portrait Frame */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div className="lg:col-span-5 relative">
             <div className="relative mx-auto max-w-[340px] sm:max-w-[380px]">
-              {/* Background solid framing */}
-              <div className="absolute inset-4 bg-gold/10 rounded-2xl transform rotate-3 -z-10" />
+              <div aria-hidden className="absolute inset-4 bg-gold/10 rounded-2xl rotate-3 -z-10" />
 
-              <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-white transform -rotate-1 hover:rotate-0 transition-transform duration-500">
-                <img
-                  referrerPolicy="no-referrer"
-                  src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?auto=format&fit=crop&q=80&w=600"
-                  alt="Chef Sowoo Kim"
-                  className="w-full h-full object-cover filter brightness-[0.98]"
-                />
+              {/*
+                셰프 초상 자리 — 실제 사진을 받기 전까지 스톡 인물 사진 대신 이니셜 표지를 둔다.
+                사진이 생기면 이 div 안에 <img alt={tc('chefPortraitAria')}>를 다시 넣을 것.
+              */}
+              <div
+                role="img"
+                aria-label={tc('chefPortraitAria')}
+                className="aspect-[3/4] rounded-2xl overflow-hidden shadow-panel border-4 border-white bg-brown flex items-center justify-center -rotate-1"
+              >
+                <span aria-hidden className="font-serif text-7xl sm:text-8xl font-bold text-gold">
+                  {tc('chefMonogram')}
+                </span>
               </div>
 
-              {/* Signature badge overlay */}
-              <div className="absolute -bottom-6 -right-6 bg-white p-5 rounded-xl shadow-xl border border-brown-light/80 max-w-[190px]">
-                <p className="text-[10px] text-gold-deep font-semibold tracking-wider uppercase">
-                  Directing Chef
-                </p>
-                <h4 className="font-serif text-base font-bold text-brown mt-0.5">
-                  {t('chefName')}
-                </h4>
-                <p className="text-[10px] text-brown-medium font-light leading-relaxed mt-1">
+              {/* 모바일에서는 오른쪽으로 걸치면 뷰포트 밖으로 8px 넘쳤다 — sm부터만 바깥으로 뺀다. */}
+              <div className="absolute -bottom-6 right-0 sm:-right-6 bg-white p-5 rounded-xl shadow-panel border border-brown-light/80 max-w-[190px]">
+                <p className="text-[11px] text-gold-deep font-semibold">Directing Chef</p>
+                <p className="font-serif text-base font-bold text-brown mt-0.5">{t('chefName')}</p>
+                <p className="text-xs text-brown-medium font-light leading-relaxed mt-1">
                   {t('chefRole')}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Right Side: Philosophy & Bio Text */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-terracotta/8 text-terracotta text-[11px] font-bold tracking-wider uppercase border border-terracotta/15 shadow-sm">
-              <Sparkles size={12} className="text-terracotta" />
-              {t('heroBadge')}
-            </div>
-
             <h1
               id="about-hero-heading"
-              className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep"
+              className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-brown leading-tight break-keep [overflow-wrap:break-word] min-w-0"
             >
-              {t('heroTitle')}{' '}
-              <span className="font-serif italic text-terracotta">{t('heroTitleEm')}</span>
+              {t('heroTitle')} {t('heroTitleEm')}
             </h1>
-
-            <div className="text-sm sm:text-base text-brown-medium font-light leading-relaxed break-keep">
-              <p>{t('bio1')}</p>
-              <p className="mt-3">{t('bio2')}</p>
-              <p className="mt-3">{t('bio3')}</p>
-            </div>
-
-            {/* Quick interactive stats */}
-            <div className="grid grid-cols-3 gap-4 py-4 border-t border-b border-brown-light max-w-lg">
-              <div>
-                <p className="text-2xl font-serif font-extrabold text-terracotta">10,500+</p>
-                <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat1')}</p>
-              </div>
-              <div>
-                <p className="text-2xl font-serif font-extrabold text-gold-deep">100%</p>
-                <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat2')}</p>
-              </div>
-              <div>
-                <p className="text-2xl font-serif font-extrabold text-brown">1:1</p>
-                <p className="text-[11px] text-brown-medium font-light mt-0.5">{t('stat3')}</p>
-              </div>
-            </div>
-
+            <p className="text-base sm:text-lg text-brown-medium font-light leading-relaxed break-keep max-w-[52ch]">
+              {t('bio1')}
+            </p>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Button onClick={onNavigateToCatalog}>{t('ctaClasses')}</Button>
-              <Button variant="outline" onClick={onNavigateToBooks}>
+              <Button size="lg" onClick={onNavigateToCatalog}>
+                {t('ctaClasses')}
+              </Button>
+              <Button size="lg" variant="outline" onClick={onNavigateToBooks}>
                 {t('ctaBooks')}
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 셰프 이야기 — Split 텍스트(머리 4열 · 본문 8열) 아래 Figures(hairline 구분). */}
+      <section
+        aria-labelledby="about-story-heading"
+        className="py-20 px-6 sm:px-12 bg-white/70 border-y border-brown-light"
+      >
+        <div className="max-w-7xl mx-auto space-y-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            <h2
+              id="about-story-heading"
+              className="lg:col-span-4 font-serif text-3xl sm:text-4xl font-bold text-brown leading-tight break-keep"
+            >
+              {t('storyTitle')}
+            </h2>
+            <div className="lg:col-span-8 space-y-4 text-sm sm:text-base text-brown-medium font-light leading-relaxed break-keep max-w-[65ch]">
+              <p>{t('bio2')}</p>
+              <p>{t('bio3')}</p>
+            </div>
+          </div>
+
+          <dl className="grid grid-cols-1 sm:grid-cols-3 border-t border-brown-light">
+            <div className="py-6 sm:pr-8 border-b sm:border-b-0 sm:border-r border-brown-light">
+              <dt className="text-sm text-brown-medium">{t('stat1')}</dt>
+              <dd className="mt-2 font-serif text-4xl sm:text-5xl font-bold text-terracotta-deep tabular-nums">
+                10,500+
+              </dd>
+            </div>
+            <div className="py-6 sm:px-8 border-b sm:border-b-0 sm:border-r border-brown-light">
+              <dt className="text-sm text-brown-medium">{t('stat2')}</dt>
+              <dd className="mt-2 font-serif text-4xl sm:text-5xl font-bold text-gold-deep tabular-nums">
+                100%
+              </dd>
+            </div>
+            <div className="py-6 sm:pl-8">
+              <dt className="text-sm text-brown-medium">{t('stat3')}</dt>
+              <dd className="mt-2 font-serif text-4xl sm:text-5xl font-bold text-brown tabular-nums">
+                1:1
+              </dd>
+            </div>
+          </dl>
         </div>
       </section>
 
@@ -129,9 +149,6 @@ export default function AboutScreen() {
         className="py-20 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/70"
       >
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-          <p className="text-xs font-serif font-bold text-gold-deep tracking-[0.2em] uppercase">
-            THE Core Values
-          </p>
           <h2
             id="about-values-heading"
             className="font-serif text-3xl font-bold text-brown break-keep"
@@ -180,7 +197,9 @@ export default function AboutScreen() {
                 <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-gold border-4 border-white shadow-md group-hover:bg-terracotta transition-colors" />
 
                 <div className="space-y-1">
-                  <span className="font-mono text-sm font-bold text-gold-deep block">{ms.year}</span>
+                  <span className="font-mono text-sm font-bold text-gold-deep block">
+                    {ms.year}
+                  </span>
                   <p className="text-sm font-serif font-medium text-brown sm:text-base leading-relaxed">
                     {ms.event}
                   </p>
@@ -198,9 +217,6 @@ export default function AboutScreen() {
       >
         <div className="max-w-3xl mx-auto space-y-12">
           <div className="text-center space-y-2 mb-12">
-            <span className="text-[10px] bg-brown text-white px-3 py-1 rounded font-bold tracking-widest uppercase">
-              Deep Interview
-            </span>
             <h2
               id="about-qa-heading"
               className="font-serif text-2xl sm:text-3xl font-bold text-brown"
@@ -219,8 +235,8 @@ export default function AboutScreen() {
                 <h4 className="font-serif text-base sm:text-lg font-bold text-brown">{qa.q}</h4>
               </div>
               <div className="flex items-start gap-3 pl-2 sm:pl-4 border-l-2 border-gold/20 bg-cream/40 p-4 rounded-xl">
-                <span className="font-serif text-xs font-semibold text-stone-400 shrink-0 mt-1 uppercase">
-                  ANSWER :
+                <span className="font-serif text-lg font-extrabold text-gold-deep shrink-0">
+                  A.
                 </span>
                 <p className="text-brown-medium text-sm font-light leading-relaxed">{qa.a}</p>
               </div>
@@ -248,26 +264,24 @@ export default function AboutScreen() {
             {t('bottomDesc')}
           </p>
 
-          <div className="flex justify-center gap-3 pt-4">
+          <div className="flex flex-wrap justify-center gap-3 pt-4">
             <button
               type="button"
               onClick={onNavigateToCatalog}
-              className="px-6 py-2.5 bg-terracotta hover:bg-terracotta-deep text-cream text-xs font-bold rounded-xl shadow-md transition-colors cursor-pointer"
+              className="px-6 py-2.5 min-h-[44px] whitespace-nowrap bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-xl shadow-md transition-colors cursor-pointer"
             >
               {t('bottomCtaClasses')}
             </button>
             <button
               type="button"
               onClick={onNavigateToBooks}
-              className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-cream text-xs font-medium rounded-xl transition-colors cursor-pointer"
+              className="px-6 py-2.5 min-h-[44px] whitespace-nowrap bg-white/10 hover:bg-white/20 text-cream text-xs font-medium rounded-xl transition-colors cursor-pointer"
             >
               {t('bottomCtaBooks')}
             </button>
           </div>
         </div>
       </section>
-
-      <NewsletterCTA />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* Hallmark · checked: 2026-11-17 · genre: editorial (inferred) · built: the project · redesign: polish · v2.0.0 */
 /* /landing 후보 전용. 홈(`/`)의 아이보리·줌 히어로와 결을 갈라 둔다. */
 
 .font-landing {
@@ -237,10 +238,23 @@
     height: calc(100vh + 300vh * var(--landing-scrub-scale, 1));
   }
 
+  /* 넓은 화면에서도 카피가 헤더 컨테이너(max-w-7xl)의 왼쪽 선에 맞춰 선다.
+     예전에는 1920에서도 화면 끝 64px에 붙었다(Hallmark 44d). 위치만 바꾸며 핀 실측과 무관하다. */
   .landing-scrub[data-active] .landing-scrub__beat {
-    left: 4rem;
+    left: max(4rem, calc((100% - 80rem) / 2));
     right: auto;
     max-width: 30rem;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__actions {
+    padding-inline: max(4rem, calc((100% - 80rem) / 2));
+  }
+
+  /* 스크럽이 꺼진 정적 배치(모션 감소·JS 미실행·강등)도 같은 선에 맞춘다.
+     활성 상태에선 아래 규칙이 padding: 0으로 덮으므로 영향이 없다. */
+  .landing-scrub:not([data-active]) .landing-scrub__stage,
+  .landing-scrub:not([data-active]) .landing-scrub__actions {
+    padding-inline: max(4rem, calc((100% - 80rem) / 2));
   }
 
   .landing-scrub[data-active] .landing-scrub__beat--top {

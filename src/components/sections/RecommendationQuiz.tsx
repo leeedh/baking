@@ -24,12 +24,12 @@ function QuizOption({ label, onSelect }: { label: string; onSelect: () => void }
     <button
       type="button"
       onClick={onSelect}
-      className="w-full text-left p-4 min-h-[44px] rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-all duration-200 ease-out-soft font-medium text-sm text-brown flex items-center justify-between gap-3 group cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="w-full text-left p-4 min-h-[44px] rounded-xl border border-brown-light hover:border-terracotta hover:bg-cream/50 transition-[background-color,border-color] duration-200 ease-out-soft font-medium text-sm text-brown flex items-center justify-between gap-3 group cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <span className="break-keep">{label}</span>
       <ChevronRight
         size={14}
-        className="shrink-0 text-brown-medium/50 group-hover:text-terracotta group-hover:translate-x-0.5 transition-all duration-200"
+        className="shrink-0 text-brown-medium/50 group-hover:text-terracotta group-hover:translate-x-0.5 transition-[color,transform] duration-200"
       />
     </button>
   );
@@ -97,10 +97,6 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
           {/* Left title section */}
           <div className="md:col-span-2 bg-brown text-cream p-8 sm:p-10 flex flex-col justify-between">
             <div className="space-y-4">
-              {/* 이 컬럼은 bg-brown이다 — 어두운 면에는 gold-deep이 아니라 gold를 쓴다(4.75:1). */}
-              <p className="text-[11px] font-bold text-gold tracking-widest uppercase">
-                {t('quiz.badge')}
-              </p>
               <h2
                 id="quiz-heading"
                 className="font-serif text-2xl sm:text-3xl font-bold leading-tight break-keep"
@@ -172,9 +168,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                   <span className="text-xs font-bold bg-gold/10 px-2 py-0.5 rounded">
                     MATCH COMPLETE
                   </span>
-                  <span className="text-xs font-semibold break-keep">
-                    {tq('resultLead')}
-                  </span>
+                  <span className="text-xs font-semibold break-keep">{tq('resultLead')}</span>
                 </div>
 
                 {/* Recommendation card shortcut */}
@@ -190,9 +184,7 @@ export default function RecommendationQuiz({ classes }: RecommendationQuizProps)
                     className="w-20 h-20 rounded-lg object-cover border border-brown-light/80 shadow-card"
                   />
                   <div className="flex-1 space-y-1 min-w-0">
-                    <span className="text-[11px] text-terracotta font-bold uppercase">
-                      {quizResult.category}
-                    </span>
+                    <span className="text-xs text-terracotta font-bold">{quizResult.category}</span>
                     <h3 className="font-serif text-sm font-bold text-brown leading-tight line-clamp-1">
                       {quizResult.title}
                     </h3>

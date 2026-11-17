@@ -115,6 +115,7 @@ const I18N_DONE: string[] = [
   'sections/NewsletterCTA.tsx',
   'sections/RecommendationQuiz.tsx',
   'sections/StudentArchive.tsx',
+  'sections/ClassOfferBand.tsx', // Hallmark 구조 재설계 — 홈의 마지막 offer 밴드
   //  Phase 5 → sections/*, 'ClassesScreen.tsx', 'Header.tsx', 'MeringueHero.tsx', 'BooksScreen.tsx'
   // 랜딩 후보(`/landing`) — 홈을 대체하지 않는 비교용 화면
   'landing/LandingScreen.tsx',
