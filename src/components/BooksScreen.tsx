@@ -1,9 +1,11 @@
 'use client';
 
 import BookLinkEditor from '@/components/admin/BookLinkEditor';
+import type { Locale } from '@/i18n/routing';
 import type { BookView } from '@/lib/books';
-import { BookOpen, Check, ExternalLink, ShoppingBag } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { formatKrw } from '@/lib/format';
+import { Check, ExternalLink, ShoppingBag } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 /**
@@ -13,6 +15,7 @@ import { useState } from 'react';
  */
 export default function BooksScreen({ books }: { books: BookView[] }) {
   const t = useTranslations('books');
+  const locale = useLocale() as Locale;
   const [selectedSlug, setSelectedSlug] = useState(books[0]?.slug ?? '');
   const selectedBook = books.find((b) => b.slug === selectedSlug) ?? books[0];
 
@@ -85,7 +88,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
                     </h4>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-xs font-bold text-terracotta">
-                        ₩{b.price.toLocaleString()}
+                        {formatKrw(b.price, locale)}
                       </span>
                       {b.discountPercent > 0 && (
                         <span className="text-[11px] text-terracotta-deep font-bold">
@@ -131,7 +134,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
               <div className="text-right shrink-0 bg-cream p-4 rounded-xl border border-brown-light">
                 {selectedBook.discountPercent > 0 && (
                   <span className="text-xs text-brown-medium line-through block">
-                    ₩{selectedBook.listPrice.toLocaleString()}
+                    {formatKrw(selectedBook.listPrice, locale)}
                   </span>
                 )}
                 <div className="flex items-center gap-1.5 justify-end">
@@ -141,7 +144,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
                     </span>
                   )}
                   <span className="text-xl font-bold text-brown">
-                    ₩{selectedBook.price.toLocaleString()}
+                    {formatKrw(selectedBook.price, locale)}
                   </span>
                 </div>
                 <span className="text-[11px] text-brown-medium font-light block mt-0.5">

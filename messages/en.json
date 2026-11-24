@@ -27,7 +27,6 @@
     "quizBtn": "1:1 Custom Proposal"
   },
   "quiz": {
-    "badge": "Matchmaking Quiz",
     "title": "My Baking DNA Matchmaker",
     "desc": "From scientific calibration to trendy artistic plating, find your 100% matched baking course in under 1 minute.",
     "start": "Launch DNA Matchmaker Quiz"
@@ -52,7 +51,6 @@
   },
   "books": {
     "listAria": "Recommended books",
-    "badge": "CURATED RECIPE BOOKS",
     "title1": "Chef Sowoo Kim's Recommended",
     "titleEm": "Hands-On Recipe Books",
     "subtitle": "A curated pick of hands-on recipe books that pair well with the classes and are great for practicing at home. Purchases are made on Coupang.",
@@ -73,7 +71,6 @@
     "storyTitle": "The chef's story",
     "chefName": "Sowoo Kim",
     "chefRole": "Director & Head Patissier, Atelier Crème",
-    "heroBadge": "ATELIER OWNER CHEF PHILOSOPHY",
     "heroTitle": "Turning a flavor few can taste into everyone's",
     "heroTitleEm": "textbook",
     "bio1": "Hello, I'm Sowoo Kim, head owner chef of Atelier Crème.",
@@ -310,7 +307,6 @@
     "okConfirmSent": "We sent a confirmation email. Please verify it in your inbox and sign in."
   },
   "myclasses": {
-    "eyebrow": "My baking academy",
     "title": "My lifetime class library",
     "countBadge": "{count} classes owned",
     "subtitle": "Rewatch whenever you like with no time limit, and keep your own 1:1 question notes.",
@@ -397,7 +393,6 @@
   },
   "sections": {
     "chef": {
-      "eyebrow": "The Mastermind & Owner",
       "headingPrefix": "I am the sole artisan pâtissier behind Atelier Crème,",
       "headingName": "Sowoo Kim",
       "headingSuffix": ".",
@@ -458,15 +453,6 @@
       ]
     },
     "newsletter": {
-      "perk1": "Offline academy partnerships in Seoul and Taipei",
-      "perk2": "24-hour feedback via KakaoTalk and email",
-      "headingPrefix": "The French values that turn the everyday into art — join the",
-      "headingEm": "atelier",
-      "headingSuffix": " with your account today",
-      "description": "The moment you hold premium authentic confiture and meringue humidity correction in one hand, the balance of the neighborhood dessert shop changes. Secure lifetime access with a single purchase and join sessions taught directly by artisan chefs.",
-      "emailLabel": "Newsletter subscription email",
-      "emailPlaceholder": "Email address for recipe newsletters...",
-      "submitPending": "Coming soon",
       "noticePrefix": "We are still setting up the newsletter channel. For now, leave a note under",
       "noticeLink": "Support",
       "noticeSuffix": " and we will contact you individually when it opens."
@@ -572,7 +558,6 @@
     "metaTitle": "Atelier Crème — Night Counter",
     "metaDescription": "The atelier after hours. Keep Sowoo Kim's French pastry masterclasses for life.",
     "scrub": {
-      "kicker": "Nocturne · Seoul · Paris",
       "title1": "After the doors close,",
       "title2": "the real lesson begins",
       "desc": "Once the window lights go out, all that remains is the formula and the oven. Chef Sowoo Kim's VOD captures that night shift exactly as it runs.",

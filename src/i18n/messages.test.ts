@@ -112,7 +112,6 @@ const I18N_DONE: string[] = [
   'sections/ChefBanner.tsx',
   'sections/PhilosophyPillars.tsx',
   'sections/FaqAccordion.tsx',
-  'sections/NewsletterCTA.tsx',
   'sections/RecommendationQuiz.tsx',
   'sections/StudentArchive.tsx',
   'sections/ClassOfferBand.tsx', // Hallmark 구조 재설계 — 홈의 마지막 offer 밴드

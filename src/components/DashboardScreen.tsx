@@ -8,6 +8,7 @@ import Modal from '@/components/ui/Modal';
 import { useAdminMutation } from '@/hooks/useAdminMutation';
 import { Link } from '@/i18n/navigation';
 import { readError } from '@/lib/api/read-error';
+import { formatCount, formatKrw } from '@/lib/format';
 import { ADMIN_INQUIRY_STATUS, ORDER_STATUS } from '@/lib/status-badges';
 import type { AdminClassRow, AdminKpi, AdminOrderRow, InquiryRow } from '@/types';
 import {
@@ -72,12 +73,13 @@ export default function DashboardScreen({
 
   /** TS-API-15 · 답변 등록·상태 전이. 성공 시 서버 데이터를 다시 읽어 목록을 갱신한다. */
   const patchInquiry = (id: string, patch: { answerBody?: string; status?: string }) =>
-    runMutation(() =>
-      fetch(`/api/admin/inquiries/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      }),
+    runMutation(
+      () =>
+        fetch(`/api/admin/inquiries/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        }),
       { successMessage: '문의 답변을 등록했습니다.' },
     );
 
@@ -96,12 +98,13 @@ export default function DashboardScreen({
   };
 
   const savePriceEdit = async (id: string) => {
-    const ok = await runMutation(() =>
-      fetch(`/api/admin/courses/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceKrw: editingPrice }),
-      }),
+    const ok = await runMutation(
+      () =>
+        fetch(`/api/admin/courses/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ priceKrw: editingPrice }),
+        }),
       { successMessage: '판매가를 변경했습니다.' },
     );
     if (ok) setEditingClassId(null);
@@ -109,13 +112,16 @@ export default function DashboardScreen({
 
   const toggleStatus = async (cls: AdminClassRow) => {
     const next = cls.status === 'published' ? 'draft' : 'published';
-    await runMutation(() =>
-      fetch(`/api/admin/courses/${cls.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: next }),
-      }),
-      { successMessage: next === 'published' ? '카탈로그에 게시했습니다.' : '초안으로 내렸습니다.' },
+    await runMutation(
+      () =>
+        fetch(`/api/admin/courses/${cls.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: next }),
+        }),
+      {
+        successMessage: next === 'published' ? '카탈로그에 게시했습니다.' : '초안으로 내렸습니다.',
+      },
     );
   };
 
@@ -139,12 +145,13 @@ export default function DashboardScreen({
 
   const handleRefund = async () => {
     if (!refundTarget) return;
-    const ok = await runMutation(() =>
-      fetch(`/api/admin/orders/${refundTarget.id}/refund`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: refundReason.trim() || undefined }),
-      }),
+    const ok = await runMutation(
+      () =>
+        fetch(`/api/admin/orders/${refundTarget.id}/refund`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: refundReason.trim() || undefined }),
+        }),
       { successMessage: '환불 처리했습니다. 수강권이 회수됩니다.' },
     );
     if (!ok) return;
@@ -190,7 +197,7 @@ export default function DashboardScreen({
             </span>
           </div>
           <span className="text-2xl font-serif font-extrabold text-brown">
-            ₩{kpi.salesTotal.toLocaleString()}
+            {formatKrw(kpi.salesTotal, 'ko')}
           </span>
         </div>
 
@@ -202,7 +209,7 @@ export default function DashboardScreen({
             </span>
           </div>
           <span className="text-2xl font-serif font-extrabold text-brown">
-            {kpi.studentsTotal.toLocaleString()} 명
+            {formatCount(kpi.studentsTotal, 'ko')} 명
           </span>
         </div>
 
@@ -247,8 +254,8 @@ export default function DashboardScreen({
               className="w-full text-left border-collapse min-w-[720px]"
             >
               <caption className="sr-only">
-                클래스별 판매 실적 — 높은 매출 순으로 정렬됨. 각 행에서 단가 조정과 게시 상태
-                전환을 할 수 있습니다.
+                클래스별 판매 실적 — 높은 매출 순으로 정렬됨. 각 행에서 단가 조정과 게시 상태 전환을
+                할 수 있습니다.
               </caption>
               <thead>
                 <tr className="bg-cream/20 border-b border-brown-light text-[11px] font-bold text-brown-medium uppercase tracking-wider">
@@ -318,16 +325,16 @@ export default function DashboardScreen({
                           </button>
                         </div>
                       ) : (
-                        <span>₩{item.price.toLocaleString()}</span>
+                        <span>{formatKrw(item.price, 'ko')}</span>
                       )}
                     </td>
 
                     <td className="py-4 px-6 text-right font-mono text-brown-medium">
-                      {item.salesCount.toLocaleString()}
+                      {formatCount(item.salesCount, 'ko')}
                     </td>
 
                     <td className="py-4 px-6 text-right font-mono font-bold text-gold-deep">
-                      ₩{item.revenue.toLocaleString()}
+                      {formatKrw(item.revenue, 'ko')}
                     </td>
 
                     <td className="py-4 px-6 text-center">
@@ -455,7 +462,7 @@ export default function DashboardScreen({
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right font-mono font-medium">
-                      ₩{order.amount.toLocaleString()}
+                      {formatKrw(order.amount, 'ko')}
                     </td>
                     <td className="py-4 px-6">
                       <Badge tone={ORDER_STATUS[order.status].tone}>
@@ -624,7 +631,7 @@ export default function DashboardScreen({
               <div className="flex justify-between gap-3">
                 <dt className="text-brown-medium">환불액</dt>
                 <dd className="font-mono font-bold text-terracotta">
-                  ₩{refundTarget.amount.toLocaleString()}
+                  {formatKrw(refundTarget.amount, 'ko')}
                 </dd>
               </div>
             </dl>

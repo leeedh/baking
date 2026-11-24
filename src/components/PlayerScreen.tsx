@@ -174,8 +174,8 @@ export default function PlayerScreen({
           </div>
           <div className="w-full bg-cream h-2 rounded-full overflow-hidden">
             <div
-              className="bg-terracotta h-full w-full rounded-full origin-left transition-transform duration-500"
-              style={{ transform: `scaleX(${progressPercent / 100})` }}
+              className="bg-terracotta h-full w-full rounded-full transition-transform duration-500"
+              style={{ transform: `translateX(${progressPercent - 100}%)` }}
             />
           </div>
           <div className="flex justify-between text-[11px] text-brown-medium">

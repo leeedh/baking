@@ -157,8 +157,8 @@ export default function MyClassesScreen({ courses: purchasedClasses }: MyClasses
                       </div>
                       <div className="w-full bg-white h-2 rounded-full overflow-hidden border border-brown-light/60">
                         <div
-                          className="bg-terracotta h-full w-full rounded-full origin-left transition-transform duration-300"
-                          style={{ transform: `scaleX(${progress / 100})` }}
+                          className="bg-terracotta h-full w-full rounded-full transition-transform duration-300"
+                          style={{ transform: `translateX(${progress - 100}%)` }}
                         />
                       </div>
                       <div className="flex justify-between text-[11px] text-brown-medium pt-0.5">
