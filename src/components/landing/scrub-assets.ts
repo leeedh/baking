@@ -3,8 +3,9 @@ import type { ScrubAsset } from './LandingScrubHero';
 /**
  * 플라밍고 스크럽 자산 — 홈(`/`) 히어로와 비교 경로 `/landing2`가 공유한다.
  *
- * 1280x720 가로 영상. 컨테이너를 `object-fit: cover`로 채우므로 세로 화면에서는
- * 좌우가 크게 잘린다(`landing.css`의 `.landing-scrub__video`).
+ * 1280x720 가로 영상. 가로 화면에서는 컨테이너를 `object-fit: cover`로 채우고,
+ * 세로 화면에서는 `portraitScale`로 contain 후 확대해 플라밍고 전체를 폭 안에 넣는다
+ * (cover 그대로면 390폭에서 원본 가로 33%만 보여 머리·꼬리가 잘렸다).
  *
  * 원본은 `assets/source/flamingo2.mp4`(2560x1440, 10.125초, 24fps)다 — 키프레임이
  * 첫 프레임 하나뿐이라 임의 지점 seek마다 처음부터 디코딩했다. 아래 파일은
@@ -33,4 +34,7 @@ export const FLAMINGO_ASSET: ScrubAsset = {
   scrollScale: 1.27,
   /* 16:9를 cover로 채우면 플라밍고가 화면에 비해 크다. 살짝만 줄인다. */
   zoom: 0.88,
+  /* 완성 프레임의 플라밍고는 가로 20%~88%(픽셀 실측)다. 1/1.25 = 가운데 80%(10%~90%)를
+     보여 좌우에 여유를 남긴다. 영상을 교체하면 피사체 폭을 다시 재서 맞출 것. */
+  portraitScale: 1.25,
 };

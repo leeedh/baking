@@ -107,6 +107,37 @@
   transform: scale(var(--landing-scrub-zoom, 1));
 }
 
+/* 세로 화면 — 가로로 넓은 피사체(플라밍고)는 cover로 채우면 머리·꼬리가 잘린다
+ * (390×844 실측: 원본 가로의 33%만 노출). 영상 상자를 원본 비율(16:9)로 두어 프레임
+ * 전체를 담고, ScrubAsset.portraitScale만큼 키운다. 좌우 넘침은 핀의 overflow가 자른다.
+ * 배율은 상수라 스크럽 중 합성 비용이 늘지 않는다.
+ *
+ * 상자를 핀 전체로 두고 `object-fit: contain`만 걸지 않는 이유 — 아래 마스크가 요소 상자
+ * 기준이라, 레터박스 상자에 걸면 영상 경계가 아니라 핀 경계를 녹인다. */
+@media (max-aspect-ratio: 1 / 1) {
+  .landing-scrub[data-portrait-fit] .landing-scrub__video {
+    height: auto;
+    aspect-ratio: 16 / 9;
+    transform: scale(var(--landing-scrub-portrait-scale, 1));
+    /* 영상 배경은 크림에 맞췄지만 ±7/255 차이가 상하 경계에 가로선으로 비친다(390폭 실측).
+       경계만 녹인다 — 피사체는 세로 8%~88% 안이라 가리지 않는다. */
+    mask-image: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  }
+
+  /* 활성 배치에서는 영상 중심을 핀 높이의 32%에 둔다. 가운데(50%)에 두면 완성 구간 카피
+   * (`--finale`·`--bottom`, 핀 하단에서 액션 바 위로 쌓인다)가 플라밍고 머리를 덮는다.
+   * 처음엔 27%였는데, 완성 문구의 지표 띠를 빼 카피가 내려앉자 받침과 제목 사이가
+   * 비어(390폭 약 80px) 영상을 그만큼 따라 내렸다.
+   * 01 제목은 시작 프레임(짤주머니·받침)과 겹치지만 기존 cover 배치도 그랬다.
+   * translateY(-50%)는 배율 전 상자 기준이라 `top`이 곧 시각 중심이 된다. */
+  .landing-scrub[data-active][data-portrait-fit] .landing-scrub__video {
+    inset: auto 0;
+    top: 32%;
+    height: auto;
+    transform: translateY(-50%) scale(var(--landing-scrub-portrait-scale, 1));
+  }
+}
+
 /* 좌우는 크림으로 눌러 카피를 띄우고, 가운데도 완전히 비우지 않는다.
  * `transparent`로 두면 케이크가 밝은 프레임에서 10px 키커(gold-deep)와
  * 9px 지표 라벨의 대비가 프레임마다 달라져 어떤 정적 검증으로도 보장되지 않는다.
@@ -137,6 +168,12 @@
 
 .landing-scrub__beat {
   max-width: 34rem;
+}
+
+/* 02~04 래퍼. 정적 배치에서는 상자를 만들지 않아 문구가 stage의 세로 흐름에 그대로 쌓인다.
+ * 활성 배치에서만 한 칸 grid가 된다(아래 `[data-active]` 규칙). */
+.landing-scrub__beats {
+  display: contents;
 }
 
 /* 스크럽이 꺼진 모든 경로(SSR·JS 미실행·모션 감소·로드 실패 강등)에서 카피는 반드시 보인다.
@@ -208,26 +245,38 @@
   bottom: calc(1.25rem + var(--landing-actions-h));
 }
 
-/* 활성 상태에선 카피가 같은 자리를 나눠 쓰며 교차 페이드한다. */
-.landing-scrub[data-active] .landing-scrub__beat {
+/* 활성 상태에선 카피가 같은 자리를 나눠 쓰며 교차 페이드한다.
+ * 01은 상단에 단독으로, 02~04는 래퍼(`__beats`)가 하단에 서고 그 안에서 겹친다.
+ * opacity는 rAF가 프레임마다 직접 쓴다. transition을 걸면 스크롤보다 늦게 따라온다. */
+.landing-scrub[data-active] .landing-scrub__beat--top,
+.landing-scrub[data-active] .landing-scrub__beats {
   position: absolute;
   left: 1.5rem;
   right: 1.5rem;
   max-width: 32rem;
-  /* opacity는 rAF가 프레임마다 직접 쓴다. transition을 걸면 스크롤보다 늦게 따라온다. */
 }
 
 .landing-scrub[data-active] .landing-scrub__beat--top {
   top: 4.5rem;
 }
 
-.landing-scrub[data-active] .landing-scrub__beat--bottom,
-.landing-scrub[data-active] .landing-scrub__beat--finale {
+/* 02~04를 한 칸에 겹쳐 **위쪽**을 맞춘다. 칸 높이는 가장 큰 문구가 정하고,
+ * 래퍼의 아래 끝은 액션 바 위에 고정된다. 예전처럼 각 문구를 아래 끝에만 고정하면
+ * 키 차이만큼 02·03 제목이 04보다 낮게 시작했다(390폭 실측 110px). */
+.landing-scrub[data-active] .landing-scrub__beats {
+  display: grid;
   bottom: calc(3.5rem + var(--landing-actions-h));
 }
 
+.landing-scrub[data-active] .landing-scrub__beats > .landing-scrub__beat {
+  position: relative;
+  grid-area: 1 / 1;
+  align-self: start;
+}
+
 @media (min-width: 640px) {
-  .landing-scrub[data-active] .landing-scrub__beat {
+  .landing-scrub[data-active] .landing-scrub__beat--top,
+  .landing-scrub[data-active] .landing-scrub__beats {
     left: 3rem;
     right: 3rem;
   }
@@ -240,7 +289,8 @@
 
   /* 넓은 화면에서도 카피가 헤더 컨테이너(max-w-7xl)의 왼쪽 선에 맞춰 선다.
      예전에는 1920에서도 화면 끝 64px에 붙었다(Hallmark 44d). 위치만 바꾸며 핀 실측과 무관하다. */
-  .landing-scrub[data-active] .landing-scrub__beat {
+  .landing-scrub[data-active] .landing-scrub__beat--top,
+  .landing-scrub[data-active] .landing-scrub__beats {
     left: max(4rem, calc((100% - 80rem) / 2));
     right: auto;
     max-width: 30rem;
@@ -261,8 +311,7 @@
     top: 6rem;
   }
 
-  .landing-scrub[data-active] .landing-scrub__beat--bottom,
-  .landing-scrub[data-active] .landing-scrub__beat--finale {
+  .landing-scrub[data-active] .landing-scrub__beats {
     bottom: calc(4.5rem + var(--landing-actions-h));
   }
 }
@@ -294,5 +343,10 @@
     position: relative;
     inset: auto;
     opacity: 1 !important;
+  }
+
+  .landing-scrub[data-active] .landing-scrub__beats {
+    position: static;
+    display: contents;
   }
 }

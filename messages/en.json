@@ -579,21 +579,7 @@
       "searchPlaceholder": "Search classes, desserts, techniques",
       "searchAria": "Search classes",
       "ctaEnter": "Enter the classes",
-      "ctaChef": "Meet the chef",
-      "stats": [
-        {
-          "value": "4,800+",
-          "label": "Students"
-        },
-        {
-          "value": "4.9",
-          "label": "Avg. rating"
-        },
-        {
-          "value": "Lifetime",
-          "label": "Access"
-        }
-      ]
+      "ctaChef": "Meet the chef"
     },
     "stations": {
       "eyebrow": "Mise en place",

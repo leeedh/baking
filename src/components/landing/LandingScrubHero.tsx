@@ -54,6 +54,13 @@ export interface ScrubAsset {
    * **배경을 크림에 맞춘 영상에서만 쓸 것**(그렇지 않으면 경계가 사각형으로 보인다).
    */
   zoom?: number;
+  /**
+   * 세로 뷰포트(가로:세로 ≤ 1)에서 cover 대신 contain으로 전체 프레임을 맞춘 뒤 곱하는 배율.
+   * 피사체가 가로로 넓어 cover로 채우면 양끝이 잘리는 영상에만 쓴다 — **배경을 크림에 맞춘
+   * 영상에서만**(위아래로 드러나는 영상 경계가 핀 배경과 이어져야 한다). 지정하면 세로 화면에서
+   * `zoom`은 무시된다. 좌우 넘침은 핀의 `overflow: hidden`이 자른다.
+   */
+  portraitScale?: number;
 }
 
 const DEFAULT_ASSET: ScrubAsset = {
@@ -77,7 +84,6 @@ const FINALE = BEATS.length - 1;
 const FADE = 0.06;
 
 type Beat = { title: string; emphasis: string; body: string };
-type Stat = { value: string; label: string };
 
 export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: ScrubAsset }) {
   const t = useTranslations('landing.scrub');
@@ -210,7 +216,6 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
   }, [trackRef]);
 
   const beats = t.raw('beats') as Beat[];
-  const stats = t.raw('stats') as Stat[];
 
   const goSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,10 +238,14 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
       aria-labelledby="landing-scrub-heading"
       className="landing-scrub relative"
       data-active={active || undefined}
+      data-portrait-fit={asset.portraitScale ? true : undefined}
       style={
         {
           ...(asset.scrollScale && { '--landing-scrub-scale': asset.scrollScale }),
           ...(asset.zoom && { '--landing-scrub-zoom': asset.zoom }),
+          ...(asset.portraitScale && {
+            '--landing-scrub-portrait-scale': asset.portraitScale,
+          }),
         } as React.CSSProperties
       }
     >
@@ -333,52 +342,53 @@ export default function LandingScrubHero({ asset = DEFAULT_ASSET }: { asset?: Sc
             </p>
           </div>
 
-          {/* 02~03 — 공정 해설. 피핑·마감 구간에 맞춰 교차한다. */}
-          {beats.map((beat, i) => (
+          {/*
+            02~04를 한 칸(grid cell)에 겹쳐 위쪽을 맞춘다. 셋 다 아래 끝에만 고정하면 키 차이만큼
+            제목 높이가 어긋난다. 칸 높이는 가장 큰 문구가 정하므로 뷰포트·번역 길이가 바뀌어도
+            세 제목이 같은 높이에 선다.
+            04에 있던 지표 띠(수강생·평점·소장 기간)는 뺐다 — 04만 키가 커져 02·03 아래에
+            180px(390폭) 빈자리가 생겼다. 다시 넣으면 그 빈자리도 되돌아온다.
+            정적 배치에서는 `display: contents`라 문구가 그대로 세로로 쌓인다(`landing.css`).
+          */}
+          <div className="landing-scrub__beats">
+            {/* 02~03 — 공정 해설. 피핑·마감 구간에 맞춰 교차한다. */}
+            {beats.map((beat, i) => (
+              <div
+                key={beat.title}
+                ref={setBeatRef(i + 1)}
+                className="landing-scrub__beat landing-scrub__beat--bottom"
+              >
+                <p className="font-landing text-2xl sm:text-3xl lg:text-4xl leading-[1.2] text-brown break-keep">
+                  <span className="block">{beat.title}</span>
+                  <span className="block italic text-gold-deep">{beat.emphasis}</span>
+                </p>
+                <p className="mt-4 max-w-sm text-sm leading-relaxed text-brown-medium font-light break-keep">
+                  {beat.body}
+                </p>
+              </div>
+            ))}
+
+            {/* 04 — 완성. 셰프 소개로 전환을 받는다. 검색·1차 CTA는 상시 액션 레이어에 있다. */}
             <div
-              key={beat.title}
-              ref={setBeatRef(i + 1)}
-              className="landing-scrub__beat landing-scrub__beat--bottom"
+              ref={setBeatRef(FINALE)}
+              className="landing-scrub__beat landing-scrub__beat--finale"
+              inert={active && !finaleReady}
             >
               <p className="font-landing text-2xl sm:text-3xl lg:text-4xl leading-[1.2] text-brown break-keep">
-                <span className="block">{beat.title}</span>
-                <span className="block italic text-gold-deep">{beat.emphasis}</span>
+                <span className="block">{t('finaleTitle')}</span>
+                <span className="block italic text-gold-deep">{t('finaleEmphasis')}</span>
               </p>
-              <p className="mt-4 max-w-sm text-sm leading-relaxed text-brown-medium font-light break-keep">
-                {beat.body}
-              </p>
-            </div>
-          ))}
 
-          {/* 04 — 완성. 지표·검색·CTA로 전환을 받는다. */}
-          <div
-            ref={setBeatRef(FINALE)}
-            className="landing-scrub__beat landing-scrub__beat--finale"
-            inert={active && !finaleReady}
-          >
-            <p className="font-landing text-2xl sm:text-3xl lg:text-4xl leading-[1.2] text-brown break-keep">
-              <span className="block">{t('finaleTitle')}</span>
-              <span className="block italic text-gold-deep">{t('finaleEmphasis')}</span>
-            </p>
-
-            <dl className="mt-6 grid grid-cols-3 gap-3 max-w-sm border-y border-gold-deep/30 py-4">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <dt className="text-xs text-gold-deep">{stat.label}</dt>
-                  <dd className="font-landing mt-1 text-xl sm:text-2xl text-brown">{stat.value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            {/* 검색과 `ctaEnter`는 상시 액션 레이어로 올라갔다. 여기 남은 보조 CTA 하나만
-                inert가 가리므로, 투명한 동안 Tab 포커스가 빨려 들어가지 않는다. */}
-            <div className="mt-6">
-              <Link
-                href="/about"
-                className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-sm font-semibold hover:border-gold-deep hover:bg-gold-deep/10 landing-cta cursor-pointer"
-              >
-                {t('ctaChef')}
-              </Link>
+              {/* 검색과 `ctaEnter`는 상시 액션 레이어로 올라갔다. 여기 남은 보조 CTA 하나만
+                  inert가 가리므로, 투명한 동안 Tab 포커스가 빨려 들어가지 않는다. */}
+              <div className="mt-6">
+                <Link
+                  href="/about"
+                  className="inline-flex items-center justify-center min-h-[44px] px-7 border border-gold-deep/60 text-gold-deep text-sm font-semibold hover:border-gold-deep hover:bg-gold-deep/10 landing-cta cursor-pointer"
+                >
+                  {t('ctaChef')}
+                </Link>
+              </div>
             </div>
           </div>
         </div>
