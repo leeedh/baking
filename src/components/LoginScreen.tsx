@@ -131,9 +131,7 @@ export default function LoginScreen() {
             <span className="font-serif text-3xl font-bold tracking-tight text-brown">
               Atelier Crème
             </span>
-            <p className="text-xs text-brown-medium mt-2 font-sans tracking-wide">
-              {t('tagline')}
-            </p>
+            <p className="text-xs text-brown-medium mt-2 font-sans tracking-wide">{t('tagline')}</p>
           </div>
 
           {/* Tab Selection */}
@@ -190,7 +188,7 @@ export default function LoginScreen() {
             {/* Name - Register only */}
             {!isLoginTab && (
               <div>
-                <label className="block text-xs font-semibold text-brown uppercase tracking-wide mb-1.5">
+                <label className="block text-xs font-semibold text-brown mb-1.5">
                   {t('nameLabel')}
                 </label>
                 <div className="relative">
@@ -200,7 +198,7 @@ export default function LoginScreen() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t('namePlaceholder')}
-                    className="w-full px-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
+                    className="w-full px-4 py-2.5 bg-cream/40 border border-edge rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-[color,background-color,border-color,box-shadow,opacity,transform]"
                   />
                 </div>
               </div>
@@ -208,7 +206,7 @@ export default function LoginScreen() {
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-brown uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-semibold text-brown mb-1.5">
                 {t('emailLabel')}
               </label>
               <div className="relative">
@@ -221,7 +219,7 @@ export default function LoginScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="creme@ateliercreme.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-cream/40 border border-edge rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-[color,background-color,border-color,box-shadow,opacity,transform]"
                   required
                 />
               </div>
@@ -230,7 +228,7 @@ export default function LoginScreen() {
             {/* Password */}
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-xs font-semibold text-brown uppercase tracking-wide">
+                <label className="block text-xs font-semibold text-brown">
                   {t('passwordLabel')}
                 </label>
                 {isLoginTab && (
@@ -240,7 +238,7 @@ export default function LoginScreen() {
                       e.preventDefault();
                       setErrorMsg(t('notImplementedResetPw'));
                     }}
-                    className="text-[10px] text-gold-deep hover:underline font-medium"
+                    className="text-[11px] text-gold-deep hover:underline font-medium"
                   >
                     {t('forgotPassword')}
                   </a>
@@ -256,7 +254,7 @@ export default function LoginScreen() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-cream/40 border border-brown-light rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-cream/40 border border-edge rounded-lg text-sm text-brown placeholder:text-brown-medium/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-[color,background-color,border-color,box-shadow,opacity,transform]"
                   required
                 />
                 <button
@@ -289,13 +287,9 @@ export default function LoginScreen() {
               id="btn-auth-submit"
               type="submit"
               disabled={submitting}
-              className="w-full py-3 px-4 bg-terracotta hover:bg-terracotta-deep disabled:opacity-60 disabled:cursor-not-allowed text-cream font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-3 px-4 bg-terracotta hover:bg-terracotta-deep disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-[color,background-color,border-color,box-shadow,opacity,transform] transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
             >
-              {submitting
-                ? t('submitting')
-                : isLoginTab
-                  ? t('submitLogin')
-                  : t('submitRegister')}
+              {submitting ? t('submitting') : isLoginTab ? t('submitLogin') : t('submitRegister')}
             </button>
           </form>
 
@@ -304,10 +298,8 @@ export default function LoginScreen() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-brown-light" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-brown-medium/50 font-medium">
-                {t('orSocial')}
-              </span>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-3 text-brown-medium font-medium">{t('orSocial')}</span>
             </div>
           </div>
 
@@ -320,7 +312,7 @@ export default function LoginScreen() {
               className="flex items-center justify-center gap-2 py-2 px-3 border border-brown-light rounded-lg bg-white hover:bg-cream/40 transition-colors text-xs font-medium text-brown cursor-pointer"
             >
               {/* 구글 로고의 4색은 브랜드 가이드가 정한 고정값이라 토큰화 대상이 아니다(DC-57). */}
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="#4285F4"
                   d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.9h6.69c-.29 1.5-.143 2.78-1.566 3.73l2.451 1.91c1.433-1.32 2.26-3.26 2.26-5.56z"
@@ -342,7 +334,7 @@ export default function LoginScreen() {
             </button>
           </div>
 
-          <p className="text-[10px] text-center text-brown-medium/60 mt-8 leading-normal">
+          <p className="text-xs text-center text-brown-medium mt-8 leading-normal">
             {t.rich('terms', {
               terms: (chunks) => (
                 <a href="#terms" className="underline hover:text-terracotta">

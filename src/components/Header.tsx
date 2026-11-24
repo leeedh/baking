@@ -103,7 +103,7 @@ export default function Header() {
         onClick={() => setIsOpen(false)}
         aria-current={active ? 'page' : undefined}
         className={cn(
-          'rounded-lg transition-all duration-200 cursor-pointer',
+          'rounded-lg whitespace-nowrap transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-200 cursor-pointer',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
           mobile
             ? 'w-full text-left px-4 py-2.5 min-h-[44px] flex items-center gap-1.5 text-xs font-bold'
@@ -117,8 +117,8 @@ export default function Header() {
                 )
               : 'text-brown-medium hover:text-gold-deep hover:bg-gold/5'
             : active
-              ? cn('text-terracotta bg-terracotta/5 font-bold', !mobile && 'shadow-sm')
-              : 'text-brown-medium hover:text-terracotta hover:bg-terracotta/5',
+              ? cn('text-terracotta-deep bg-terracotta/5 font-bold', !mobile && 'shadow-sm')
+              : 'text-brown-medium hover:text-terracotta-deep hover:bg-terracotta/5',
         )}
       >
         {admin && <ShieldAlert size={14} className="text-gold-deep shrink-0" />}
@@ -150,7 +150,7 @@ export default function Header() {
             <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-brown whitespace-nowrap">
               Atelier Crème
             </span>
-            <p className="hidden sm:block text-[10px] tracking-wide text-brown-medium uppercase font-sans">
+            <p className="hidden sm:block text-[11px] text-brown-medium font-sans">
               Premium French Baking Atelier
             </p>
           </div>
@@ -183,7 +183,7 @@ export default function Header() {
                 onClick={() => switchLocale(code)}
                 aria-current={locale === code ? 'true' : undefined}
                 className={cn(
-                  'px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-md transition-all cursor-pointer',
+                  'px-2 py-1 text-[11px] sm:text-xs font-semibold rounded-md transition-[color,background-color,border-color,box-shadow,opacity,transform] cursor-pointer',
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                   locale === code
                     ? 'bg-brown text-cream shadow-sm'
@@ -221,7 +221,7 @@ export default function Header() {
               href="/login"
               id="nav-login-cta"
               onClick={() => setIsOpen(false)}
-              className="hidden md:flex px-4 py-2 bg-brown text-cream text-xs font-medium rounded-lg hover:bg-terracotta transition-all cursor-pointer items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="hidden md:flex px-4 py-2 bg-brown text-white text-xs font-medium rounded-lg hover:bg-terracotta transition-[color,background-color,border-color,box-shadow,opacity,transform] cursor-pointer items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <LogIn size={14} />
               {t('nav.login')}
@@ -283,7 +283,7 @@ export default function Header() {
                 type="button"
                 id="btn-logout-mobile"
                 onClick={handleLogout}
-                className="w-full mt-1 px-3 py-2 min-h-[44px] border border-terracotta/30 text-terracotta rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-terracotta/5 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="w-full mt-1 px-3 py-2 min-h-[44px] border border-terracotta/30 text-terracotta rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-terracotta/5 transition-[color,background-color,border-color,box-shadow,opacity,transform] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <LogOut size={13} />
                 {t('nav.logout')}
@@ -295,7 +295,7 @@ export default function Header() {
                 href="/login"
                 id="nav-login-cta-mobile"
                 onClick={() => setIsOpen(false)}
-                className="w-full py-2.5 min-h-[44px] bg-brown text-cream text-xs font-bold rounded-lg hover:bg-terracotta transition-all flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="w-full py-2.5 min-h-[44px] bg-brown text-white text-xs font-bold rounded-lg hover:bg-terracotta transition-[color,background-color,border-color,box-shadow,opacity,transform] flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <LogIn size={13} />
                 {t('nav.login')}

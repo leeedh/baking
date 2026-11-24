@@ -13,7 +13,7 @@ export default function NotFound() {
         <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 text-gold-deep flex items-center justify-center">
           <Croissant size={26} />
         </div>
-        <p className="text-xs font-bold text-gold-deep tracking-[0.3em] uppercase">404</p>
+        <p className="text-sm font-bold text-gold-deep">404</p>
         <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brown break-keep">
           찾으시는 페이지가 없습니다
         </h1>

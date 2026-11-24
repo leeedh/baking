@@ -10,14 +10,12 @@ export default function AnnouncementBar() {
         className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-1"
       >
         <div className="flex items-start sm:items-center gap-2 min-w-0">
-          <span className="shrink-0 bg-terracotta text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase">
-            PROMO
+          <span className="shrink-0 bg-terracotta text-white text-[11px] font-bold px-1.5 py-0.5 rounded">
+            Promo
           </span>
-          <span className="text-[11px] font-light tracking-wide break-keep">
-            {t('sections.announcement.promo')}
-          </span>
+          <span className="text-xs font-light break-keep">{t('sections.announcement.promo')}</span>
         </div>
-        <div className="hidden md:flex items-center gap-4 text-[11px] text-white/80">
+        <div className="hidden md:flex items-center gap-4 text-xs text-white/80">
           <span>{t('sections.announcement.perk1')}</span>
           <span>{t('sections.announcement.perk2')}</span>
         </div>

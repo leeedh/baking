@@ -21,4 +21,17 @@ const nextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+// next-intl v3 플러그인은 Turbopack alias를 구 키 `experimental.turbo`에 넣어 Next 15.3+에서
+// 매 기동마다 deprecated 경고가 뜬다. 같은 설정을 정식 키 `turbopack`으로 옮긴다(v4 업그레이드 시 제거).
+const config = withNextIntl(nextConfig);
+if (config.experimental?.turbo) {
+  const { turbo, ...experimental } = config.experimental;
+  config.turbopack = {
+    ...config.turbopack,
+    ...turbo,
+    resolveAlias: { ...config.turbopack?.resolveAlias, ...turbo.resolveAlias },
+  };
+  config.experimental = experimental;
+}
+
+export default config;

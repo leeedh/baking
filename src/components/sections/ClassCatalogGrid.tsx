@@ -4,7 +4,11 @@ import Button from '@/components/ui/Button';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { cn } from '@/lib/cn';
-import { ALL_CATEGORIES, CATEGORY_FILTER_VALUES, courseCategoryLabelKey } from '@/lib/course-categories';
+import {
+  ALL_CATEGORIES,
+  CATEGORY_FILTER_VALUES,
+  courseCategoryLabelKey,
+} from '@/lib/course-categories';
 import { BadgeAlert, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type CSSProperties, useState } from 'react';
@@ -29,7 +33,8 @@ export default function ClassCatalogGrid({
   const revealRef = useRevealOnScroll<HTMLDivElement>();
 
   const filteredClasses = classes.filter((cls) => {
-    const matchesCategory = selectedCategory === ALL_CATEGORIES || cls.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === ALL_CATEGORIES || cls.category === selectedCategory;
     const q = searchQuery.toLowerCase();
     const matchesSearch =
       cls.title.toLowerCase().includes(q) ||
@@ -41,11 +46,13 @@ export default function ClassCatalogGrid({
   return (
     <>
       <span id="catalog-grid-anchor" className="block relative -top-6" />
-      <section aria-labelledby="catalog-heading" className="py-20 px-6 sm:px-12 max-w-7xl mx-auto">
+      <section
+        aria-labelledby="catalog-heading"
+        className="pt-8 sm:pt-10 pb-20 px-6 sm:px-12 max-w-7xl mx-auto"
+      >
         {/* Section Heading with curation touch */}
         <SectionHeading
           id="catalog-heading"
-          eyebrow="The Atelier Lineup"
           title={t('sections.catalog.title')}
           description={t('sections.catalog.description')}
           action={
@@ -62,7 +69,7 @@ export default function ClassCatalogGrid({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('sections.catalog.searchPlaceholder')}
                   aria-label={t('sections.catalog.searchAria')}
-                  className="w-full pl-8 pr-3 py-2.5 min-h-[44px] bg-white border border-brown-light rounded-xl text-xs text-brown placeholder:text-brown-medium/60 transition-[border-color] hover:border-terracotta/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  className="w-full pl-8 pr-3 py-2.5 min-h-[44px] bg-white border border-edge rounded-xl text-xs text-brown placeholder:text-brown-medium/60 transition-[border-color] hover:border-terracotta/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 />
               </div>
 

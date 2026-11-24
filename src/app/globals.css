@@ -1,3 +1,17 @@
+/* Hallmark · checked: 2026-11-17 · genre: editorial (inferred)
+ * floor: 210 → 85 FAIL (잔여는 범위 밖 운영자 콘솔·미마운트 MeringueHero·/landing 비교 섹션 다수) · fixed: 10a 12 19 27 33 34 38i 40 48 54 63 67 75 29 11 · structural: 5 printed (8, 44d, 49a 카드 제목, 58 /about 히어로, 79 /classes·/books)
+ * built: the project · redesign: polish · v2.0.0 */
+/* Hallmark · dismissed 44b · 1280x800에서 스크럽 활성 후 실측 h1 212–394px, 검색·CTA 723–800px로 화면 안에 든다; 린터는 스크럽 활성 전 정적 배치를 쟀다 */
+/* Hallmark · dismissed 62 · data-reveal="out"은 useRevealOnScroll이 마운트 시 넣는 값이라 스크립트가 없으면 속성 자체가 없고 콘텐츠가 보인다 */
+/* Hallmark · dismissed 6a · landing.css의 100vh는 스크럽 스크롤 트랙 길이이고 화면에 고정되는 핀은 100svh다 */
+/* Hallmark · dismissed 4 · ClassCard 58·62·73행은 이미지 위 배지이지 카드 속 카드가 아니다 */
+/* Hallmark · dismissed 67 · 헤더 Atelier Crème 아래 태그라인은 워드마크 락업의 일부이고 이제 대문자·자간 없이 11px이다 */
+/* Hallmark · redesign: full (selective) · 홈 anatomy(buy: 상품→철학 Rows→셰프→아카이브→offer 밴드), /classes Index posture, /about Stage + 셰프 이야기, 히어로 1920 정렬, 카드 제목 링크 */
+/* Hallmark · dropped 뉴스레터 비활성 이메일 필드 3개(/ko·/classes·/about)와 그 헤딩 · 발송 채널이 없어 buy 페이지의 마지막에 맞지 않는다(85); 안내 문구는 Footer 한 줄로 옮겼다 */
+/* Hallmark · reworded "수강생 실습 아카이브" to "수강생 실습 아카이브 예시 콘텐츠" · 46a, 실제 후기가 아닌 샘플임을 헤딩에 밝힌다 */
+/* Hallmark · reworded "Select Book" to "도서 선택", "SELECTED BOOK" to "선택한 도서", "NOTICE" to "안내" · 67 */
+/* Hallmark · dropped 셰프 스톡 인물 사진 2곳 · 실제 셰프로 오인될 수 있어(46a) 이니셜 표지로 대체; 아카이브의 404 사진 2장은 라이브러리 사진으로 교체하고 Footer에 출처 */
+/* Hallmark · waive 49b · a.text-brown.line-clamp-2 card title links wrap at 320px · on /classes and the home grid the titles are catalog names such as "타르트 에디토리얼" that stay whole; line-clamp-2 caps them at two lines */
 /* 외부 폰트 @import는 tailwindcss 인라인 전개보다 앞에 와야 한다 (Turbopack CSS 파서: @import는 모든 룰보다 선행) */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
@@ -30,6 +44,9 @@
   --color-brown-light: #efe8dc;
   --color-brown-medium: #5f4e43;
   --color-brown-deep: #4e3c30;
+  /* 입력 필드 테두리 — brown-light(1.2:1)는 필드 경계로 보이지 않았다.
+     white 위 4.08:1, cream 위 3.7:1로 WCAG 1.4.11(비텍스트 3:1)을 넘긴다. */
+  --color-edge: #8a7b70;
 
   /* 포커스 링 (ring-ring / outline-ring) */
   --color-ring: #b65538;
@@ -46,6 +63,8 @@
   --shadow-card: 0 1px 2px 0 rgb(42 33 27 / 0.05);
   --shadow-card-hover: 0 18px 40px -12px rgb(42 33 27 / 0.22);
   --shadow-panel: 0 8px 24px -12px rgb(42 33 27 / 0.18);
+  /* 화면 하단 고정 바(모바일 구매 바)가 위쪽으로 드리우는 그림자 */
+  --shadow-bar: 0 -8px 20px rgb(42 33 27 / 0.08);
 
   /* 이징 — 브랜드 모션의 기본 곡선 */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -116,9 +135,13 @@ html {
   /* 단일 웜 라이트 테마 — 다크 테마는 미도입이므로 브라우저 자동 반전을 막는다 */
   color-scheme: light;
   scroll-behavior: smooth;
+  /* 한 요소가 넘쳐도 페이지 전체가 옆으로 밀리지 않게. hidden이 아니라 clip이라
+     스크롤 컨테이너가 생기지 않아 sticky 헤더가 그대로 동작한다. */
+  overflow-x: clip;
 }
 
 body {
+  overflow-x: clip;
   background-color: var(--color-cream);
   color: var(--color-brown);
   font-family: var(--font-sans);
@@ -162,9 +185,7 @@ body {
  * ScrollTrigger.getAll()을 전역 kill하므로 다른 섹션의 트리거까지 날아간다.
  */
 [data-reveal] {
-  transition:
-    opacity 0.55s var(--ease-out-soft),
-    transform 0.55s var(--ease-out-soft);
+  transition: opacity 0.55s var(--ease-out-soft), transform 0.55s var(--ease-out-soft);
   transition-delay: var(--reveal-delay, 0ms);
 }
 [data-reveal="out"] {

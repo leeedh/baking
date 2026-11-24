@@ -19,8 +19,8 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="ko">
-      <body className="bg-cream text-brown font-sans">
+    <html lang="ko" className="overflow-x-clip">
+      <body className="overflow-x-clip bg-cream text-brown font-sans">
         <div className="min-h-screen flex items-center justify-center px-6 py-20">
           <div className="max-w-md w-full text-center space-y-5">
             <h1 className="font-serif text-2xl sm:text-3xl font-bold break-keep">

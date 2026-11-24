@@ -27,12 +27,12 @@
     "quizBtn": "1:1 Custom Proposal"
   },
   "quiz": {
-    "badge": "Matchmaking Quiz",
     "title": "My Baking DNA Matchmaker",
     "desc": "From scientific calibration to trendy artistic plating, find your 100% matched baking course in under 1 minute.",
     "start": "Launch DNA Matchmaker Quiz"
   },
   "footer": {
+    "photoCredit": "Photographs",
     "intro": "Keep limited-edition pastry techniques from global dessert artists for life, in HD VOD. One purchase gives you unlimited, unrestricted study of original recipes and core know-how from master pâtissiers in Seoul, Taipei, and beyond.",
     "languages": "Korean & 繁體中文 supported",
     "locations": "Seongsu, Seoul & Xinyi, Taipei",
@@ -51,27 +51,26 @@
   },
   "books": {
     "listAria": "Recommended books",
-    "badge": "CURATED RECIPE BOOKS",
     "title1": "Chef Sowoo Kim's Recommended",
     "titleEm": "Hands-On Recipe Books",
     "subtitle": "A curated pick of hands-on recipe books that pair well with the classes and are great for practicing at home. Purchases are made on Coupang.",
-    "selectEdition": "Select Book",
-    "selectedManual": "SELECTED BOOK",
+    "selectEdition": "Select a book",
+    "selectedManual": "Selected book",
     "chaptersTitle": "What you'll learn ({count})",
     "priceRef": "Reference price — checkout on Coupang",
     "externalNotice": "This book is sold on Coupang.",
     "buyCta": "Buy on Coupang",
     "buyUnavailable": "Purchase link coming soon",
-    "noticeBadge": "NOTICE",
+    "noticeBadge": "Notice",
     "noticeTitle": "Recommended books are sold on Coupang",
     "noticeDesc": "This page introduces recommended books; purchase, payment, and shipping are handled on Coupang. Unlike our online classes, we do not provide in-house checkout or delivery.",
     "disclosure": "As a Coupang Partners affiliate, we earn a commission from qualifying purchases made through the links on this page.",
     "empty": "No books are currently featured."
   },
   "instructor": {
+    "storyTitle": "The chef's story",
     "chefName": "Sowoo Kim",
     "chefRole": "Director & Head Patissier, Atelier Crème",
-    "heroBadge": "ATELIER OWNER CHEF PHILOSOPHY",
     "heroTitle": "Turning a flavor few can taste into everyone's",
     "heroTitleEm": "textbook",
     "bio1": "Hello, I'm Sowoo Kim, head owner chef of Atelier Crème.",
@@ -101,12 +100,30 @@
     "timelineTitle": "Milestones & History",
     "timelineDesc": "The chronicle of Atelier Crème, cultivated by rigorous training and unflinching dedication.",
     "milestones": [
-      { "year": "2016", "event": "Graduated as a Grand Diplôme scholarship student, L'École Ritz Escoffier, Paris" },
-      { "year": "2018", "event": "Founded the Hannam-dong dessert boutique \"Atelier Crème\"; all products sold out early" },
-      { "year": "2020", "event": "Sold-out baked-goods master workshops in Taipei & Kaohsiung, Taiwan (3,000 seats cumulative)" },
-      { "year": "2022", "event": "Modern patisserie directing license partnership with Happy Happy Academy" },
-      { "year": "2024", "event": "Featured advisory appearances on SBS and MBC baking-trend specials, patissier technique segment" },
-      { "year": "2025", "event": "Signature baking guidebook 'Four Seasons of Atelier Crème' became a bestseller" }
+      {
+        "year": "2016",
+        "event": "Graduated as a Grand Diplôme scholarship student, L'École Ritz Escoffier, Paris"
+      },
+      {
+        "year": "2018",
+        "event": "Founded the Hannam-dong dessert boutique \"Atelier Crème\"; all products sold out early"
+      },
+      {
+        "year": "2020",
+        "event": "Sold-out baked-goods master workshops in Taipei & Kaohsiung, Taiwan (3,000 seats cumulative)"
+      },
+      {
+        "year": "2022",
+        "event": "Modern patisserie directing license partnership with Happy Happy Academy"
+      },
+      {
+        "year": "2024",
+        "event": "Featured advisory appearances on SBS and MBC baking-trend specials, patissier technique segment"
+      },
+      {
+        "year": "2025",
+        "event": "Signature baking guidebook 'Four Seasons of Atelier Crème' became a bestseller"
+      }
     ],
     "qaTitle": "The Interview Students Were Most Curious About",
     "qaDesc": "Sharing the philosophy of Atelier Crème's one-person brand and behind-the-scenes stories from the baking studio.",
@@ -290,7 +307,6 @@
     "okConfirmSent": "We sent a confirmation email. Please verify it in your inbox and sign in."
   },
   "myclasses": {
-    "eyebrow": "My baking academy",
     "title": "My lifetime class library",
     "countBadge": "{count} classes owned",
     "subtitle": "Rewatch whenever you like with no time limit, and keep your own 1:1 question notes.",
@@ -349,6 +365,8 @@
     }
   },
   "common": {
+    "chefMonogram": "Sowoo",
+    "chefPortraitAria": "Chef Sowoo Kim (photo coming soon)",
     "skipToContent": "Skip to main content",
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -375,7 +393,6 @@
   },
   "sections": {
     "chef": {
-      "eyebrow": "The Mastermind & Owner",
       "headingPrefix": "I am the sole artisan pâtissier behind Atelier Crème,",
       "headingName": "Sowoo Kim",
       "headingSuffix": ".",
@@ -436,15 +453,6 @@
       ]
     },
     "newsletter": {
-      "perk1": "• Offline academy partnerships in Seoul and Taipei",
-      "perk2": "• 24-hour feedback via KakaoTalk and email",
-      "headingPrefix": "The French values that turn the everyday into art — join the",
-      "headingEm": "atelier",
-      "headingSuffix": " with your account today",
-      "description": "The moment you hold premium authentic confiture and meringue humidity correction in one hand, the balance of the neighborhood dessert shop changes. Secure lifetime access with a single purchase and join sessions taught directly by artisan chefs.",
-      "emailLabel": "Newsletter subscription email",
-      "emailPlaceholder": "Email address for recipe newsletters...",
-      "submitPending": "Coming soon",
       "noticePrefix": "We are still setting up the newsletter channel. For now, leave a note under",
       "noticeLink": "Support",
       "noticeSuffix": " and we will contact you individually when it opens."
@@ -466,6 +474,7 @@
       "resultRetry": "Retake the quiz"
     },
     "archive": {
+      "sampleBadge": "Sample content",
       "title": "Student practice archive",
       "description": "Real photo reviews baked by students themselves in home studios and commercial ovens after taking Atelier Crème's original curriculum.",
       "filterAria": "Practice work category filter",
@@ -510,11 +519,7 @@
       "installment": "With 12 interest-free installments",
       "installmentAmount": "{amount}/month",
       "cta": "Explore the master course",
-      "highlights": [
-        "#CostSavingRatios",
-        "#CloseOvenFeedback",
-        "#SecretPDFBook"
-      ]
+      "highlights": ["#CostSavingRatios", "#CloseOvenFeedback", "#SecretPDFBook"]
     },
     "catalog": {
       "category": {
@@ -535,8 +540,13 @@
     },
     "announcement": {
       "promo": "Up to 45% off to celebrate the Sugar Lane & Happy Happy Academy collaboration reference launch",
-      "perk1": "• 1:1 direction from the owner chef, guaranteed",
-      "perk2": "• Commercial golden-ratio formula PDF delivered instantly"
+      "perk1": "1:1 direction from the owner chef, guaranteed",
+      "perk2": "Commercial golden-ratio formula PDF delivered instantly"
+    },
+    "offer": {
+      "heading": "Start with the top-rated class",
+      "lead": "Pay once, keep it for life, and rewatch whenever you need.",
+      "allCta": "See all classes"
     },
     "best": {
       "title": "Most loved classes right now",
@@ -548,7 +558,6 @@
     "metaTitle": "Atelier Crème — Night Counter",
     "metaDescription": "The atelier after hours. Keep Sowoo Kim's French pastry masterclasses for life.",
     "scrub": {
-      "kicker": "Nocturne · Seoul · Paris",
       "title1": "After the doors close,",
       "title2": "the real lesson begins",
       "desc": "Once the window lights go out, all that remains is the formula and the oven. Chef Sowoo Kim's VOD captures that night shift exactly as it runs.",
@@ -570,21 +579,7 @@
       "searchPlaceholder": "Search classes, desserts, techniques",
       "searchAria": "Search classes",
       "ctaEnter": "Enter the classes",
-      "ctaChef": "Meet the chef",
-      "stats": [
-        {
-          "value": "4,800+",
-          "label": "Students"
-        },
-        {
-          "value": "4.9",
-          "label": "Avg. rating"
-        },
-        {
-          "value": "Lifetime",
-          "label": "Access"
-        }
-      ]
+      "ctaChef": "Meet the chef"
     },
     "stations": {
       "eyebrow": "Mise en place",

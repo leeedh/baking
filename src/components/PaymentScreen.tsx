@@ -251,9 +251,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                   className="w-full px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring font-mono"
                   placeholder="010-XXXX-XXXX"
                 />
-                <span className="text-[10px] text-brown-medium/60 mt-1 block">
-                  {t('phoneHint')}
-                </span>
+                <span className="text-[11px] text-brown-medium mt-1 block">{t('phoneHint')}</span>
               </div>
             </div>
           </div>
@@ -266,7 +264,10 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
 
             {!widgetReady && !payError && (
               <div className="flex items-center gap-2 text-xs text-brown-medium py-8 justify-center">
-                <span className="w-4 h-4 border-2 border-t-transparent border-terracotta rounded-full animate-spin" data-motion-essential />
+                <span
+                  className="w-4 h-4 border-2 border-t-transparent border-terracotta rounded-full animate-spin"
+                  data-motion-essential
+                />
                 {t('loadingMethods')}
               </div>
             )}
@@ -296,7 +297,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder={t('couponPlaceholder')}
-                className="flex-1 px-3 py-2 bg-white border border-brown-light rounded-lg text-xs text-brown uppercase tracking-wider focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="flex-1 px-3 py-2 bg-white border border-edge rounded-lg text-xs text-brown uppercase focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
               <button
                 type="submit"
@@ -331,9 +332,9 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 className="w-16 h-12 object-cover rounded-md"
               />
               <div>
-                <span className="text-[9px] font-bold text-gold-deep">{course.category}</span>
+                <span className="text-[11px] font-bold text-gold-deep">{course.category}</span>
                 <h4 className="text-xs font-bold text-brown line-clamp-1">{course.title}</h4>
-                <div className="flex items-center gap-1.5 text-[10px] text-brown-medium mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-brown-medium mt-1">
                   <span>{t('instructorLabel', { name: course.instructor })}</span>
                   <span>•</span>
                   <span className="text-terracotta font-bold">{t('lifetimeVod')}</span>
@@ -377,7 +378,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
                 </span>
               </div>
               {locale === 'en' && (
-                <p className="text-right text-[10px] text-brown-medium/70">
+                <p className="text-right text-[11px] text-brown-medium">
                   {t('twdNote', {
                     amount: formatCount(Math.round(finalPrice / KRW_PER_TWD), locale),
                   })}
@@ -410,7 +411,7 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
               type="button"
               onClick={handlePay}
               disabled={isProcessing || !widgetReady}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-sm text-cream text-center shadow transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full py-3 px-4 rounded-xl font-bold text-sm text-white text-center shadow transition-[color,background-color,border-color,box-shadow,opacity,transform] flex items-center justify-center gap-2 cursor-pointer ${
                 isProcessing || !widgetReady
                   ? 'bg-terracotta/60 cursor-not-allowed'
                   : 'bg-terracotta hover:bg-terracotta-deep hover:shadow-md'
@@ -418,7 +419,10 @@ export default function PaymentScreen({ classId, course, courseId }: PaymentScre
             >
               {isProcessing ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-t-transparent border-cream rounded-full animate-spin" data-motion-essential />
+                  <span
+                    className="w-4 h-4 border-2 border-t-transparent border-cream rounded-full animate-spin"
+                    data-motion-essential
+                  />
                   {t('processing')}
                 </>
               ) : (

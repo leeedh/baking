@@ -29,7 +29,7 @@ const BASE =
 /**
  * `<Link>`처럼 button이 아닌 요소에 같은 외형을 입힐 때 쓴다.
  *
- * 이 함수는 **`'use client'` 없는 모듈**에 있어야 한다 — not-found.tsx·NewsletterCTA 같은
+ * 이 함수는 **`'use client'` 없는 모듈**에 있어야 한다 — not-found.tsx·ClassOfferBand 같은
  * 서버 컴포넌트가 직접 호출하기 때문이다(클라이언트 모듈의 함수는 서버에서 호출할 수 없다).
  */
 export function buttonClasses(

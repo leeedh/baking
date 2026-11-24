@@ -1,9 +1,11 @@
 'use client';
 
 import BookLinkEditor from '@/components/admin/BookLinkEditor';
+import type { Locale } from '@/i18n/routing';
 import type { BookView } from '@/lib/books';
-import { BookOpen, Check, ExternalLink, ShoppingBag } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { formatKrw } from '@/lib/format';
+import { Check, ExternalLink, ShoppingBag } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 /**
@@ -13,6 +15,7 @@ import { useState } from 'react';
  */
 export default function BooksScreen({ books }: { books: BookView[] }) {
   const t = useTranslations('books');
+  const locale = useLocale() as Locale;
   const [selectedSlug, setSelectedSlug] = useState(books[0]?.slug ?? '');
   const selectedBook = books.find((b) => b.slug === selectedSlug) ?? books[0];
 
@@ -35,15 +38,11 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
         className="pt-12 pb-16 px-6 sm:px-12 max-w-7xl mx-auto border-b border-brown-light/80"
       >
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 text-gold-deep text-[11px] font-bold tracking-widest uppercase border border-gold/20 shadow-sm">
-            <BookOpen size={12} />
-            {t('badge')}
-          </span>
           <h1
             id="books-hero-heading"
             className="font-serif text-3xl sm:text-5xl font-bold text-brown leading-tight break-keep"
           >
-            {t('title1')} <span className="font-serif italic text-terracotta">{t('titleEm')}</span>
+            {t('title1')} {t('titleEm')}
           </h1>
           <p className="text-sm text-brown-medium font-light leading-relaxed max-w-2xl mx-auto break-keep">
             {t('subtitle')}
@@ -58,9 +57,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
       >
         {/* Left Side: Books Selector & Thumbnails */}
         <div className="lg:col-span-4 space-y-6">
-          <h3 className="font-serif text-xs font-bold text-gold-deep tracking-wider uppercase mb-2">
-            {t('selectEdition')}
-          </h3>
+          <h3 className="font-serif text-sm font-bold text-gold-deep mb-2">{t('selectEdition')}</h3>
 
           <div className="space-y-4">
             {books.map((b) => {
@@ -70,7 +67,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
                   type="button"
                   key={b.slug}
                   onClick={() => setSelectedSlug(b.slug)}
-                  className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex gap-4 ${
+                  className={`w-full text-left p-5 rounded-2xl border transition-[background-color,border-color,box-shadow] duration-300 cursor-pointer flex gap-4 ${
                     active
                       ? 'bg-white border-terracotta shadow-md -translate-y-0.5'
                       : 'bg-white/50 border-brown-light hover:bg-white hover:border-gold/40'
@@ -91,10 +88,10 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
                     </h4>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-xs font-bold text-terracotta">
-                        ₩{b.price.toLocaleString()}
+                        {formatKrw(b.price, locale)}
                       </span>
                       {b.discountPercent > 0 && (
-                        <span className="text-[10px] text-terracotta font-black">
+                        <span className="text-[11px] text-terracotta-deep font-bold">
                           {b.discountPercent}% OFF
                         </span>
                       )}
@@ -107,7 +104,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
 
           {/* External commerce notice */}
           <div className="p-6 bg-brown text-cream rounded-2xl border border-gold/30 space-y-3">
-            <span className="text-[9px] bg-gold text-brown px-2 py-0.5 rounded font-extrabold tracking-widest uppercase">
+            <span className="text-[11px] bg-gold text-brown px-2 py-0.5 rounded font-bold">
               {t('noticeBadge')}
             </span>
             <h4 className="font-serif text-base font-bold">{t('noticeTitle')}</h4>
@@ -136,21 +133,21 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
               {/* Price & Discount Indicator (참고가 — 실제 결제는 외부 쇼핑몰) */}
               <div className="text-right shrink-0 bg-cream p-4 rounded-xl border border-brown-light">
                 {selectedBook.discountPercent > 0 && (
-                  <span className="text-xs text-stone-400 line-through block">
-                    ₩{selectedBook.listPrice.toLocaleString()}
+                  <span className="text-xs text-brown-medium line-through block">
+                    {formatKrw(selectedBook.listPrice, locale)}
                   </span>
                 )}
                 <div className="flex items-center gap-1.5 justify-end">
                   {selectedBook.discountPercent > 0 && (
-                    <span className="text-terracotta text-xs font-black">
+                    <span className="text-terracotta-deep text-xs font-bold">
                       {selectedBook.discountPercent}% OFF
                     </span>
                   )}
                   <span className="text-xl font-bold text-brown">
-                    ₩{selectedBook.price.toLocaleString()}
+                    {formatKrw(selectedBook.price, locale)}
                   </span>
                 </div>
-                <span className="text-[10px] text-stone-400 font-light block mt-0.5">
+                <span className="text-[11px] text-brown-medium font-light block mt-0.5">
                   {t('priceRef')}
                 </span>
               </div>
@@ -204,13 +201,13 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
                   href={selectedBook.externalPurchaseUrl}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="w-full sm:w-auto px-10 py-3 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-10 py-3 bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded-xl shadow-md transition-[color,background-color,border-color,box-shadow,opacity,transform] flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>{t('buyCta')}</span>
                   <ExternalLink size={14} />
                 </a>
               ) : (
-                <span className="w-full sm:w-auto px-10 py-3 bg-stone-200 text-stone-400 text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
+                <span className="w-full sm:w-auto px-10 py-3 bg-brown-light text-brown-medium text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
                   <span>{t('buyUnavailable')}</span>
                 </span>
               )}
@@ -218,7 +215,7 @@ export default function BooksScreen({ books }: { books: BookView[] }) {
           </div>
 
           {/* 쿠팡 파트너스 제휴 고지 (필수) */}
-          <p className="text-[10.5px] text-stone-400 font-light leading-relaxed border-t border-brown-light pt-4">
+          <p className="text-xs text-brown-medium font-light leading-relaxed border-t border-brown-light pt-4">
             {t('disclosure')}
           </p>
         </div>

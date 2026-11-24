@@ -10,7 +10,7 @@ import type {
 import { useId } from 'react';
 
 const CONTROL =
-  'w-full bg-white text-brown placeholder:text-brown-medium/50 border border-brown-light rounded-xl ' +
+  'w-full bg-white text-brown placeholder:text-brown-medium/50 border border-edge rounded-xl ' +
   'transition-[border-color,box-shadow] duration-200 ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' +
   'disabled:opacity-50 disabled:cursor-not-allowed';

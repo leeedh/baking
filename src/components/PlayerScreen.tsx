@@ -174,11 +174,11 @@ export default function PlayerScreen({
           </div>
           <div className="w-full bg-cream h-2 rounded-full overflow-hidden">
             <div
-              className="bg-terracotta h-full rounded-full transition-[width] duration-500"
-              style={{ width: `${progressPercent}%` }}
+              className="bg-terracotta h-full w-full rounded-full transition-transform duration-500"
+              style={{ transform: `translateX(${progressPercent - 100}%)` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-brown-medium/60">
+          <div className="flex justify-between text-[11px] text-brown-medium">
             <span>{t('completedCount', { count: completedLessonIds.length })}</span>
             <span>{t('totalCount', { count: totalLessonsCount })}</span>
           </div>
@@ -213,9 +213,7 @@ export default function PlayerScreen({
           {currentLesson && (
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white rounded-xl border border-brown-light gap-4 shadow-sm">
               <div>
-                <span className="text-[10px] font-bold text-gold-deep tracking-wide uppercase">
-                  Lecture Playing
-                </span>
+                <span className="text-[11px] font-bold text-gold-deep">Lecture Playing</span>
                 <h3 className="text-sm font-bold text-brown mt-0.5">{currentLesson.title}</h3>
                 <p className="text-xs text-brown-medium mt-1">
                   {currentLesson.isPreview ? t('lessonPreviewNote') : t('lessonMemberNote')}
@@ -227,7 +225,7 @@ export default function PlayerScreen({
                   id="btn-mark-complete"
                   onClick={handleCompleteCurrentLesson}
                   disabled={currentLocked}
-                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-[color,background-color,border-color,box-shadow,opacity,transform] flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     completedLessonIds.includes(currentLesson.id)
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       : 'bg-cream text-terracotta border border-brown-light hover:bg-terracotta hover:text-white'
@@ -271,7 +269,7 @@ export default function PlayerScreen({
                         className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-cream hover:bg-brown-light disabled:opacity-50 text-xs text-brown transition-colors cursor-pointer"
                       >
                         <span className="text-left">{material.title}</span>
-                        <span className="text-[10px] text-brown-medium/70 font-mono shrink-0">
+                        <span className="text-[11px] text-brown-medium font-mono shrink-0">
                           {downloadingId === material.id
                             ? t('materialIssuing')
                             : formatBytes(material.sizeBytes)}
@@ -314,13 +312,13 @@ export default function PlayerScreen({
             <h3 className="font-serif text-sm font-bold text-brown flex items-center gap-1.5">
               <BookOpen size={16} className="text-terracotta" /> {t('lessonListTitle')}
             </h3>
-            <p className="text-[10px] text-brown-medium mt-0.5">{t('lessonListHint')}</p>
+            <p className="text-[11px] text-brown-medium mt-0.5">{t('lessonListHint')}</p>
           </div>
 
           <div className="space-y-4 max-h-[300px] sm:max-h-[500px] overflow-y-auto pr-1">
             {chapters.map((chapter) => (
               <div key={chapter.index} className="space-y-2">
-                <span className="text-[10.5px] font-bold text-gold-deep block uppercase tracking-wider bg-cream p-1.5 rounded">
+                <span className="text-xs font-bold text-gold-deep block bg-cream p-1.5 rounded">
                   {chapter.title}
                 </span>
 
@@ -335,7 +333,7 @@ export default function PlayerScreen({
                         key={lesson.id}
                         onClick={() => handleLessonSelect(lesson)}
                         disabled={locked}
-                        className={`w-full p-2.5 min-h-[44px] rounded-lg flex items-center justify-between text-left text-xs transition-all cursor-pointer ${
+                        className={`w-full p-2.5 min-h-[44px] rounded-lg flex items-center justify-between text-left text-xs transition-[color,background-color,border-color,box-shadow,opacity,transform] cursor-pointer ${
                           isSelected
                             ? 'bg-terracotta/10 text-terracotta font-bold'
                             : locked
@@ -349,7 +347,7 @@ export default function PlayerScreen({
                               <CheckCircle size={14} className="fill-emerald-100" />
                             </span>
                           ) : isSelected ? (
-                            <span className="text-terracotta shrink-0 animate-bounce">
+                            <span className="text-terracotta shrink-0">
                               <PlayCircle size={14} />
                             </span>
                           ) : (
@@ -358,9 +356,9 @@ export default function PlayerScreen({
                           <span className="truncate">{lesson.title}</span>
                         </div>
 
-                        <div className="flex items-center gap-1 text-[9px] text-brown-medium/60 font-mono">
+                        <div className="flex items-center gap-1 text-[11px] text-brown-medium font-mono">
                           {locked ? (
-                            <span className="text-[8px] bg-gold/10 text-gold-deep px-1 rounded">
+                            <span className="text-[11px] bg-gold/10 text-gold-deep px-1 rounded">
                               {t('lessonLocked')}
                             </span>
                           ) : (
@@ -377,10 +375,10 @@ export default function PlayerScreen({
 
           {!purchased && (
             <div className="bg-terracotta/5 border border-terracotta/20 rounded-xl p-3 text-center space-y-2">
-              <span className="text-[10.5px] font-bold text-terracotta block">
+              <span className="text-[11px] font-bold text-terracotta block">
                 {t('upsellTitle')}
               </span>
-              <p className="text-[9px] text-brown-medium leading-normal font-light">
+              <p className="text-xs text-brown-medium leading-normal font-light">
                 {t('upsellBody')}
               </p>
             </div>

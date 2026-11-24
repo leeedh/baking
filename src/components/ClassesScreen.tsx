@@ -7,7 +7,6 @@ import type { ClassItem } from '../types';
 import AddClassButton from './admin/AddClassButton';
 import ClassCatalogGrid from './sections/ClassCatalogGrid';
 import FaqAccordion from './sections/FaqAccordion';
-import NewsletterCTA from './sections/NewsletterCTA';
 import RecommendationQuiz from './sections/RecommendationQuiz';
 
 interface ClassesScreenProps {
@@ -18,7 +17,9 @@ interface ClassesScreenProps {
 }
 
 // DC-96 (PRD-F-20) · 온라인 클래스 = 판매 화면.
-// 추천 퀴즈 → 검색·카테고리 필터 + 전체 그리드 → FAQ → 뉴스레터.
+// 짧은 제목 → 검색·카테고리 필터 + 전체 그리드 → 추천 퀴즈(고르기 어려울 때) → FAQ.
+// Hallmark hero posture "Index": 목록이 이 페이지에 오는 이유라서 첫 화면에 카드가 보여야 한다.
+// 예전에는 가운데 제목과 퀴즈가 첫 화면을 다 쓰고 목록은 접힌 아래에 있었다(게이트 79).
 export default function ClassesScreen({ classes, initialSearchQuery }: ClassesScreenProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -38,16 +39,15 @@ export default function ClassesScreen({ classes, initialSearchQuery }: ClassesSc
     >
       <section
         aria-labelledby="classes-hero-heading"
-        className="pt-12 pb-4 px-6 sm:px-12 max-w-7xl mx-auto text-center space-y-3"
+        className="pt-10 sm:pt-12 px-6 sm:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-8 lg:items-end"
       >
-        <p className="text-xs font-bold text-gold-deep tracking-[0.25em] uppercase">Online Classes</p>
         <h1
           id="classes-hero-heading"
-          className="font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep"
+          className="lg:col-span-5 font-serif text-4xl sm:text-5xl font-bold text-brown leading-tight break-keep"
         >
           {t('classes.title')}
         </h1>
-        <p className="text-sm text-brown-medium font-light max-w-2xl mx-auto break-keep">
+        <p className="lg:col-span-7 text-sm text-brown-medium font-light leading-relaxed max-w-[65ch] break-keep lg:pb-2">
           {t('classes.subtitle')}
         </p>
       </section>
@@ -55,10 +55,9 @@ export default function ClassesScreen({ classes, initialSearchQuery }: ClassesSc
       {/* 운영자에게만 보인다(클라이언트 판정 — 캐시된 목록에 세션을 섞지 않는다). */}
       <AddClassButton />
 
-      <RecommendationQuiz classes={classes} />
       <ClassCatalogGrid classes={classes} initialSearchQuery={initialSearchQuery} />
+      <RecommendationQuiz classes={classes} />
       <FaqAccordion />
-      <NewsletterCTA />
     </div>
   );
 }

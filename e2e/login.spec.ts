@@ -28,9 +28,9 @@ test('로그인 후 카탈로그와 내 클래스에 진입한다', async ({ pag
   await expect(page).toHaveURL(/\/ko\/?$/);
   await expect(page.getByRole('link', { name: messages.nav.myclasses }).first()).toBeVisible();
 
-  // 카탈로그 카드는 링크가 아니라 클릭 핸들러로 이동한다(ClassCard).
+  // 카탈로그 카드 제목은 상세로 가는 링크다(ClassCard — Hallmark 49a로 버튼에서 링크로 바뀌었다).
   await page.goto('/ko/classes');
-  await page.getByRole('heading', { level: 3 }).getByRole('button').first().click();
+  await page.getByRole('heading', { level: 3 }).getByRole('link').first().click();
   await expect(page).toHaveURL(/\/ko\/classes\/[\w-]+$/);
 
   // 인증 가드가 있는 페이지 — 세션이 없으면 /ko/login으로 리다이렉트된다.

@@ -122,7 +122,7 @@ export default function DetailScreen({
               referrerPolicy="no-referrer"
               src={cls.thumbnail}
               alt={cls.title}
-              className="w-full h-full object-cover brightness-75 group-hover:scale-101 transition-transform duration-500"
+              className="w-full h-full object-cover brightness-75"
             />
             {hasPreview && (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/30">
@@ -133,14 +133,14 @@ export default function DetailScreen({
                 >
                   <Play size={26} className="ml-1 fill-white" />
                 </button>
-                <span className="mt-3 text-xs bg-black/60 backdrop-blur-md text-cream px-3 py-1 rounded-full font-medium tracking-wide">
+                <span className="mt-3 text-xs bg-brown text-cream px-3 py-1 rounded-full font-medium">
                   {t('previewCta')}
                 </span>
               </div>
             )}
 
             {/* Corner Badge */}
-            <span className="absolute top-4 left-4 bg-gold text-white text-xs font-bold px-3 py-1 rounded-md shadow-md uppercase tracking-wider">
+            <span className="absolute top-4 left-4 bg-gold-deep text-white text-xs font-bold px-3 py-1 rounded-md shadow-md">
               {t('levelBadge', { level: cls.level })}
             </span>
           </div>
@@ -227,9 +227,7 @@ export default function DetailScreen({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <div className="p-4 bg-cream/40 rounded-xl border border-brown-light">
-                    <h4 className="font-bold text-xs text-terracotta uppercase mb-2">
-                      {t('recipeHeading')}
-                    </h4>
+                    <h4 className="font-bold text-sm text-terracotta mb-2">{t('recipeHeading')}</h4>
                     <ul className="space-y-1.5 text-xs text-brown-medium">
                       {(t.raw('recipeItems') as string[]).map((item) => (
                         <li key={item}>• {item}</li>
@@ -237,9 +235,7 @@ export default function DetailScreen({
                     </ul>
                   </div>
                   <div className="p-4 bg-cream/40 rounded-xl border border-brown-light">
-                    <h4 className="font-bold text-xs text-gold-deep uppercase mb-2">
-                      {t('benefitHeading')}
-                    </h4>
+                    <h4 className="font-bold text-sm text-gold-deep mb-2">{t('benefitHeading')}</h4>
                     <ul className="space-y-1.5 text-xs text-brown-medium">
                       {(t.raw('benefitItems') as string[]).map((item) => (
                         <li key={item}>• {item}</li>
@@ -252,9 +248,7 @@ export default function DetailScreen({
                   <h3 className="font-serif text-lg font-bold text-terracotta mb-2">
                     {t('noticeHeading')}
                   </h3>
-                  <p className="text-xs text-brown-medium leading-relaxed">
-                    {t('noticeBody')}
-                  </p>
+                  <p className="text-xs text-brown-medium leading-relaxed">{t('noticeBody')}</p>
                 </div>
               </div>
             )}
@@ -310,7 +304,7 @@ export default function DetailScreen({
                                 <div>
                                   <span className="text-xs text-brown">{lesson.title}</span>
                                   {isFreePreview && (
-                                    <span className="ml-2 inline-block bg-terracotta text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+                                    <span className="ml-2 inline-block bg-terracotta text-white text-[11px] px-1.5 py-0.5 rounded font-bold">
                                       {t('freeBadge')}
                                     </span>
                                   )}
@@ -326,12 +320,14 @@ export default function DetailScreen({
                                   <button
                                     id={`preview-btn-${lesson.id}`}
                                     onClick={() => onStartPreview(cls.id, lesson.id)}
-                                    className="px-3 py-2 min-h-[36px] bg-terracotta hover:bg-terracotta-deep text-cream text-xs font-bold rounded cursor-pointer"
+                                    className="px-3 py-2 min-h-[36px] bg-terracotta hover:bg-terracotta-deep text-white text-xs font-bold rounded cursor-pointer"
                                   >
                                     {t('watchNow')}
                                   </button>
                                 ) : (
-                                  <span className="text-xs text-brown-medium/50">{t('locked')}</span>
+                                  <span className="text-xs text-brown-medium/50">
+                                    {t('locked')}
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -352,7 +348,7 @@ export default function DetailScreen({
                     <span className="block text-3xl font-serif font-extrabold text-terracotta">
                       {cls.rating}
                     </span>
-                    <span className="text-[10px] text-brown-medium">{t('ratingLabel')}</span>
+                    <span className="text-[11px] text-brown-medium">{t('ratingLabel')}</span>
                   </div>
                   <div className="h-10 w-px bg-brown-light" />
                   <p className="text-xs text-brown-medium leading-relaxed break-keep">
@@ -399,7 +395,7 @@ export default function DetailScreen({
                               </div>
                             </div>
                           </div>
-                          <span className="text-[10px] text-brown-medium/60 font-mono">
+                          <span className="text-[11px] text-brown-medium font-mono">
                             {rev.date}
                           </span>
                         </div>
@@ -418,7 +414,7 @@ export default function DetailScreen({
         {/* Right Area: Purchase details Float Sticky Box */}
         <div className="lg:col-span-4 sticky top-24">
           <div className="bg-white rounded-2xl border-2 border-terracotta p-6 shadow-xl space-y-6">
-            <div className="inline-block bg-terracotta/10 text-terracotta text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
+            <div className="inline-block bg-terracotta/10 text-terracotta text-xs font-bold px-3 py-1 rounded-md">
               {t('passBadge')}
             </div>
 
@@ -470,7 +466,7 @@ export default function DetailScreen({
               <button
                 id="btn-buy-now"
                 onClick={() => onNavigateToPayment(cls.id)}
-                className="w-full py-3.5 bg-terracotta hover:bg-terracotta-deep text-cream font-extrabold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 cursor-pointer text-center block"
+                className="w-full py-3.5 bg-terracotta hover:bg-terracotta-deep text-white font-extrabold text-sm rounded-xl shadow-lg hover:shadow-xl transition-[color,background-color,border-color,box-shadow,opacity,transform] hover:-translate-y-0.5 cursor-pointer text-center block"
               >
                 {t('buyNow')}
               </button>
@@ -491,7 +487,7 @@ export default function DetailScreen({
               </button>
             )}
 
-            <p className="text-[10px] text-center text-brown-medium/60 leading-normal">
+            <p className="text-xs text-center text-brown-medium leading-normal">
               {t('refundNote')}
             </p>
           </div>
@@ -499,17 +495,15 @@ export default function DetailScreen({
       </div>
 
       {/* Sticky Bottom Row for Quick Purchase Conversion on Mobile Devices */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-brown-light p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_20px_rgba(42,33,27,0.08)] flex items-center justify-between gap-3 px-4">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-brown-light p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-bar flex items-center justify-between gap-3 px-4">
         <div className="flex flex-col">
-          <span className="text-[9px] font-bold text-terracotta uppercase tracking-wider">
-            LIFETIME ACCESS PASS
-          </span>
+          <span className="text-[11px] font-bold text-terracotta">LIFETIME ACCESS PASS</span>
           <div className="flex items-baseline gap-1.5">
             <span className="text-lg font-serif font-extrabold text-brown">
               {formatKrw(cls.price, locale)}
             </span>
             {discountPercent > 0 && (
-              <span className="text-[10px] text-gold-deep font-bold">
+              <span className="text-[11px] text-gold-deep font-bold">
                 {t('discountBadge', { percent: discountPercent })}
               </span>
             )}
@@ -527,7 +521,7 @@ export default function DetailScreen({
           <button
             id="mobile-sticky-buy"
             onClick={() => onNavigateToPayment(cls.id)}
-            className="px-6 py-3 min-h-[44px] bg-terracotta hover:bg-terracotta-deep text-cream font-extrabold text-xs rounded-xl shadow-md text-center whitespace-nowrap cursor-pointer"
+            className="px-6 py-3 min-h-[44px] bg-terracotta hover:bg-terracotta-deep text-white font-extrabold text-xs rounded-xl shadow-md text-center whitespace-nowrap cursor-pointer"
           >
             {t('buyNowShort')}
           </button>

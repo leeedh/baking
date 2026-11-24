@@ -10,7 +10,7 @@ import type { CSSProperties } from 'react';
 
 interface PhilosophyPillarsProps {
   /**
-   * DC-96 · 홈(게이트웨이)은 `summary` — 카드 본문을 3줄로 줄이고 소개 페이지로 유도한다.
+   * DC-96 · 홈(게이트웨이)은 `summary` — 본문을 2줄로 줄이고 소개 페이지로 유도한다.
    * 소개(`/about`)는 `full` — 철학 전문을 그대로 노출한다.
    */
   variant?: 'summary' | 'full';
@@ -20,125 +20,90 @@ interface PhilosophyPillarsProps {
 type PillarCopy = { title: string; body: string; footnote: string };
 
 type Pillar = {
-  no: string;
   Icon: LucideIcon;
-  /** 카드별 액센트 — gold → terracotta → brown 순으로 톤이 깊어진다. */
-  accent: { badge: string; badgeHover: string; border: string; text: string };
+  /** 행별 액센트 — gold → terracotta → brown 순으로 톤이 깊어진다. */
+  text: string;
 };
 
 const PILLARS: Pillar[] = [
-  {
-    no: '01',
-    Icon: FileText,
-    accent: {
-      badge: 'bg-gold/10 text-gold-deep',
-      badgeHover: 'group-hover:bg-gold group-hover:text-white',
-      border: 'hover:border-gold/30',
-      text: 'text-gold-deep',
-    },
-  },
-  {
-    no: '02',
-    Icon: Utensils,
-    accent: {
-      badge: 'bg-terracotta/10 text-terracotta',
-      badgeHover: 'group-hover:bg-terracotta group-hover:text-white',
-      border: 'hover:border-terracotta/30',
-      text: 'text-terracotta',
-    },
-  },
-  {
-    no: '03',
-    Icon: MessageSquare,
-    accent: {
-      badge: 'bg-brown/10 text-brown',
-      badgeHover: 'group-hover:bg-brown group-hover:text-white',
-      border: 'hover:border-brown/30',
-      text: 'text-brown',
-    },
-  },
+  { Icon: FileText, text: 'text-gold-deep' },
+  { Icon: Utensils, text: 'text-terracotta-deep' },
+  { Icon: MessageSquare, text: 'text-brown' },
 ];
 
+/*
+ * Rows 컴포지션(Hallmark layout §5-5). 예전의 "아이콘 배지 위 제목" 3열 타일은
+ * 생성형 페이지의 전형(게이트 3)이라, 헤드 블록을 왼쪽 4열에 두고 hairline으로
+ * 나뉜 세 행을 오른쪽 8열에 둔다. 홈에서는 바로 앞이 카드 그리드라 조밀→조용으로
+ * 호흡이 바뀐다. 번호는 장식 라벨이 아니라 실제 <ol>의 순서다.
+ */
 export default function PhilosophyPillars({ variant = 'full' }: PhilosophyPillarsProps) {
   const t = useTranslations('sections.philosophy');
   const copy = t.raw('pillars') as PillarCopy[];
   const isSummary = variant === 'summary';
-  const revealRef = useRevealOnScroll<HTMLDivElement>();
+  const revealRef = useRevealOnScroll<HTMLOListElement>();
 
   return (
     <section
       aria-labelledby="philosophy-heading"
-      className="py-20 px-6 sm:px-12 bg-white/75 border-b border-brown-light/50"
+      className="py-20 sm:py-24 px-6 sm:px-12 bg-white/75 border-y border-brown-light/50"
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-          {/* eyebrow는 헤딩이 아니다 — 예전에는 <h2>였고 실제 제목이 <h3>여서 순서가 역전됐다. */}
-          <p className="font-serif text-xs font-bold text-gold-deep tracking-[0.25em] uppercase">
-            Premium Standard
-          </p>
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8">
+        <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-28 lg:self-start">
           <h2
             id="philosophy-heading"
             className="font-serif text-3xl sm:text-4xl font-bold text-brown leading-tight break-keep"
           >
-            {t('headingPrefix')}{' '}
-            <span className="font-serif italic text-terracotta">{t('headingEm')}</span>
+            {t('headingPrefix')} {t('headingEm')}
           </h2>
-          <p className="text-sm text-brown-medium font-light break-keep">
+          <p className="text-sm text-brown-medium font-light leading-relaxed break-keep">
             {t('description')}
           </p>
-        </div>
-
-        <div ref={revealRef} className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
-          {PILLARS.map((pillar, i) => (
-            <div
-              key={pillar.no}
-              data-reveal-init
-              style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
-              className={cn(
-                'p-8 bg-cream/40 rounded-2xl border border-brown-light/65 space-y-4 group',
-                'transition-[background-color,border-color,box-shadow] duration-300 ease-out-soft hover:bg-cream/70 hover:shadow-card-hover',
-                pillar.accent.border,
-              )}
-            >
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-xl flex items-center justify-center font-serif text-lg font-bold transition-all duration-300 ease-out-soft',
-                  pillar.accent.badge,
-                  pillar.accent.badgeHover,
-                )}
-              >
-                {pillar.no}
-              </div>
-              <h3 className="font-serif text-xl font-bold text-brown break-keep">{copy[i]?.title}</h3>
-              <p
-                className={cn(
-                  'text-xs sm:text-[13px] text-brown-medium leading-relaxed font-light break-keep',
-                  isSummary && 'line-clamp-3',
-                )}
-              >
-                {copy[i]?.body}
-              </p>
-              <div
-                className={cn(
-                  'pt-2 flex items-center gap-1.5 text-xs font-semibold',
-                  pillar.accent.text,
-                )}
-              >
-                <pillar.Icon size={14} />
-                <span>{copy[i]?.footnote}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {isSummary && (
-          <div className="mt-12 text-center">
+          {isSummary && (
             <Link href="/about" className={buttonClasses('outline')}>
               <span>{t('ctaAbout')}</span>
               <ChevronRight size={13} />
             </Link>
-          </div>
-        )}
+          )}
+        </div>
+
+        <ol ref={revealRef} className="lg:col-span-8 border-t border-brown-light">
+          {PILLARS.map((pillar, i) => (
+            <li
+              key={copy[i]?.title ?? i}
+              data-reveal-init
+              style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
+              className="grid grid-cols-[3rem_minmax(0,1fr)] sm:grid-cols-[4rem_minmax(0,1fr)] gap-x-4 py-8 sm:py-10 border-b border-brown-light"
+            >
+              <span
+                aria-hidden
+                className={cn(
+                  'font-serif text-2xl sm:text-3xl font-bold leading-none',
+                  pillar.text,
+                )}
+              >
+                {i + 1}
+              </span>
+              <div className="space-y-3 min-w-0">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-brown leading-snug break-keep">
+                  {copy[i]?.title}
+                </h3>
+                <p
+                  className={cn(
+                    'text-sm text-brown-medium leading-relaxed font-light break-keep max-w-[65ch]',
+                    isSummary && 'line-clamp-2',
+                  )}
+                >
+                  {copy[i]?.body}
+                </p>
+                <p className={cn('flex items-center gap-1.5 text-xs font-semibold', pillar.text)}>
+                  <pillar.Icon size={14} aria-hidden />
+                  <span>{copy[i]?.footnote}</span>
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

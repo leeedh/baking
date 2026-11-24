@@ -26,7 +26,6 @@ export default function BestClasses({ classes }: BestClassesProps) {
     <section aria-labelledby="best-heading" className="py-20 px-6 sm:px-12 max-w-7xl mx-auto">
       <SectionHeading
         id="best-heading"
-        eyebrow="Best Selection"
         title={t('sections.best.title')}
         description={t('sections.best.description')}
         action={
